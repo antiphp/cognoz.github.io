@@ -44,7 +44,7 @@ mysqldump --all-databases --single-transaction > all_databases.sql
 mysql -p < all_databases.sql
 
 ###Fuel plugins - Add version: 2.0.0 in deployment_tasks via VIM:
-'%s/^\s*role: .*/  version: 2.0.0\r&/g'
+'%s/^\s&ast;role: .&ast;/  version: 2.0.0\r&/g'
 
 ###Check missed packages on interfaces:
  ip -s -s link show
@@ -135,7 +135,7 @@ vim /etc/network/if-up.d/drbd-start
 #! /bin/sh
 /etc/init.d/drbd start
 vim /etc/fstab
-/dev/drbd1 /home ext3 _netdev,relatime 0 2
+/dev/drbd1 /home ext3 \_netdev,relatime 0 2
 
 ###Openstack keepalived vip in instances:
 1. create new neutron port
@@ -252,22 +252,22 @@ Check your license first
 4. SHOW FIELD KEYS FROM virt_memory_total
  Influx cache maximum memory size exceeded #6109
 In logs:
-14:52:07 reading file /data1/influxdb/wal/sysnoc/default/2/_00703.wal, size 10504926 [cacheloader] 2016/03/24 14:52:09 reading file /data1/influxdb/wal/sysnoc/default/2/_00704.wal, size 10494123 run: open server: open tsdb store: [shard 2] cache maximum memory size exceeded
+14:52:07 reading file /data1/influxdb/wal/sysnoc/default/2/\_00703.wal, size 10504926 [cacheloader] 2016/03/24 14:52:09 reading file /data1/influxdb/wal/sysnoc/default/2/\_00704.wal, size 10494123 run: open server: open tsdb store: [shard 2] cache maximum memory size exceeded
 
 Solution:
 1. vim tsdb/engine/tsm1/cache.go
-   @@ -306,6 +306,12 @@ func (c *Cache) Delete(keys []string) {
+   @@ -306,6 +306,12 @@ func (c &ast;Cache) Delete(keys []string) {
        }
    }
 
-+func (c *Cache) SetMaxSize(size uint64) {
++func (c &ast;Cache) SetMaxSize(size uint64) {
 +    c.mu.Lock()
 +    c.maxSize = size
 +    c.mu.Unlock()
 +}
 +
 2. vim tsdb/engine/tsm1/engine.go
- @@ -659,6 +659,14 @@ func (e *Engine) reloadCache() error {
+@@ -659,6 +659,14 @@ func (e &ast;Engine) reloadCache() error {
          return err
      }
 
@@ -338,7 +338,7 @@ service radosgw-all restart
 ##GOlang
 1. Clone repo - go get github/user/repo (alternatively, you can manually clone repo in gopath:/src/ dir )
 2. In case of problems with goroot/gopath - unset GOROOT variable
-3. In case of problems with http.requests* (or context) calls - update GOlang to >1.8.3
+3. In case of problems with http.requests&ast; (or context) calls - update GOlang to >1.8.3
 4. Find all dependencies for package:
      go list -f '{{join .Deps "\n"}}'
 5. 'import cycle not allowed' - unset all GO variables, and run 'go get github/user/repo'
@@ -367,7 +367,7 @@ openssl x509 -noout - hash - in cacert.crt
 ###Openstack ca-bundle right order (hosttelecon):
 1. crt -    
 Issuer: C=GB, ST=Greater Manchester, L=Salford, O=COMODO CA Limited, CN=COMODO RSA Domain Validation Secure Server CA
-Subject: OU=Domain Control Validated, OU=EssentialSSL Wildcard, CN=*.atlex.cloud
+Subject: OU=Domain Control Validated, OU=EssentialSSL Wildcard, CN=&ast;.atlex.cloud
 2. Bundle:
 2.1 -
 Issuer: C=GB, ST=Greater Manchester, L=Salford, O=COMODO CA Limited, CN=COMODO RSA Certification Authority
@@ -389,7 +389,7 @@ Insert the cert in the end of file /etc/certs/ca-certificates.crt Hashed- link: 
 3. fuel node --node $id --tasks $ssl_tasks $haproxy-service-tasks $keystone-service-tasks
 4. Profit
 
-ln -s cacert.crt ****e15.0
+ln -s cacert.crt &ast;&ast;&ast;&ast;e15.0
 c_rehash . ; update-ca-certificates
 ###why curl is working but clients are not
 Python-requests смотрит /etc/ssl/certs/ , но после установки certify смотрит
@@ -401,8 +401,8 @@ Python-requests смотрит /etc/ssl/certs/ , но после установ�
 ##LDAP
 
 ###ldap 2 less
-ldapsearch -x -LLL -h ******.ru -p 3268 -D openstack_ldap_user@******.ru -w 'D**2%$**&amp;X5(' -b DC=ti,DC=local -s sub "(sAMAccountName=a.sh*****)" -P 3 -e ! chaining=referralsRequired
-ldap on 2 less - ldapsearch -x -LLL -h 127.0.0.1 -p 389 -D cn=administrator,dc=local,dc=ru -w BNkmv/OEt+z1su_g_A_p_q_PjO6uA1C1 -b dc=******,dc=ru -s sub "(sAMAccountName=a.*****_ev)"
+ldapsearch -x -LLL -h &ast;&ast;&ast;&ast;.ru -p 3268 -D openstack_ldap_user@&ast;&ast;&ast;&ast;.ru -w 'D&ast;&ast;2%$&ast;&ast;&amp;X5(' -b DC=ti,DC=local -s sub "(sAMAccountName=a.sh&ast;&ast;&ast;&ast;)" -P 3 -e ! chaining=referralsRequired
+ldap on 2 less - ldapsearch -x -LLL -h 127.0.0.1 -p 389 -D cn=administrator,dc=local,dc=ru -w BNkmv/OEt+z1su_g_A_p_q_PjO6uA1C1 -b dc=&ast;&ast;&ast;&ast;&ast;,dc=ru -s sub "(sAMAccountName=a.&ast;&ast;&ast;&ast;\_ev)"
 
 ##Python using ssl verify cert -
 
@@ -410,7 +410,6 @@ import requests
 url = 'https://foo.com/bar'
 r = requests.post(url, verify='/path/to/ca')
 
-* * *
 ##Zabbix
 ###mariadb-mysql
 
@@ -475,7 +474,7 @@ docker rmi $(docker images -q)
 ###Kernel update to 4.4 for Fuel 9.0:
 cp fuel_bootstrap_cli.yaml fuel_bootstrap_cli.yaml.bak
 sed -i -e 's/generic-lts-trusty/generic-lts-xenial/g' \
-  -e '/-[[:blank:]]*hpsa-dkms$/d' fuel_bootstrap_cli.yaml
+  -e '/-[[:blank:]]&ast;hpsa-dkms$/d' fuel_bootstrap_cli.yaml
 fuel-bootstrap build --activate --label bootstrap-kernel44
 
 ###Fixing fake disks issue on discover nodes:
@@ -514,7 +513,7 @@ fuel role --rel 2  --update --file 1.yaml
 In UI network l3 enable DVR
 
 ###Change hostnames for all nodes:
-fuel node | grep -E "^(\ )*[0-9]" | awk '{print $1,$5}' | while read id hostname; do fuel node --node-id $id --hostname $hostname; done
+fuel node | grep -E "^(\ )&ast;[0-9]" | awk '{print $1,$5}' | while read id hostname; do fuel node --node-id $id --hostname $hostname; done
 
 ###fuel-graph
 fuel graph --download file.dot
@@ -556,26 +555,26 @@ Select .... from ... as as;
 
 ##Elasticsearch
 ### check cluster status
-curl localhost:9200/_cluster/health
+curl localhost:9200/\_cluster/health
 
 ### figure out which indices are in trouble
-curl 'localhost:9200/_cluster/health?level=indices&pretty'
+curl 'localhost:9200/\_cluster/health?level=indices&pretty'
 
 ### figure out what shard is the problem
-curl localhost:9200/_cat/shards
+curl localhost:9200/\_cat/shards
 
 ###query to all objects
-curl elastic_vip:9200/_all/compute.instance.exists/_search?
+curl elastic_vip:9200/\_all/compute.instance.exists/\_search?
 pretty=true&size=10000
 
 ###query to specific object (events_2017-06-26)
-curl -XGET “$ES_URL/events_2017-06-26/snapshot.create/_search?pretty”
+curl -XGET “$ES_URL/events_2017-06-26/snapshot.create/\_search?pretty”
 
 ###query indices
-curl ‘localhost:9200/_cat/indices?v’
+curl ‘localhost:9200/\_cat/indices?v’
 
 ###query mappings
-curl -XGET “$ES_URL/events_2017-06-26/_mapping?pretty”
+curl -XGET “$ES_URL/events_2017-06-26/\_mapping?pretty”
 
 ###lma_diagnostic
 bash: lma_diagnostics
@@ -612,7 +611,7 @@ crm resource restart p_clone-log_collector
 ###If you have multi region environment:
 1) change two lines (search "region") here on hard-coded name of  your region  lib/python2.7/site-packages/rally/osclients.py#L196 (and if you installed rally in venv in /venv/lib/python.....)
 2) Also change line in neutron return in osclients.py:
-L357 client = neutron.Client(self.......... endpoint_override=self._get_endpoint(service_type))
+L357 client = neutron.Client(self.......... endpoint_override=self.\_get_endpoint(service_type))
 
 ###In case of multiple networks:
 for every failed task do this:
@@ -633,7 +632,7 @@ service_list:
 - cinder
 - glance
 use_existing_users: false
-image_name: "^(cirros.*uec|TestVM)$"
+image_name: "^(cirros.&ast;uec|TestVM)$"
 flavor_name: "m1.tiny"
 glance_image_location: "/root/cirros-0.3.4-i386-disk.img" (Image должен лежать там)
 smoke: false
@@ -645,9 +644,9 @@ storage_amount: 4
 network_amount: 3
 
 2.  vi venv/lib/python2.7/site-packages/rally/plugins/openstack/scenarios/nova/utils.py:
-line 112: def _boot_server(self, image_id, flavor_id,
+line 112: def \_boot_server(self, image_id, flavor_id,
 
-auto_assign_nic=True, **kwargs)
+auto_assign_nic=True, &ast;&ast;kwargs)
 
 3.  vi src/certification/openstack/scenario/cinder.yaml:
 
@@ -670,7 +669,7 @@ ceph osd set noin
 
 ###ceph log per osd:
 ceph daemon osd.0 log dump
-ceph log per osd grep slowest recent ops: ceph daemon osd.0 dump_historic_ops utlilization of ceph ceph osd reweight-by-utilization 115 - normal utilization is 120% average_util*120 = % drive full osd
+ceph log per osd grep slowest recent ops: ceph daemon osd.0 dump_historic_ops utlilization of ceph ceph osd reweight-by-utilization 115 - normal utilization is 120% average_util&ast;120 = % drive full osd
 
 ###Ceph fio instance testing:
  fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --filename=test --bs=4k --iodepth=64 --runtime=120 --readwrite=randrw --rwmixread=75 --size=15G
@@ -707,7 +706,7 @@ Make NIC team (VLAN ID=private network id) from second adapter - https://blogs.t
 Disable firewall. After that you must have connectivity on both interfaces (in br-mesh and br-ex nets)
 Install ovs agent for windows - https://cloudbase.it/open-vswitch-24-on-hyperv-part-1/
 Make ovs settings (br-tun) as on compute nodes
-Add "_" to c:/program files/cloudbase/openstack/nova/python2.7/site-packages/hyperv/neutron/hyperv_neutron_agent.py
+Add "\_" to c:/program files/cloudbase/openstack/nova/python2.7/site-packages/hyperv/neutron/hyperv_neutron_agent.py
 https://git.openstack.org/cgit/openstack/networking-hyperv/commit/?id=8bc5a0352379cddc57c618ff745cee301b403b66
 
 ###If you want vlan connectivity between hyperv node and openstack you should use neutron-hyperv-agent.
@@ -734,7 +733,7 @@ apt-get download libc6-i386=2.19-0ubuntu6.7
 dpkg -i libc6-i386_2.19-0ubuntu6.7_amd64.deb
 apt-get install hp-health
 wget http://downloads.linux.hpe.com/SDR/downloads/MCP/ubuntu/pool/non-free/hp-snmp-agents_10.0.0.1.23-20._amd64.deb
-dpkg -i hp-snmp-agents_10.0.0.1.23-20._amd64.deb
+dpkg -i hp-snmp-agents_10.0.0.1.23-20.\_amd64.deb
 /sbin/hpsnmpconfig
 service snmpd restart
 snmpwalk -v1 -c public localhost 1.3.6.1.4.1.232
@@ -786,7 +785,7 @@ insert line tempf.flush()
 Grafana -
 create database grafana;
 create user 'grafana'@'%' identified by 'grafana';
-grant all privileges on grafana.* to 'grafana'@'%';
+grant all privileges on grafana.&ast; to 'grafana'@'%';
 quit;
  
 ##Puppet notes
@@ -824,7 +823,7 @@ process_osd { $dev : }
 ### Get future deployment settings:
 fuel deployment --env $env_id –default
 ###Update template for each node (Put these sections to the end of template):
-vim deployment_3/*.yaml transformations:
+vim deployment_3/&ast;.yaml transformations:
 action: add-br name: br-private-phys
 action: add-br name: br-private provider: ovs
 action: add-patch bridges:

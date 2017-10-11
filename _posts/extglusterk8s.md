@@ -3,6 +3,7 @@ layout: post
 title: External glusterfs integration with k8s
 ---
 ## Replica 2 glusterfs cluster integration with k8s via heketi api
+complex tash  :weary:
 
 ###Artifacts:
 https://cloud.mail.ru/public/C5ns/pvCutmFa7
@@ -41,7 +42,7 @@ mkdir -p /var/lib/heketi && chown -R heketi:heketi /var/lib/heketi
 mkdir -p /var/log/heketi && chown -R heketi:heketi /var/log/heketi
 mkdir -p /etc/heketi
 ssh-keygen -f /etc/heketi/heketi_key -t rsa -N ''
-chown heketi:heketi /etc/heketi/heketi_key*
+chown heketi:heketi /etc/heketi/heketi_key&ast;
 for i in 1 2; do ssh-copy-id -i /etc/heketi/heketi_key.pub root@test-glusterfs-$i; done
 cat /etc/ssh/sshd_config
 PermitRootLogin yes
@@ -88,7 +89,7 @@ CHECK: shutdown -h now instance1; ip -4 a
 
 ##Step 3. LVM, Heketidb volume
 (All nodes)
-fdisk -l /dev/vd* (find your 10G device with fdisk, let's assume that it is /dev/vdc)
+fdisk -l /dev/vd&ast; (find your 10G device with fdisk, let's assume that it is /dev/vdc)
 pvcreate /dev/vdc
 vgcreate heketidb-vg /dev/vdc
 lvcreate -n heketidb-lv -l 100%FREE heketidb-vg
@@ -99,10 +100,10 @@ mount -a
 (On one node):
 gluster volume create heketidb-vol replica 2 transport tcp test-glusterfs-1:/var/lib/heketi/db test-glusterfs-2:/var/lib/heketi/db force
 Again, vim /etc/fstab (node 1)
-test-glusterfs-1:heketidb-vol /var/lib/heketi/db_mount glusterfs defaults,_netdev 0 0
+test-glusterfs-1:heketidb-vol /var/lib/heketi/db_mount glusterfs defaults,\_netdev 0 0
 mount -a
 (node 2)
-test-glusterfs-2:heketidb-vol /var/lib/heketi/db_mount glusterfs defaults,_netdev 0 0
+test-glusterfs-2:heketidb-vol /var/lib/heketi/db_mount glusterfs defaults,\_netdev 0 0
 mount -a
 ###CHECK: mount | grep heketi
 
@@ -146,7 +147,7 @@ vim k8s/gluster-secret.yml
 vim k8s/gluster-heketi-external-storage-class.yml
 vim k8s/glusterfs-pvc-storageclass.yml
 echo -n "PASSWORD" >> k8s/gluster-secret.yml
-kubectl create -f *
+kubectl create -f &ast;
 CHECK: kubectl get pvc - gluster-dyn-pvc should be BOUND
 
 ##Step 6. Deploying and testing in app
@@ -212,26 +213,26 @@ cat 1M_root.log | awk '{print $8}' | awk '{a+=$1} END{print a/NR}' > 1M_root.res
 ##LISTINGS:
 cat /etc/heketi/heketi.json
 {
-"_port_comment": "Heketi Server Port Number",
+"\_port_comment": "Heketi Server Port Number",
 "port": "8082",
-"_use_auth": "Enable JWT authorization. Please enable for deployment",
+"\_use_auth": "Enable JWT authorization. Please enable for deployment",
 "use_auth": true,
-"_jwt": "Private keys for access",
+"\_jwt": "Private keys for access",
 "jwt": {
-"_admin": "Admin has access to all APIs",
+"\_admin": "Admin has access to all APIs",
 "admin": {
 "key": "PASSWORD"
 },
-"_user": "User only has access to /volumes endpoint",
+"\_user": "User only has access to /volumes endpoint",
 "user": {
 "key": "dXNlcl9wYXNzd29yZAo="
 }
 },
-"_backup_db_to_kube_secret": "Backup the heketi database to a Kubernetes secret when running in Kubernetes. Default is off.",
+"\_backup_db_to_kube_secret": "Backup the heketi database to a Kubernetes secret when running in Kubernetes. Default is off.",
 "backup_db_to_kube_secret": false,
-"_glusterfs_comment": "GlusterFS Configuration",
+"\_glusterfs_comment": "GlusterFS Configuration",
 "glusterfs": {
-"_executor_comment": [
+"\_executor_comment": [
 "Execute plugin. Possible choices: mock, ssh",
 "mock: This setting is used for testing and development.",
 " It will not send commands to any node.",
@@ -241,14 +242,14 @@ cat /etc/heketi/heketi.json
 " Kubernetes exec api."
 ],
 "executor": "ssh",
-"_sshexec_comment": "SSH username and private key file information",
+"\_sshexec_comment": "SSH username and private key file information",
 "sshexec": {
 "keyfile": "/etc/heketi/heketi_key",
 "user": "root",
 "port": "22",
 "fstab": "/etc/fstab"
 },
-"_kubeexec_comment": "Kubernetes configuration",
+"\_kubeexec_comment": "Kubernetes configuration",
 "kubeexec": {
 "host" :"https://kubernetes.host:8443",
 "cert" : "/path/to/crt.file",
@@ -258,9 +259,9 @@ cat /etc/heketi/heketi.json
 "namespace": "OpenShift project or Kubernetes namespace",
 "fstab": "Optional: Specify fstab file on node. Default is /etc/fstab"
 },
-"_db_comment": "Database file name",
+"\_db_comment": "Database file name",
 "db": "/var/lib/heketi/db_mount/heketi.db",
-"_loglevel_comment": [
+"\_loglevel_comment": [
 "Set log level. Choices are:",
 " none, critical, error, warning, info, debug",
 "Default is warning"
@@ -347,7 +348,7 @@ case $STATE in
 /usr/bin/logger "$1 $2 $3 $4 fault state"
 exit 0
 ;;
-*) /bin/rm -rf /var/lib/heketi/vip
+&ast;) /bin/rm -rf /var/lib/heketi/vip
 /usr/bin/logger "$1 $2 $3 $4 unknown state"
 exit 1
 ;;
