@@ -1,5 +1,0 @@
----
-layout: post
-title: Kubeadm tutorial
----
-## Simple tutorial How to deploy k8s with calico net on 2 virtualbox vm’s via kubeadm
