@@ -5,10 +5,10 @@ title: External glusterfs integration with k8s
 ## Replica 2 glusterfs cluster integration with k8s via heketi api
 complex tash  :weary:
 
-###Artifacts:
+### Artifacts:
 https://cloud.mail.ru/public/C5ns/pvCutmFa7
 
-###Components:
+### Components:
 
 two VMs in Openstack, ubuntu 16.04:
 test-glusterfs-1 10.1.39.241
@@ -17,9 +17,9 @@ glustefs version: 3.12.1
 keepalived 1.2.19
 kubernetes (deployed previously via rancher 1.6.9)
 
-###Our aim is to get working HA persistent storage for K8S apps.
+### Our aim is to get working HA persistent storage for K8S apps.
 
-##Step 1. Initial configuration of OS
+## Step 1. Initial configuration of OS
 (All nodes)
 cat /etc/hosts
 127.0.0.1 localhost
@@ -48,13 +48,13 @@ cat /etc/ssh/sshd_config
 PermitRootLogin yes
 
 service ssh restart
-###CHECK: ssh -i /etc/heketi/heketi_key root@test-glusterfs-2
+### CHECK: ssh -i /etc/heketi/heketi_key root@test-glusterfs-2
 cp /root/heketi/heketi.json /etc/heketi/heketi.json
 (raw file in the end of the post)
 mkdir /var/lib/heketi/db /var/lib/heketi/db_mount
 chown -R heketi:heketi /var/lib/heketi/
 
-##Step 2. Volumes, neutron port, secgroups, keepalived
+## Step 2. Volumes, neutron port, secgroups, keepalived
 
 1. Create at least 2 volumes per VM in the Openstack (4 volumes, if you have 2 vm):
 cinder create --name test-glusterfs-1-heketidb 10G
@@ -87,7 +87,7 @@ ip -4 a
 ping $vip (it must be accessible from k8s)
 CHECK: shutdown -h now instance1; ip -4 a
 
-##Step 3. LVM, Heketidb volume
+## Step 3. LVM, Heketidb volume
 (All nodes)
 fdisk -l /dev/vd&ast; (find your 10G device with fdisk, let's assume that it is /dev/vdc)
 pvcreate /dev/vdc
@@ -105,9 +105,9 @@ mount -a
 (node 2)
 test-glusterfs-2:heketidb-vol /var/lib/heketi/db_mount glusterfs defaults,\_netdev 0 0
 mount -a
-###CHECK: mount | grep heketi
+### CHECK: mount | grep heketi
 
-##Step 4. Heketi, Testing backend
+## Step 4. Heketi, Testing backend
 (All nodes)
 vim /etc/systemd/system/heketi.service (listing in the end of post)
 vim /usr/local/sbin/notify-heketi.sh (listing in the end of post)
@@ -116,7 +116,7 @@ service keepalived restart
 systemctl daemon-reload
 systemctl start heketi.service
 systemctl status heketi.service (one should be active and another not (conditional))
-###CHECK:
+### CHECK:
 ls /var/lib/heketi/vip (it should exist on master node only)
 netstat -lutpn | grep 8082 (it should listen on master node only)
 
@@ -125,7 +125,7 @@ vim /etc/heketi/topology.json (listing in the end of post)
 export HEKETI_CLI_SERVER=http://$keepalive_vip:8082
 hekecti-cli --user admin --secret PASSWORD topology load /etc/heketi/topology.json
 
-###CHECK: hekecti-cli --user admin --secret PASSWORD volume create --name test --size 10G --replica 2
+### CHECK: hekecti-cli --user admin --secret PASSWORD volume create --name test --size 10G --replica 2
 gluster volume list
 hekecti-cli --user admin --secret PASSWORD volume delete test
 Failover-CHECK:
@@ -138,7 +138,7 @@ hekecti-cli --user admin --secret PASSWORD volume create --name test-ha --size 1
 hekecti-cli --user admin --secret PASSWORD volume delete test-ha
 Power on instance 1
 
-##Step 5. Integration with K8S (all listings are in the end of post)
+## Step 5. Integration with K8S (all listings are in the end of post)
 
 Install kubectl, mdkir ~/.kube, vim ~/.kube/config
 CHECK: kubectl get po
@@ -150,7 +150,7 @@ echo -n "PASSWORD" >> k8s/gluster-secret.yml
 kubectl create -f &ast;
 CHECK: kubectl get pvc - gluster-dyn-pvc should be BOUND
 
-##Step 6. Deploying and testing in app
+## Step 6. Deploying and testing in app
 vim k8s/nginx-deployment-pvc.yml
 kubectl create -f k8s/nginx-deployment-pvc.yml
 kubectl get po | grep nginx-deploy
@@ -162,7 +162,7 @@ for i in {1..1000000}; do sleep 1; echo `date` >> /usr/share/nginx/html/omaigod;
 Now, while this shit is executing, we could shut off/reboot any glusterfs instance
 after some time, check this file in container /usr/share/nginx/html/omaigod
 
-##Step 7. Benchmarking glusterfs
+## Step 7. Benchmarking glusterfs
 cat generate.sh
 
 cat generate.sh
@@ -177,21 +177,21 @@ export TARGET=pwd/100k
 export SIZE=100K
 sh generate.sh > 100k.log
 
-####Creating 1024 files of 1M
+#### Creating 1024 files of 1M
 
 export NUMBER=1024
 export TARGET=pwd/1M
 export SIZE=1M
 sh generate.sh > 1M.log
 
-####Creating 100 files of 10M
+#### Creating 100 files of 10M
 
 export NUMBER=100
 export TARGET=pwd/10M
 export SIZE=10M
 sh generate.sh > 10M.log
 
-####Creating 10 files of 100M
+#### Creating 10 files of 100M
 
 export NUMBER=10
 export COUNT=100
@@ -199,7 +199,7 @@ export TARGET=pwd/100M
 export SIZE=1M
 sh generate.sh > 100M.log
 
-####Creating 1 file of 1G
+#### Creating 1 file of 1G
 
 export NUMBER=1
 export TARGET=pwd/1G
@@ -207,10 +207,10 @@ export SIZE=1M
 export COUNT=1024
 sh generate.sh > 1G.log
 
-####Average:
+#### Average:
 cat 1M_root.log | awk '{print $8}' | awk '{a+=$1} END{print a/NR}' > 1M_root.result
 
-##LISTINGS:
+## LISTINGS:
 cat /etc/heketi/heketi.json
 {
 "\_port_comment": "Heketi Server Port Number",
@@ -330,7 +330,7 @@ virtual_ipaddress {
 }
 
 cat /usr/local/sbin/notify-heketi.sh
-#!/bin/bash
+### /bin/bash
 TYPE=$1
 NAME=$2
 STATE=$3
@@ -390,7 +390,7 @@ name: heketi-secret
 namespace: default
 type: "kubernetes.io/glusterfs"
 data:
-# echo -n "PASSWORD" | base64
+ echo -n "PASSWORD" | base64
 key: UEFTU1dPUkQ=
 
 cat gluster-heketi-external-storage-class.yml
@@ -447,8 +447,8 @@ app: nginxxx
 replicas: 2 # tells deployment to run 2 pods matching the template
 template: # create pods using pod definition in this template
 metadata:
-# unlike pod-nginx.yaml, the name is not included in the meta data as a unique name is
-# generated from the deployment name
+\# unlike pod-nginx.yaml, the name is not included in the meta data as a unique name is
+\# generated from the deployment name
 labels:
 app: nginxxx
 spec:
