@@ -2,7 +2,7 @@
 layout: post
 title: External glusterfs integration with k8s
 ---
-## Replica 2 glusterfs cluster integration with k8s via heketi api
+Replica 2 glusterfs cluster integration with k8s via heketi api
 complex tash  :weary:
 
 ### Artifacts:
