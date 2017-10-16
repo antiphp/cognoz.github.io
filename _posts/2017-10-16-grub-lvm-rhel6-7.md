@@ -3,8 +3,7 @@ layout: post
 title: Transformation of non-lvm rhel6/7 distro based running vm in lvm-based  
 version: 1.4  
 ---
-### In the begining  
-#### Our mission is to create on running vm separate /boot/ partition on running /dev/vda1 and lvm partitions on /dev/vda2 (with lvroot, lvtmp, lvopt, lvvar, lvusr, lvswap)  
+### Our mission is to create on running vm separate /boot/ partition on running /dev/vda1 and lvm partitions on /dev/vda2 (with lvroot, lvtmp, lvopt, lvvar, lvusr, lvswap)  
 
 ## Rhel6.7  
 1. Create volume, attach it to vm  
