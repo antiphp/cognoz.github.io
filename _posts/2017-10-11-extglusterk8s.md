@@ -211,8 +211,8 @@ sh generate.sh > 1G.log``
 ``cat 1M_root.log | awk '{print $8}' | awk '{a+=$1} END{print a/NR}' > 1M_root.result``  
 
 ## LISTINGS:
-[heketi.json]({{/listings/2017-10-11-extglusterk8s/heketi.json}})  
-[topology.json]({{/listings/2017-10-11-extglusterk8s/topology.json}})  
+[heketi.json]({{ "/listings/2017-10-11-extglusterk8s/heketi.json" }})  
+[topology.json]({{ "/listings/2017-10-11-extglusterk8s/topology.json" }})  
 [keepalived.conf]({{/listings/2017-10-11-extglusterk8s/keepalived.conf}})  
 [notify-heketi.sh]({{/listings/2017-10-11-extglusterk8s/notify-heketi.sh}})  
 [heketi.service]({{/listings/2017-10-11-extglusterk8s/heketi.service}})  
