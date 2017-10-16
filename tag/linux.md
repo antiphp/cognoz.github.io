@@ -1,5 +1,5 @@
 ---
 layout: tagpage
-title: "Tag: kubernetes"
-tag: kubernetes
+title: "Tag: linux"
+tag: linux
 ---
