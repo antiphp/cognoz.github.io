@@ -3,6 +3,8 @@ layout: post
 title: Transformation of non-lvm rhel6/7 distro based running vm in lvm-based  
 ---
 ### Creating lvm-based vm from installed RHEL distro  
+
+### Goal
 Our mission is to create on running vm separate /boot/ partition on /dev/vda1 and lvm partitions on /dev/vda2 (with lvroot, lvtmp, lvopt, lvvar, lvusr, lvswap)  
 
 ## Rhel6.7  
