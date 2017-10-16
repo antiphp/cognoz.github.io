@@ -13,9 +13,11 @@
 code {
   font-family:'Bitstream Vera Sans Mono','Courier', monospace;
   background-color: #b5b3b3;
+  color: white;
+  font-weight: 900;
   display: block;
   white-space: pre;
-  overflow-x: auto;
+  overflow-x: hidden;
   word-wrap: normal;
 }
 
