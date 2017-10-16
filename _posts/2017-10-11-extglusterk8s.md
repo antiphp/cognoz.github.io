@@ -2,10 +2,7 @@
 layout: post
 title: External glusterfs integration with k8s
 ---
-### Replica 2 glusterfs cluster integration with k8s via heketi api  
-
-### Artifacts:  
-https://cloud.mail.ru/public/C5ns/pvCutmFa7  
+### Glusterfs cluster (replica 2) integration with k8s via heketi api  
 
 ### Components:
 - Two VMs in Openstack, ubuntu 16.04:
