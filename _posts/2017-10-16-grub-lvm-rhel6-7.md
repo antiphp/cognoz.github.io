@@ -1,9 +1,9 @@
 ---
 layout: post
 title: Transformation of non-lvm rhel6/7 distro based running vm in lvm-based  
-version: 1.4  
+version: 1.6
 ---
-### Our mission is to create on running vm separate /boot/ partition on running /dev/vda1 and lvm partitions on /dev/vda2 (with lvroot, lvtmp, lvopt, lvvar, lvusr, lvswap)  
+### Our mission is to create on running vm separate /boot/ partition on /dev/vda1 and lvm partitions on /dev/vda2 (with lvroot, lvtmp, lvopt, lvvar, lvusr, lvswap)  
 
 ## Rhel6.7  
 1. Create volume, attach it to vm  
@@ -89,7 +89,7 @@ shutdown -h now``
 9. Profit  
 
 ##RHEL7  
-almost identically, but  
+0. Almost identically, but  
 ``grub2-install --root-directory=/mnt/ /dev/vdb  
 vdb1id=lsblk -f | grep vdb1 | awk '{print $3}'  
 sed -i "s/.search --no-floppy --fs-uuid --set=root --hint='hd0,msdos1'./ search --no-floppy --fs-uuid --set=root --hint='hd0,msdos1' $vdb1id/" /mnt/boot/grub2/grub.cfg  

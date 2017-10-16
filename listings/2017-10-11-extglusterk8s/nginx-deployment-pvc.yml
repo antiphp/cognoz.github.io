@@ -1,0 +1,44 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: fronten-nginx
+spec:
+  selector:
+    app: nginxxx
+    tier: frontend
+  ports:
+    - protocol: "TCP"
+      port: 80
+      nodePort: 30300
+      targetPort: 80
+  type: NodePort
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginxxx
+  replicas: 2 # tells deployment to run 2 pods matching the template
+  template: # create pods using pod definition in this template
+    metadata:
+      # unlike pod-nginx.yaml, the name is not included in the meta data as a unique name is
+      # generated from the deployment name
+      labels:
+        app: nginxxx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        volumeMounts:
+         - name: gluster-vol1
+           mountPath: /usr/share/nginx/html
+        image: nginx
+        ports:
+        - containerPort: 80
+      volumes:
+      - name: gluster-vol1
+        persistentVolumeClaim:
+          claimName: gluster-dyn-pvc

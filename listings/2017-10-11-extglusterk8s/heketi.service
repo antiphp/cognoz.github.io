@@ -1,0 +1,26 @@
+[Unit]
+Description=Heketi Server
+Requires=network-online.target
+After=network-online.target
+ConditionPathIsMountPoint=/var/lib/heketi/db_mount
+ConditionPathExists=/var/lib/heketi/vip
+
+[Service]
+Type=simple
+User=heketi
+Group=heketi
+PermissionsStartOnly=true
+PIDFile=/run/heketi/heketi.pid
+Restart=always
+RestartSec=3
+WorkingDirectory=/var/lib/heketi
+RuntimeDirectory=heketi
+RuntimeDirectoryMode=0755
+ExecStartPre=/bin/rm -f /run/heketi/heketi.pid
+ExecStart=/usr/local/bin/heketi --config=/etc/heketi/heketi.json
+ExecReload=/bin/kill -s HUP $MAINPID
+KillSignal=SIGINT
+TimeoutStopSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,40 @@
+{
+  "clusters": [
+    {
+      "nodes": [
+        {
+          "node": {
+            "hostnames": {
+              "manage": [
+                "test-glusterfs-1"
+              ],
+              "storage": [
+                "10.1.39.241"
+              ]
+            },
+            "zone": 1
+          },
+          "devices": [
+            "/dev/vdc"
+          ]
+        },
+        {
+          "node": {
+            "hostnames": {
+              "manage": [
+                "test-glusterfs-2"
+              ],
+              "storage": [
+                "10.1.39.240"
+              ]
+            },
+            "zone": 2
+          },
+          "devices": [
+            "/dev/vdc"
+          ]
+        }
+      ]
+    }
+  ]
+}
