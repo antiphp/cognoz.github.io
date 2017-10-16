@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Transformation of non-lvm rhel6/7 distro based running vm in lvm-based  
-version: 1.3  
+version: 1.4  
 ---
 ### In the begining  
 #### Our mission is to create on running vm separate /boot/ partition on running /dev/vda1 and lvm partitions on /dev/vda2 (with lvroot, lvtmp, lvopt, lvvar, lvusr, lvswap)  
@@ -23,19 +23,12 @@ find /boot/ -xdev | cpio -pvmd /mnt
 grub-install --root-directory=/mnt/ /dev/vdb``  
 5. Change kernel lines in grub config, install lvm2 and regenerate initramfs for lvm support. Copy MBR from old /dev/vda to new /dev/vdb  
 ``sed -i 's|.*kernel /boot/vmlinuz-2.6.32-573.el6.x86_64 ro.| kernel /boot/vmlinuz-2.6.32-573.el6.x86_64 ro root=/dev/mapper/rootvg-lvroot rd_NO_LUKS KEYBOARDTYPE=pc KEYTABLE=us LANG=en_US.UTF-8 rd_NO_MD SYSFONT=latarcyrheb-sun16 crashkernel=auto console=tty0 console=ttyS0,115200n8 no_timer_check rd_NO_DM rhgb quiet|' /mnt/boot/grub/grub.conf  
-
 yum install -y lvm2  
-
 rm -rf /var/cache/  
-
 cd /mnt/boot/  
-
 mv initramfs-uname -r.img initramfs-uname -r.img.bak  
-
 dracut -f initramfs-uname -r.img uname -r  
-
 cd; umount /mnt/  
-
 dd if=/dev/vda of=/dev/vdb bs=446 count=1``  
 6. Create lvm vggroup and lvpartitons  
 ``vgcreate rootvg -s 32MB /dev/vdb2  
