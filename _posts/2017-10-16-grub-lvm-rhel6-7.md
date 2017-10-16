@@ -1,6 +1,7 @@
 ---
 layout: post
-title: Transformation of non-lvm rhel6/7 distro based running vm in lvm-based  
+title: Transformation of non-lvm rhel6/7 distro based running vm in lvm-based
+tags: linux rhel lvm mbr grub
 ---
 ### Creating lvm-based vm from installed RHEL distro  
 

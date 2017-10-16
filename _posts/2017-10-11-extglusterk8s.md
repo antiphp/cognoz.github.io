@@ -1,6 +1,7 @@
 ---
 layout: post
 title: External glusterfs integration with k8s
+tags: gluster kubernetes heketi keepalived openstack systemctl
 ---
 ### Glusterfs cluster (replica 2) integration with k8s via heketi api  
 
