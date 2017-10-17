@@ -5,15 +5,16 @@ tags: postgres linux HA pgpool2
 ---
 ### Creating HA Postgres cluster with loadbalancing via pgpool2  
 
-### what we have  
+### What we have  
 hosts:  
 primary server postgres01 ip: 192.168.56.21  
 standby server postgres02 ip: 192.168.56.22  
 virtual ip:  
 192.168.56.16  
 
-### I - installation and replication  
-#### ALL nodes  
+## I
+### Installation and replication  
+### ALL nodes  
 ``add-apt-repository ppa:ondrej/php  
 echo 'deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main' > /etc/apt/sources.list.d/postgresql.list  
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -  
@@ -58,7 +59,7 @@ max_wal_senders = 10``
 sudo -u postgres psql  
 SELECT * FROM pg_create_physical_replication_slot('it_postgresql01');``  
 
-#On standby node  
+### On standby node  
 
 ``service postgresql stop  
 sudo -i -u postgres  
@@ -79,7 +80,7 @@ primary_conninfo = 'host=192.168.56.21 port=5433 user=replication password=reppa
 trigger_file = '/etc/postgresql/9.5/main/im_the_master'  
 sudo service postgresql start``  
 
-### II  
+## II  
 
 ### On all nodes  
 ### Basic setup - SSH-key auth, hosts  
