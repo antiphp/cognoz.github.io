@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Transformation of non-lvm rhel6/7 distro based running vm in lvm-based
+title: Postgresql 9.5 HA insatllation with loadbalancing, pgpool2 and phpadmin
 tags: postgres linux HA pgpool2
 ---
 ### Creating HA Postgres cluster with loadbalancing via pgpool2  
