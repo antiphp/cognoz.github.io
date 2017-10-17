@@ -1,6 +1,6 @@
 ---
 layout: post  
-title: Postgresql 9.5 HA insatllation with loadbalancing pgpool2 and phpadmin  
+title: Postgresql 9.5 HA installation with loadbalancing pgpool2 and phpadmin  
 tags: postgres linux HA pgpool2  
 ---
 ### Creating HA Postgres cluster with loadbalancing via pgpool2  
@@ -12,7 +12,6 @@ standby server postgres02 ip: 192.168.56.22
 virtual ip:  
 192.168.56.16  
 
-## I
 ### Installation and replication  
 ### ALL nodes  
 ``add-apt-repository ppa:ondrej/php  
@@ -217,7 +216,7 @@ sudo vim /var/www/.pcppass:
 *:*:postgres:postgres``  
 ``sudo cp /var/www/.pcppass /root/   
 sudo cp /var/www/.pcppass /var/lib/postgresql/  
-scp portal/install_portal.sh ./ && chmod +x install_portal.sh  
+scp portal/install_portal.sh ./ && chmod +x install_portal.sh   
 ./install_portal.sh  
 sudo chown www-data:www-data /var/www/.pcppass  
 sudo chmod 600 /var/www/.pcppass  
