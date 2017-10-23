@@ -920,3 +920,9 @@ Hello from heketi
 
 ### Find pod by ip  
 kubectl get pods -o wide --namespace monitoring | grep $ip
+
+### Old browser dashboard case  
+If you get an empty page when you are opening dashboard with url from _cluster info_ command like  
+``https://10.1.39.235/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy``  
+When you should try complete url for dashboard:  
+``https://10.1.39.235/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy/#!/workload?namespace=default``  
