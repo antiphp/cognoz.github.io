@@ -916,4 +916,7 @@ kubectl port-forward heketi-37915784-8gkqp :8080
 Forwarding from 127.0.0.1:38219 -> 8080
 Forwarding from [::1]:38219 -> 8080
 curl localhost:38219/hello
-Hello from heketi
+Hello from heketi  
+
+### Find pod by ip  
+kubectl get pods -o wide --namespace monitoring | grep $ip
