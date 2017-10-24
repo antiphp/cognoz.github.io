@@ -21,6 +21,9 @@ in case of MD5RSA algorithm rejection edit with notepad file
 ``/c/program files/java/jre8.../lib/security/java.security``  
 and remove this algorithm from all 'disable' lines  
 
+### Echo pipeline over SSH  
+`` echo 'string' | ssh ubuntu@10.1.3.3 "cat >> /target/file"``  
+
 ### Get only response code from server  
 curl -s -o /dev/null -I -w "%{http_code}"  http://ip:port  
 

@@ -216,4 +216,5 @@ sh generate.sh > 1G.log``
 [heketi.service]({{ "/listings/2017-10-11-extglusterk8s/heketi.service" }})  
 [gluster-secret.yml]({{ "/listings/2017-10-11-extglusterk8s/gluster-secret.yml" }})  
 [glusterfs-pvc-storageclass.yml]({{ "/listings/2017-10-11-extglusterk8s/glusterfs-pvc-storageclass.yml" }})  
+[gluster heketi storage class]({{ "/listings/2017-10-11-extglusterk8s/gluster-heketi-external-storage-class.yml" }})
 [nginx-deployment-pvc.yml]({{ "/listings/2017-10-11-extglusterk8s/nginx-deployment-pvc.yml" }})  
