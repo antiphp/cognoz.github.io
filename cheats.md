@@ -7,333 +7,338 @@ permalink: /cheats/
 ## Use ctrl + f
 
 ## Basis
-To avoid interface name changes via udev (pass options to kernel):
+### To avoid interface name changes via udev (pass options to kernel):  
 net.ifnames=1 biosdevname=1
 
-### Java workarounds (jre8)
+### Specify ssh options (password authentication)  
+``ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no``  
+
+### Java workarounds (jre8)  
 1. start 'configure java' app
-2. security - high level - edit security list - insert website url
-3. If you get 'unable to launch app' err message - click details
-in case of MD5RSA algorithm rejection edit with notepad file
-/c/program files/java/jre8.../lib/security/java.security and remove this algorithm from all 'disable' lines
+2. security - high level - edit security list - insert website url  
+3. If you get 'unable to launch app' err message - click details  
+in case of MD5RSA algorithm rejection edit with notepad file  
+``/c/program files/java/jre8.../lib/security/java.security``  
+and remove this algorithm from all 'disable' lines  
 
-### Get only response code from server
-curl -s -o /dev/null -I -w "%{http_code}"  http://ip:port
+### Get only response code from server  
+curl -s -o /dev/null -I -w "%{http_code}"  http://ip:port  
 
-### Check internet speed in cli (via speedtest.com by ookla)
-curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -
+### Check internet speed in cli (via speedtest.com by ookla)  
+``curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -``  
 
-### Check json from page (chrome)
-F12 -> Network -> Preserver log
+### Check json from page (chrome)    
+F12 -> Network -> Preserver log  
 
-### Using rsync with append
-rsync --append-verify SOURCE DEST
+### Using rsync with append  
+``rsync --append-verify SOURCE DEST``    
 
 ### NodeJS webserver
-apt-get install -y nodejs npm nodejs-legacy
-npm install -g http-server
-http-server -p 81
+``apt-get install -y nodejs npm nodejs-legacy  
+npm install -g http-server  
+http-server -p 81``  
 
-### ASCII with CRLF terminators, removing CRLF
-vim filename
-:set fileformat=unix
-:wq
+### ASCII with CRLF terminators, removing CRLF  
+``vim filename  
+:set fileformat=unix  
+:wq``  
 
-### MYSQL consistent backup & restore
-mysqldump --all-databases --single-transaction > all_databases.sql
-mysql -p < all_databases.sql
+### MYSQL consistent backup & restore  
+``mysqldump --all-databases --single-transaction > all_databases.sql  
+mysql -p < all_databases.sql``  
 
-### Fuel plugins - Add version: 2.0.0 in deployment_tasks via VIM
-'%s/^\s&ast;role: .&ast;/  version: 2.0.0\r&/g'
+### Fuel plugins - Add version: 2.0.0 in deployment_tasks via VIM  
+``'%s/^\s&ast;role: .&ast;/  version: 2.0.0\r&/g'``  
 
-### Check missed packages on interfaces
- ip -s -s link show
+### Check missed packages on interfaces  
+ ``ip -s -s link show``  
 
-### Debug resource start via pcs
-pcs resource debug-start
+### Debug resource start via pcs  
+``pcs resource debug-start``  
 
-### check buffers:
-ethtool -g
+### check buffers:  
+``ethtool -g``  
 
-### set up maximum buffer for Nic
- ethtool -G  rx
-add this change to script - (RHEL)
-1. vim   /etc/sysconfig/network-scripts/ifcfg-NIC
-2. add line:
-  ETHTOOL_OPTS="-G  rx <размер буфера>"
-#### Changes to Tx buffer are not recommended because of devices on other side of link
+### set up maximum buffer for Nic  
+``ethtool -G  rx``    
+add this change to script - (RHEL)  
+vim   /etc/sysconfig/network-scripts/ifcfg-NIC  
+``ETHTOOL_OPTS="-G  rx <buffer size>"``    
+#### !!!Changes to Tx buffer are not recommended because of devices on other side of link  
 
-### Check crm disk status  (full disk)
-`crm node status-attr  show "#health_disk"`
-delete flag:
+### Check crm disk status  (full disk)  
+``crm node status-attr  show "#health_disk"      
+delete flag``    
 
-### Recursive sed replacement in files
-find . -type f -exec sed -i 's/foo/bar/g' {} +
+### Recursive sed replacement in files  
+``find . -type f -exec sed -i 's/foo/bar/g' {} +``  
 
-### Recursive Disk Usage
-du -h --max-depth=1 /var/log | sort -hr
-### WIFI connection password
-/etc/NetworkManager/system-connections/conn_name.conf
-[wifi security]
-psk =
+### Recursive Disk Usage  
+``du -h --max-depth=1 /var/log | sort -hr``  
+### WIFI connection password  
+vim /etc/NetworkManager/system-connections/conn_name.conf  
+``[wifi security]  
+psk =``  
 
-### Creating patches
-diff -Naur oldfile newfile >new-patch
+### Creating patches  
+``diff -Naur oldfile newfile >new-patch``  
 
-### Disabling cloud-init datasource search
-`echo 'datasource_list: [ None ]' | sudo -s tee /etc/cloud/cloud.cfg.d/90_dpkg.cfg`Disabling service via update-rc.d:
-update-rc.d drbd disable
+### Disabling cloud-init datasource search  
+``echo 'datasource_list: [ None ]' | sudo -s tee /etc/cloud/cloud.cfg.d/90_dpkg.cfg``  
+### Disabling service via update-rc.d  
+``update-rc.d drbd disable``  
 
-### Enabling corosync autostart
-vim /etc/default/corosync - change NO on YES
+### Enabling corosync autostart  
+vim /etc/default/corosync  
+``change NO on YES``  
 
-### Using deprecated branches
-git checkout kilo-eol
+### Using deprecated branches  
+``git checkout kilo-eol``  
 
-### Submitting existing repository in new gerrit repo
-   git clone $repo-from-stash
-   cd $repo
-   git checkout $branches #creating branches
-   git remote add gerrit $gerrit-repo
-   for i in {1000..1}; do echo $i; git reset --hard HEAD~$i; if [[ $? == 0 ]]; then break; fi; done #searching for first commit for squashing
-   git merge --squash HEAD@{1}    #squashing
-   git commit
-   git pull gerrit $branch     #fetching repo to common ancestor
-   git-review #Voila!
-#### repeat all steps for all branches
+### Submitting existing repository in new gerrit repo  
+``git clone $repo-from-stash  
+cd $repo  
+git checkout $branches #creating branches  
+git remote add gerrit $gerrit-repo  
+for i in {1000..1}; do echo $i; git reset --hard HEAD~$i; if [[ $? == 0 ]]; then break; fi;  done #searching for first commit for squashing  
+git merge --squash HEAD@{1}    #squashing  
+git commit  
+git pull gerrit $branch     #fetching repo to common ancestor  
+git-review #Voila!``  
+repeat all steps for all branches   
 
-### Sed all files in dir
-find . -type f -print0 | xargs -0 sed -i 's/str1/str2/g'
+### Sed all files in dir  
+``find . -type f -print0 | xargs -0 sed -i 's/str1/str2/g'``  
 
-### FC scsi bus rescan:
-echo 1 > /sys/class/fc_host/host#/issue_lip
-or apt install sg3_utils SCSI bus rescan:
-echo “- - -” > /sys/class/scsi_host/hostH/scan
+### FC scsi bus rescan  
+``echo 1 > /sys/class/fc_host/host#/issue_lip``  
+or apt install sg3_utils SCSI bus rescan  
+``echo “- - -” > /sys/class/scsi_host/hostH/scan``  
+or (working on fuel/vsphere)  
+``ls /sys/class/scsi_device/  
+2:0:0:0  3:0:0:0  
+echo 1 > /sys/class/scsi_device/2\:0\:0\:0/device/rescan    
+echo 1 > /sys/class/scsi_device/3\:0\:0\:0/device/rescan``  
 
-or (working on fuel/vsphere):
-[root@fuel2 ~]#  ls /sys/class/scsi_device/
-2:0:0:0  3:0:0:0
-[root@fuel2 ~]# echo 1 > /sys/class/scsi_device/2\:0\:0\:0/device/rescan  
-[root@fuel2 ~]# echo 1 > /sys/class/scsi_device/3\:0\:0\:0/device/rescan
+### Drop vm cache  
+``echo 3 > /proc/sys/vm/drop_caches``  
 
-### Drop vm cache
-echo 3 > /proc/sys/vm/drop_caches
+### Identify wwn of fc card  
+``cat /sys/class/fc_host/hostX/device/fc_host/hostX/node_name``  
 
-### Identify wwn of fc card
-cat /sys/class/fc_host/hostX/device/fc_host/hostX/node_name
+### Find deb package by filename  
+``dpkg -S file.name``  
 
-### Из какого пакета file.name
-dpkg -S file.name
+### Find rpm package by filename  
+``rpm -qi --filesbypkg $package``  
 
-### rpm -qi --filesbypkg $package
+### QCOW2 to VMDK openstack convertation  
+``qemu-img create -O vmdk -o adapter_type=lsilogic,compat6 ubuntu.qcow2 ubuntu.vmdk``  
 
-### QCOW2 to VMDK openstack convertation
-qemu-img create -O vmdk -o adapter_type=lsilogic,compat6 ubuntu.qcow2 ubuntu.vmdk
+### How to avoid drbd "start mounting" / "start daemon" race condition  
+vim /etc/network/if-up.d/drbd-start  
+``#! /bin/sh  
+/etc/init.d/drbd start``  
+vim /etc/fstab  
+``/dev/drbd1 /home ext3 _netdev,relatime 0 2``  
 
-### How to avoid drbd "start mounting"/"start daemon" race condition
-vim /etc/network/if-up.d/drbd-start
-\#! /bin/sh
-/etc/init.d/drbd start
-vim /etc/fstab
-/dev/drbd1 /home ext3 \_netdev,relatime 0 2
+### Openstack keepalived vip in instances  
+1. create new neutron port  
+2. install keepalived, configure (Search by tag keepalived on this site)  
+3. ``neutron port-update  $VIP_portid --allowed-address-pairs type=dict list=true   ip_address=VIP,mac_address=mac1 ip_address=VIP,mac_address=mac2``    
+4. ``neutrom port-update $vm1_porti --allowed-address-pairs type=dict list=true   ip_address=$ip1,mac_address=vm1_mac ip_address=$vip,mac_address=vm1_mac``    
+    same thing with vm2  
+4. start keepalived, check connectivity  
 
-### Openstack keepalived vip in instances
-1. create new neutron port
-2. install keepalived, configure
-3. neutron port-update  $VIP_portid --allowed-address-pairs type=dict list=true ip_address=VIP,mac_address=mac1 ip_address=VIP,mac_address=mac2
-4. neutrom port-update $vm1_porti --allowed-address-pairs type=dict list=true ip_address=$ip1,mac_address=vm1_mac ip_address=$vip,mac_address=vm1_mac
-    same thing with vm2
-4. start keepalived, check connectivity
-
-### Install simple VM via virsh
-qemu-img create -f qcow2 /var/lib/libvirt/images/cloud-linux.img 15G
-virt-install --connect qemu:///system --hvm --name cloud-linux --ram 1548 --vcpus 1 --cdrom ПУТЬ К ОБРАЗУ.ISO --disk path=/var/lib/libvirt/images/cloud-linux.img,format=qcow2,bus=virtio,cache=none --network network=default,model=virtio --memballoon model=virtio --vnc --os-type=linux --accelerate --noapic --keymap=en-us --video=cirrus --force
+### Install simple VM via virsh  
+``qemu-img create -f qcow2 /var/lib/libvirt/images/cloud-linux.img 15G   
+virt-install --connect qemu:///system --hvm --name cloud-linux --ram 1548 --vcpus 1 --cdrom path_to_iso --disk path=/var/lib/libvirt/images/cloud-linux.img,format=qcow2,bus=virtio,cache=none --network network=default,model=virtio --memballoon model=virtio --vnc --os-type=linux --accelerate --noapic --keymap=en-us --video=cirrus --force``  
 
 ### Ceph debugging
-1. ceph -s ( Check your active flags (like norecovery, nobackflip, etc...))
-2. ceph osd tree
-3. ceph health detail (| grep blocked)
-4. telnet monitor : 6789 (on ctrl node)
-5. status ceph-osd id=$id
-6. ceph pg dump | grep stuck
+``ceph -s ( Check your active flags (like norecovery, nobackflip, etc...))  
+ceph osd tree  
+ceph health detail (| grep blocked)  
+telnet monitor : 6789 (on ctrl node)  
+status ceph-osd id=$id  
+ceph pg dump | grep stuck``    
 
-### Windows7 doesnt use hosts file
-Solution by Wol (http://geekswithblogs.net/JanS/archive/2009/06/17/beware-of-spacing-in-windows7-hosts-file.aspx)
-cd \Windows\System32\drivers\etc --go to the directory where the hosts file lives
-attrib -R hosts --just in case it's Read Only, unlock it
-notepad hosts --now you have a copy of hosts in Notepad
-del hosts --yep. Delete hosts. Why this is necessary -- why ANY of this should be necessary -- I have no clue ::eyeroll::
---now go into Notepad and Ctrl-S to put the hosts file back. Note: Ctrl-S should save it as "hosts" without any extension. You want this. Be sure not to let Notepad save it as "hosts.txt"
-ipconfig /flushdns --possibly unnecessary, but I did it this way and it worked
-attrib +R hosts --make hosts file Read Only, which adds as much security as you think it does
+### Windows7 doesnt use hosts file  
+_Solution by Wol_[Beware if spacing in windows 7 hosts file](http://geekswithblogs.net/JanS/archive/2009/06/17/beware-of-spacing-in-windows7-hosts-file.aspx)  
+1. cd \Windows\System32\drivers\etc ###go to the directory where the hosts file lives  
+2. attrib -R hosts ###just in case it's Read Only, unlock it  
+3. notepad hosts ###now you have a copy of hosts in Notepad  
+4. del hosts ###yep. Delete hosts. Why this is necessary -- why ANY of this should be necessary -- I have no clue  
+5. Now go into Notepad and Ctrl-S to put the hosts file back. Note: Ctrl-S should save it as "hosts" without any extension. You want this. Be sure not to let Notepad save it as "hosts.txt"  
+6. ipconfig /flushdns --possibly unnecessary, but I did it this way and it worked  
+7. attrib +R hosts --make hosts file Read Only, which adds as much security as you think it does  
 
-## Postgresql Pgpool
-Check recovery nodes:
-sudo -u postgres psql -h 172.21.3.41 -p 5432 -x -c "show pool_nodes;"
-sudo -u postgres psql -h 172.21.3.229 -p 5432 -x -c "select pg_is_in_recovery();"
+## Postgresql Pgpool  
+Check recovery nodes  
+``sudo -u postgres psql -h 172.21.3.41 -p 5432 -x -c "show pool_nodes;"  
+sudo -u postgres psql -h 172.21.3.229 -p 5432 -x -c "select pg_is_in_recovery();"``  
 
-### Testing LB
-sudo -u postgres pgbench -i
-sudo -u postgres pgbench -p 5432 -h pgpool_vip -c 10 -S -T 10 postgres
-sudo -u postgres psql -p 5432 -h pgpool_vip -c "show pool_nodes" postgres
+### Testing LB  
+``sudo -u postgres pgbench -i  
+sudo -u postgres pgbench -p 5432 -h pgpool_vip -c 10 -S -T 10 postgres  
+sudo -u postgres psql -p 5432 -h pgpool_vip -c "show pool_nodes" postgres``  
 
-### PCP commands
-pcp_node_count -h /var/run/postgresql -p 9898
-pcp_attach_node -h /var/run/postgresql -p 9898 0 (return node after reboot)
+### PCP commands  
+``pcp_node_count -h /var/run/postgresql -p 9898  
+pcp_attach_node -h /var/run/postgresql -p 9898 0 (return node after reboot)``  
 
-### Mcollective
-Some mcollective useful commands:
-mco rpc -v excurte_shell_command execute cmd="shotgun2 short-report" -I master
- Cisco
+### Mcollective  
+Some mcollective useful commands  
+``mco rpc -v excurte_shell_command execute cmd="shotgun2 short-report" -I master``  
 
-### Monitoring in console
-term mon
+##Cisco  
+### Monitoring in console  
+``term mon``  
 
-### Check link
-on server: ifconfig interface up
-on switch: show status int eth1/1
+### Check link   
+_on server_  
+``ifconfig interface up``    
+_on switch_  
+``show status int eth1/1``   
 
-### Check interface status: show interface status
-Grep: | include ....
-Check config: show run conf | inc
+### Check interface status: show interface status  
+``Grep: | include ....``    
+_Check config_  
+``show run conf | inc``  
 
+## Cisco LACP  
+_cdp vpc_  
+1. enable cdp  
+2. enable vpc  
+3. create vpc domain  
+4. configure keepalive dest mgmt-ip-peer source mgmt-ip    
+5. create portchannel group LACP mode active  
+6. feature lacp  
+TRUNK  
+7. configure if-range  
+8. spanning tree  
+9. assign if-range to portchannel  
+_Example_  
+``eth1809-3: conf t  
+eth1809-3(config): interface port-channel 1  
+eth1809-3(config): negotiate auto  
+eth1809-3(config): vpc 1  
+eth1809-3(config): switchport mode trunk  
+eth1809-3(config): exit  
+eth1809-3(config): interface eth1/1  
+eth1809-3(config): no sh  
+eth1809-3(config): switchport mode trunk  
+eth1809-3(config): channel-group 1 mode active  
+eth1809-3(config): exit  
+eth1809-3(config): wr``  
 
-## Cisco LACP
-cdp vpc
-1. enable cdp
-2. enable vpc
-3. create vpc domain
-4. configure keepalive dest mgmt-ip-peer source mgmt-ip
+### Enable Jumbo frames  
+``cz-eth1809-3(config)# policy-map type network-qos jumbo  
+cz-eth1809-3(config-pmap-nq)#   class type network-qos class-default  
+cz-eth1809-3(config-pmap-nq-c)#           mtu 9216  
+cz-eth1809-3(config-pmap-nq-c)# system qos  
+cz-eth1809-3(config-sys-qos)#   service-policy type network-qos jumbo``  
 
+## Vmware/vsphere  
+### Port security configure  
+1. Hosts  
+2. Host  
+3. Configure  
+4. Networking  
+5. vswitch edit  
+6. Disable all security checkbox  
 
-1.create portchannel group LACP mode active
-2. feature lacp
-TRUNK
-2. configure if-range
-3. spanning tree
-4. assign if-range to portchannel
-Example:
-eth1809-3: conf t
-eth1809-3(config): interface port-channel 1
-eth1809-3(config): negotiate auto
-eth1809-3(config): vpc 1
-eth1809-3(config): switchport mode trunk
-eth1809-3(config): exit
-eth1809-3(config): interface eth1/1
-eth1809-3(config): no sh
-eth1809-3(config): switchport mode trunk
-eth1809-3(config): channel-group 1 mode active
-eth1809-3(config): exit
-eth1809-3(config): wr
+### Disconnected /deactivated datastore  
+#### Check your license first  
 
-### Enable Jumbo frames
-cz-eth1809-3(config)# policy-map type network-qos jumbo
-cz-eth1809-3(config-pmap-nq)#   class type network-qos class-default
-cz-eth1809-3(config-pmap-nq-c)#           mtu 9216
-cz-eth1809-3(config-pmap-nq-c)# system qos
-cz-eth1809-3(config-sys-qos)#   service-policy type network-qos jumbo
+### Influxdb openstack access  
+1. find astute.yaml, and values  influxdb_dbname, influxdb_username, influxdb_userpass and in vips section -  vips>influxdb>ipaddr
+2. access database
+``influx -host IPADDR -username INFLUXDB_USERNAME -password INFLUXDB_USERPASS -database INFLUXDB_DBNAME  
+SHOW MEASUREMENTS  
+SHOW FIELD KEYS FROM virt_memory_total``  
 
-## Vmware/vsphere
+### Influx cache maximum memory size exceeded #6109  
+_Sample from logs_  
+``14:52:07 reading file /data1/influxdb/wal/sysnoc/default/2/\_00703.wal, size 10504926 [cacheloader] 2016/03/24 14:52:09 reading file   /data1/influxdb/wal/sysnoc/default/2/\_00704.wal, size 10494123 run: open server: open tsdb store: [shard 2] cache maximum memory size exceeded``  
 
-### Port security configure
-1. Hosts
-2. Host
-3. Configure
-4. Networking
-5. vswitch edit
-6. Disable all security checkbox
+Solution  
+vim tsdb/engine/tsm1/cache.go  
+``   @@ -306,6 +306,12 @@ func (c &ast;Cache) Delete(keys []string) {
+       }  
+   }  
 
-### Disconnected /deactivated datastore
-Check your license first
- Influxdb openstack access
-1. find astute.yaml, and values  influxdb_dbname, influxdb_username, influxdb_userpass и в секции vips>influxdb>ipaddr
-2. access database: influx -host IPADDR -username INFLUXDB_USERNAME -password INFLUXDB_USERPASS -database INFLUXDB_DBNAME
-3. SHOW MEASUREMENTS
-4. SHOW FIELD KEYS FROM virt_memory_total
- Influx cache maximum memory size exceeded #6109
-In logs:
-14:52:07 reading file /data1/influxdb/wal/sysnoc/default/2/\_00703.wal, size 10504926 [cacheloader] 2016/03/24 14:52:09 reading file /data1/influxdb/wal/sysnoc/default/2/\_00704.wal, size 10494123 run: open server: open tsdb store: [shard 2] cache maximum memory size exceeded
++func (c &ast;Cache) SetMaxSize(size uint64) {  
++    c.mu.Lock()  
++    c.maxSize = size  
++    c.mu.Unlock()  
++}  
++``  
+vim tsdb/engine/tsm1/engine.go  
+``@@ -659,6 +659,14 @@ func (e &ast;Engine) reloadCache() error {  
+         return err  
+     }  
 
-Solution:
-1. vim tsdb/engine/tsm1/cache.go
-   @@ -306,6 +306,12 @@ func (c &ast;Cache) Delete(keys []string) {
-       }
-   }
++    limit := e.Cache.MaxSize()  
++    defer func() {  
++        e.Cache.SetMaxSize(limit)  
++    }()   
++  
++    // Disable the max size during loading  
++    e.Cache.SetMaxSize(0)  
++  
+     loader := NewCacheLoader(files)``  
+restart influxdb  
+``service influxdb restart``  
 
-+func (c &ast;Cache) SetMaxSize(size uint64) {
-+    c.mu.Lock()
-+    c.maxSize = size
-+    c.mu.Unlock()
-+}
-+
-2. vim tsdb/engine/tsm1/engine.go
-@@ -659,6 +659,14 @@ func (e &ast;Engine) reloadCache() error {
-         return err
-     }
+## Haproxy  
+### If haproxy cannot start on all nodes after deployment ('cannot bind soc' after /usr/lib/ocf/resource.d/fuel/ns_haproxy reload), check this nonlocal_bind bug  
+[bug](https://bugs.launchpad.net/fuel/+bug/1659205)
 
-+    limit := e.Cache.MaxSize()
-+    defer func() {
-+        e.Cache.SetMaxSize(limit)
-+    }()
-+
-+    // Disable the max size during loading
-+    e.Cache.SetMaxSize(0)
-+
-     loader := NewCacheLoader(files)
-3. restart influxdb
+Solution  
+``ip netns delete haproxy  
+/usr/lib/ocf/resource.d/fuel/ns_haproxy start  
+crm resource cleanup clone_p_haproxy``  
 
-## Haproxy
-### If haproxy cannot start on all nodes after deployment ('cannot bind soc' after /usr/lib/ocf/resource.d/fuel/ns_haproxy reload), check this nonlocal_bind bug
-https://bugs.launchpad.net/fuel/+bug/1659205
+### Haproxy ssl  
+Enabling tls on grafana  
+``scp kibana.lma.mos.cloud.sbrf.ru.chain.pem kaira6:/var/lib/astute/haproxy/``  
+vim /var/lib/astute/haproxy/kibana  
+``bind 10.127.32.37:80  
+bind 10.127.32.37:443 ssl crt /var/lib/astute/haproxy/kibana.lma.mos.cloud.sbrf.ru.chain.pem no-sslv3 no-tls-tickets ciphers AES128+EECDH:AES128+EDH:AES256+EECDH:AES256+EDH  
+balance source  
+option forwardfor  
+option httplog  
+reqadd X-Forwarded-Proto:\ https  
+stick on src  
+stick-table type ip size 200k expire 30m  
+timeout client 3h  
+timeout server 3h``  
 
-Solution:
-ip netns delete haproxy
-/usr/lib/ocf/resource.d/fuel/ns_haproxy start
-crm resource cleanup clone_p_haproxy
+Grafana  
+``bind 10.127.32.37:80  
+bind 10.127.32.37:443 ssl crt   /var/lib/astute/haproxy/grafana.lma.mos.cloud.sbrf.ru.chain.pem no-sslv3 no-tls-tickets ciphers AES128+EECDH:AES128+EDH:AES256+EECDH:AES256+EDH  
+balance source  
+option httplog  
+option httpchk GET /login/ HTTP/1.0  
+reqadd X-Forwarded-Proto:\ https  
+stick on src  
+stick-table type ip size 200k expire 30m``  
+DELETE this line  
+``option forwardfor``  
 
-### Haproxy ssl
-Enabling tls on grafana:
-scp kibana.lma.mos.cloud.sbrf.ru.chain.pem kaira6:/var/lib/astute/haproxy/
-vim /var/lib/astute/haproxy/kibana......
-
-bind 10.127.32.37:80
-bind 10.127.32.37:443 ssl crt /var/lib/astute/haproxy/kibana.lma.mos.cloud.sbrf.ru.chain.pem no-sslv3 no-tls-tickets ciphers AES128+EECDH:AES128+EDH:AES256+EECDH:AES256+EDH
-balance source
-option forwardfor
-option httplog
-reqadd X-Forwarded-Proto:\ https
-stick on src
-stick-table type ip size 200k expire 30m
-timeout client 3h
-timeout server 3h
-
-Grafana:
-(haprxy conf)
-
-bind 10.127.32.37:80
-bind 10.127.32.37:443 ssl crt /var/lib/astute/haproxy/grafana.lma.mos.cloud.sbrf.ru.chain.pem no-sslv3 no-tls-tickets ciphers AES128+EECDH:AES128+EDH:AES256+EECDH:AES256+EDH
-balance source
-Удалить строчку
-option forwardfor
-option httplog
-option httpchk GET /login/ HTTP/1.0
-reqadd X-Forwarded-Proto:\ https
-stick on src
-stick-table type ip size 200k expire 30m
-
-## Swift
-### Swift with Ceph - troubleshooting
-Kraken release, error: NO_SUCH_BUCKET/ACCOUNT/404
-1. Verify your endpoints, (they should contain :8080/swift/v1/%(tenant_id)s postfix)
-2. Check your ceph.conf -
-[client.radosgw.gateway]
-rgw keystone api version = v2.0
-rgw keystone url = http://192.168.0.2:35357
-rgw_keystone_admin_token = P.......iu.f..
-rgw swift account in url = true
-rgw keystone implicit tenants = false
-3. restart all radosgw services on all radosgw nodes:
-service radosgw-all restart
+## Swift  
+### Swift with Ceph - troubleshooting  
+Kraken release, error: NO_SUCH_BUCKET/ACCOUNT/404  
+1. Verify your endpoints, (they should contain :8080/swift/v1/%(tenant_id)s postfix)   
+2. Check your ceph.conf    
+``[client.radosgw.gateway]  
+rgw keystone api version = v2.0  
+rgw keystone url = http://192.168.0.2:35357  
+rgw_keystone_admin_token = P.......iu.f..  
+rgw swift account in url = true  
+rgw keystone implicit tenants = false``  
+3. restart all radosgw services on all radosgw nodes  
+``service radosgw-all restart``  
 
 ## GOlang
 1. Clone repo - go get github/user/repo (alternatively, you can manually clone repo in gopath:/src/ dir )
