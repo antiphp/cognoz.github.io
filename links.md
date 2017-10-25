@@ -4,7 +4,10 @@ title: Links
 permalink: /links/
 ---
 
-### CI/CD  
+### Linux  
+[sysctl simple tcp tutorial (russian)](https://habrahabr.ru/company/otus/blog/340870/)  
+
+### CI/CD   
 [gitlab current merge-request pipeline restriction](https://gitlab.com/gitlab-org/gitlab-ce/issues/23902)  
 
 ### RABBITMQ  

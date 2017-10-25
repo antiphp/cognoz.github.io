@@ -103,9 +103,17 @@ mount -a``
 _node 2_  
 ``test-glusterfs-2:heketidb-vol /var/lib/heketi/db_mount glusterfs defaults,\_netdev 0 0``  
 _all nodes_  
-``mount -a``  
+``mount -a``
 ### CHECK  
 ``mount | grep heketi``  
+### Mount on boot check  
+``mount -a    
+reboot  
+ssh test-gluster-2  
+mount | grep db_mount``  
+If you experiencing troubles with automount of a gluster volume after reboot (i belive that it happens due to a race-condition with netservice start)    
+you can try this options in your /etc/fstab  
+``test-glusterfs-2:heketidb-vol /var/lib/heketi/db_mount glusterfs defaults,noauto,x-systemd.automount,_netdev,fetch-attempts=10  0 2``  
 
 ## Step 4. Heketi, Testing backend  
 _run on all nodes_  
