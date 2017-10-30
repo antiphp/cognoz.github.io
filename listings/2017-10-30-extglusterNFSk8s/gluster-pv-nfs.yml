@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs
+spec:
+  persistentVolumeReclaimPolicy: Recycle
+  claimRef:
+    namespace: default
+    name: nfsclaim
+  capacity:
+    storage: 300Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    # FIXME: use the right IP
+    server: 10.1.39.219
+    path: "/testshet"
