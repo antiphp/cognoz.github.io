@@ -6,10 +6,10 @@ tags: gluster kubernetes ganesha keepalived openstack systemctl  nfs
 ### Glusterfs cluster (replica 2) integration with k8s via Ganesha+NFS3
 
 ### Components:
-- Two VMs in Openstack, ubuntu 16.04:
+- Two VMs in Openstack, centos 7:
 _test-glusterfs-1 10.1.39.241  
 test-glusterfs-2 10.1.39.240_  
-- glustefs version: 3.12.1  
+- glustefs version: 3.10  
 - keepalived 1.2.19  
 - nfs-ganesha 2.5.3
 - kubernetes (deployed previously via rancher 1.6.9)  
@@ -27,30 +27,51 @@ _run on all nodes_
 127.0.0.1 localhost  
 127.0.0.1 test-glusterfs-1  
 10.1.39.241 test-glusterfs-1  
-10.1.39.240 test-glusterfs-2``  
+10.1.39.240 test-glusterfs-2  
+10.1.39.242 test-glusterfs-3  
+10.1.39.211 test-glusterfs-1v  
+10.1.39.212 test-glusterfs-2v``    
 
-``add-apt-repository ppa:gluster/glusterfs-3.12  
-add-apt-repository ppa:gluster/libntirpc-1.5
-add-apt-repository ppa:gluster/nfs-ganesha-2.5
-apt update  
-apt -y install glusterfs-server thin-provisioning-tools keepalived systemd  nfs-ganesha nfs-ganesha-gluster  
-service glusterd restart  
+``sudo passwd root  
+su  
+yum install -y centos-release-gluster310.noarch vim    
+yum install -y glusterfs glusterfs-server  nfs-ganesha  nfs-ganesha-gluster glusterfs-geo-replication
+systemctl enable glusterd && systemctl start glusterd  
+setenforce 0    
 gluster peer probe test-glusterfs-1  
-gluster peer probe test-glusterfs-2``    
+gluster peer probe test-glusterfs-2  
+gluster peer probe test-glusterfs-3``    
+_run on first and second nodes_  
+``yum install pcs``  
+vim [/etc/corosync/corosync.conf](/listings/2017-10-30-extglusterNFSk8s/corosync.conf)  
+``systemctl enable pcsd && systemctl start pcsd
+systemctl enable pacemaker && systemctl start pacemaker
+systemctl enable corosync && systemctl start corosync
+echo hapassword | passwd --stdin hacluster``
+Use loginpair (hacluster:hapassord) for next commands
+_run on one (1st or 2d) node_      
+``pcs cluster auth test-glusterfs-1  
+pvs cluster auth test-glusterfs-2 ``  
 
 ## Step 2. Volumes, neutron port, secgroups, keepalived
 1. Create 2 volumes for both VM's in the Openstack:  
 ``cinder create --name test-glusterfs-1-data 300G  
-cinder create --name test-glusterfs-2-data 300G``  
+cinder create --name test-glusterfs-2-data 300G  
+cinder create --name test-glusterfs-3-meta 10G``    
 2. Attach them to instances  
 ``nova volume-attach $vm1_id test-glusterfs-1-data  
-nova volume-attach $vm2_id test-glusterfs-2-data``  
-3. Create and update neutron port for keepalived vip
+nova volume-attach $vm2_id test-glusterfs-2-data  
+nova volume-attach $vm3_id test-glusterfs-3-meta``  
+3. Create and update neutron ports for pcs vip resources  
 ``. openrc
 export OS_TENANT_NAME='K8S-Lab'  
 export OS_PROJECT_NAME='K8S-Lab'  
-neutron port-create --fixed-ip subnet-id=$yournetid,ip_address=$kepalivedVIP $yournetid  
-neutron port-update $VIP_portid --allowed-address-pairs type=dict list=true ip_address=VIP,mac_address=mac1 ip_address=VIP,mac_address=mac2  
+neutron port-create --fixed-ip subnet-id=$yournetid,ip_address=test-glusterfs-1v_IP $yournetid  
+neutron port-update $test-glusterfs-1v_IP_portid --allowed-address-pairs type=dict list=true   ip_address=VIP,mac_address=mac1 ip_address=VIP,mac_address=mac2  
+neutron port-create --fixed-ip subnet-id=$yournetid,ip_address=test-glusterfs-2v_IP $yournetid  
+neutron port-update $test-glusterfs-2v_IP_portid --allowed-address-pairs type=dict list=true ip_address=VIP,mac_address=mac1 ip_address=VIP,mac_address=mac2  
+neutron port-update $VM1_portid --allowed-address-pairs type=dict list=true   ip_address=$VM1_ip,mac_address=$VM1_mac ip_address=$test-glusterfs-1v_IP,mac_address=$VM1_mac ip_addres=$test-glusterfs-2v_IP,mac_address=$VM1_mac  
+neutron port-update $VM2_portid --allowed-address-pairs type=dict list=true   ip_address=$VM2_ip,mac_address=$VM2_mac ip_address=$test-glusterfs-1v_IP,mac_address=$VM2_mac ip_addres=$test-glusterfs-2v_IP,mac_address=$VM2_mac  
 ``  
 4. Create security groups in UI (convenient way)  
 ``vrrp - 112 tcp  
@@ -58,21 +79,7 @@ ssh - 22 tcp
 heketi - 8082 tcp  
 nfs - 2049, 564,875 tcp and udp``  
 Assign all these groups to our instances (and default secgroup of course)  
-Reboot instances  
-5. ssh vm1 | ssh vm2
-vim [/etc/keepalived/keepalived.conf](/listings/2017-10-30-extglusterNFSk8s/keepalived.conf)  
-vim [/etc/keepalived/ganeshacheck.sh](/listings/2017-10-30-extglusterNFSk8s/ganeshacheck.sh)
-``chmod +x /etc/keepalived/ganeshacheck.sh  
-service keepalived restart  
-ip -4 a  
-ping $vip (it must be accessible from k8s)``  
-###CHECK  
-``reboot instance1; ip -4 a  
-OR  
-service nfs-ganesha stop; ssh instance1 reboot  
-##YOU shouldn't see vip on instance2 as far as ganesha is not running``  
-ip should be active only if ganesha service UP, so you can stop nfs-ganesha service on slave and reboot master instance with VIP to test existence of vip on slave node    
-
+Reboot instances      
 ## Step 3. LVM  
 _run on all nodes_
 ``lsblk; (find your 300G DATA device with fdisk, let's assume that it is /dev/vdc)  
@@ -80,13 +87,58 @@ pvcreate /dev/vdc
 vgcreate glustervg /dev/vdc  
 lvcreate -n glusterlv -l 100%FREE glustervg  
 mkfs.xfs -i size=512 /dev/glustervg/glusterlv  
-mkdir -p /opt/gluster/gluster``  
+mkdir -p /opt/gluster/vol``  
 vim /etc/fstab  
-``/dev/mapper/glustervg-glusterlv /opt/gluster xfs defaults 0 0``  
-``mount -a``   
-_run on 1 node_    
-``gluster volume create data-1 replica 2 transport tcp test-glusterfs-1:/opt/gluster/gluster  test-glusterfs-2:/opt/gluster/gluster force``  
+``/dev/mapper/glustervg-glusterlv /opt/gluster/vol xfs defaults 0 0``  
+``mount -a  
+mkdir /opt/gluster/vol/gluster``
+## Step 4. SSH configuration  
+vim /etc/ssh/sshd_config  
+``PermitRootLogin yes  
+PasswordAuthentication yes``  
+``service sshd restart``  
+_run on first node_    
+``ssh-keygen -f /var/lib/glusterd/nfs/secret.pem  
+ssh-copy-id -i /var/lib/glusterd/nfs/secret.pem.pub root@test-nfs-rk-1  
+ssh-copy-id -i /var/lib/glusterd/nfs/secret.pem.pub root@test-nfs-rk-2  
+ssh-copy-id -i /var/lib/glusterd/nfs/secret.pem.pub root@test-nfs-rk-3  
+scp /var/lib/glusterd/nfs/secret.* root@test-nfs-rk-3:/var/lib/glusterd/nfs/  
+scp /var/lib/glusterd/nfs/secret.* root@test-nfs-rk-2:/var/lib/glusterd/nfs/``  
+_run on all nodes_  
+``ssh -i /var/lib/glusterd/nfs/secret.pem root@test-nfs-rk-1  
+exit  
+ssh -i /var/lib/glusterd/nfs/secret.pem root@test-nfs-rk-2  
+exit  
+ssh -i /var/lib/glusterd/nfs/secret.pem root@test-nfs-rk-3    
+exit``   
 
+_run on first node_  
+vim [/etc/ganesha/ganesha-ha.conf](/listings/2017-10-30-extglusterNFSk8s/ganesha-ha.conf)  
+``gluster volume set all cluster.enable-shared-storage enable``  
+wait for a moment  
+_run on all nodes_  
+``setenforce 0``
+_run on one node_  
+``gluster volume remove-brick gluster_shared_storage replica 2 test-glusterfs-3:/var/lib/glusterd/ss_brick  
+!!!!!!!gluster volume add-brick gluster_shared_storage replica 3 arbiter 1 test-nfs-rk-3:/var/lib/glusterd/ss_brick force !!!!!!
+gluster volume create cluster-demo replica 3 arbiter 1 test-nfs-rk-1:/opt/gluster/vol/gluster/ test-nfs-rk-2:/opt/gluster/vol/gluster/ test-nfs-rk-3:/opt/gluster/vol/gluster/ force  
+``  
+``mkdir /etc/ganesha/bak/``  
+vim [/etc/ganesha/bak/ganesha.conf](/listings/2017-10-30-extglusterNFSk8s/ganesha-ha.conf)  
+start ganesha-ha creation  
+``gluster nfs-ganesha enable``  
+debug config  
+``crm_verify -LV``    
+if you have error with stonith when run  
+``pcs property set stonith-enabled=false``  
+if you have this error: _Error: creation of symlink ganesha.conf in /etc/ganesha failed_  
+when you should disable selinux  
+vim /etc/selinux/config   
+``SELINUX=disabled  
+reboot``  
+
+``gluster volume create data-1 replica 2 transport tcp test-glusterfs-1:/opt/gluster/vol/gluster  test-glusterfs-2:/opt/gluster/vol/gluster test-glusterfs-3:/opt/gluster/vol/gluster force``  
+``
 ### CHECK  
 ``mount | grep gluster``   
 
@@ -94,13 +146,13 @@ _run on 1 node_
 _run on all nodes_  
 vim [/etc/ganesha/ganesha.conf](/listings/2017-10-30-extglusterNFSk8s/ganesha.conf)  
 vim [/etc/ganesha/gluster.conf](/listings/2017-10-30-extglusterNFSk8s/gluster.conf)  
-vim /lib/systemd/system/nfs-ganesha-config.service:  
-``ExecStart=/usr/lib/nfs-ganesha-config.sh``  
-``chmod +x /usr/lib/nfs-ganesha-config.sh; systemctl daemon-reload; systemctl restart nfs-ganesha.service``  
+vim [/lib/systemd/system/nfs-ganesha.service](/listings/2017-10-30-extglusterNFSk8s/ganesha.service)   
 ### CHECK  
 `` mkdir /tmp/dirt; mount -t nfs VIP:/volname(from gluster.conf) /tmp/dirt``    
 
-
+### IMPORTANT   
+1. systemctl enable corosync.service  && systemctl enable pacemaker.service && systemctl enable nfs-ganesha.service   
+2. Sle
 ## Step 5. Integration with K8S  
 ``Install kubectl(google it), mdkir ~/.kube, vim ~/.kube/config``  
 ### CHECK  
@@ -174,3 +226,9 @@ sh generate.sh > 1G.log``
 
 #### Average:
 ``cat 1M_root.log | awk '{print $8}' | awk '{a+=$1} END{print a/NR}' > 1M_root.result``   
+
+## Tear down cluster  
+`` ssh node1; gluster nfs-ganesha dsable  
+pcs cluster node remove $node1  
+ssh node2  
+pcs cluster node remove $node2``  
