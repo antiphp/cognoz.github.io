@@ -18,7 +18,7 @@ _test-fio-1  10.1.39.214_
 ## Step 1. Initial configuration of VM
 _RUN on all VMs_  
 ``cat /etc/hosts  
-127.0.0.1 test-fio-rk
+127.0.0.1 test-fio-rk  
 10.1.39.207 test-nfs-rk-1
 10.1.39.208 test-nfs-rk-2
 10.1.39.209 test-nfs-rk-3
@@ -27,7 +27,7 @@ _RUN on all VMs_
 10.1.39.212 test-nfs-rk-2v
 10.1.39.214 test-fio-rk
 ``    
-
+_RUN on test-fio node_  
 ``add-apt-repository ppa:gluster/glusterfs-3.12  
 apt update  
 apt -y install git make gcc zlib1g-dev glusterfs-client  libaio-dev nfs-common  
