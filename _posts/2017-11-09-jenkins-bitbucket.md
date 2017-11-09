@@ -3,7 +3,8 @@ layout: post
 title: Jenkins pipeline jobs integration with bitbucket
 tags: jenkins bitbucket scm cicd
 ---
-### Jenkins jobs integration with bitbucket SCM
+### Jenkins jobs integration with bitbucket SCM  
+
 How to configure bitbucket scm watch in Jenkins declarative pipeline 2.0 job.  
 In my work I faced some problems with configuration since I have got only ssh key
 which was mapped on project, not user/pass service login, so i couldn't configure some jenins plugins for pipeline job, saddly. Also, bitbucket plugin could not be configured in jenkins pipeline jobs to watch SCM changes, so I had need some workaround for trigger build which I'll show here.  
