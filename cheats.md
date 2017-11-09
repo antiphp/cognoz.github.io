@@ -36,6 +36,14 @@ F12 -> Network -> Preserver log
 ### Using rsync with append  
 ``rsync --append-verify SOURCE DEST``    
 
+### Iptables basics  
+flush rules  
+``service iptables-persistent flush``  
+print chains with line-numbers  
+``iptables -nvL --line-numbers``  
+delete rule by number and chain  
+``iptables -D INPUT 3``  
+
 ### NodeJS webserver
 ``apt-get install -y nodejs npm nodejs-legacy  
 npm install -g http-server  
@@ -97,6 +105,9 @@ vim /etc/default/corosync
 
 ### Using deprecated branches  
 ``git checkout kilo-eol``  
+
+### Enable password cache in git store  
+``git config credential.helper cache``  
 
 ### Submitting existing repository in new gerrit repo  
 ``git clone $repo-from-stash  
