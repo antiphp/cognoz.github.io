@@ -35,9 +35,12 @@ _run on all nodes_
 ``sudo passwd root  
 su  
 yum install -y centos-release-gluster310.noarch vim    
-yum install -y glusterfs glusterfs-server  nfs-ganesha  nfs-ganesha-gluster glusterfs-geo-replication
+yum install -y glusterfs glusterfs-server  nfs-ganesha  nfs-ganesha-gluster glusterfs-geo-replication glusterfs-ganesha  
 systemctl enable glusterd && systemctl start glusterd  
+systemctl disable firewalld
 setenforce 0    
+vim /etc/selinux/config - disabled
+reboot
 gluster peer probe test-glusterfs-1  
 gluster peer probe test-glusterfs-2  
 gluster peer probe test-glusterfs-3``    
@@ -48,10 +51,10 @@ vim [/etc/corosync/corosync.conf](/listings/2017-10-30-extglusterNFSk8s/corosync
 systemctl enable pacemaker && systemctl start pacemaker
 systemctl enable corosync && systemctl start corosync
 echo hapassword | passwd --stdin hacluster``
-Use loginpair (hacluster:hapassord) for next commands
+Use loginpair (hacluster:hapassword) for next commands
 _run on one (1st or 2d) node_      
 ``pcs cluster auth test-glusterfs-1  
-pvs cluster auth test-glusterfs-2 ``  
+pcs cluster auth test-glusterfs-2 ``  
 
 ## Step 2. Volumes, neutron port, secgroups, keepalived
 1. Create 2 volumes for both VM's in the Openstack:  
@@ -101,23 +104,18 @@ _run on first node_
 ``ssh-keygen -f /var/lib/glusterd/nfs/secret.pem  
 ssh-copy-id -i /var/lib/glusterd/nfs/secret.pem.pub root@test-nfs-rk-1  
 ssh-copy-id -i /var/lib/glusterd/nfs/secret.pem.pub root@test-nfs-rk-2  
-ssh-copy-id -i /var/lib/glusterd/nfs/secret.pem.pub root@test-nfs-rk-3  
-scp /var/lib/glusterd/nfs/secret.* root@test-nfs-rk-3:/var/lib/glusterd/nfs/  
 scp /var/lib/glusterd/nfs/secret.* root@test-nfs-rk-2:/var/lib/glusterd/nfs/``  
 _run on all nodes_  
 ``ssh -i /var/lib/glusterd/nfs/secret.pem root@test-nfs-rk-1  
 exit  
 ssh -i /var/lib/glusterd/nfs/secret.pem root@test-nfs-rk-2  
-exit  
-ssh -i /var/lib/glusterd/nfs/secret.pem root@test-nfs-rk-3    
 exit``   
+
 
 _run on first node_  
 vim [/etc/ganesha/ganesha-ha.conf](/listings/2017-10-30-extglusterNFSk8s/ganesha-ha.conf)  
 ``gluster volume set all cluster.enable-shared-storage enable``  
 wait for a moment  
-_run on all nodes_  
-``setenforce 0``
 _run on one node_  
 ``gluster volume remove-brick gluster_shared_storage replica 2 test-glusterfs-3:/var/lib/glusterd/ss_brick  
 !!!!!!!gluster volume add-brick gluster_shared_storage replica 3 arbiter 1 test-nfs-rk-3:/var/lib/glusterd/ss_brick force !!!!!!
@@ -129,7 +127,7 @@ start ganesha-ha creation
 ``gluster nfs-ganesha enable``  
 debug config  
 ``crm_verify -LV``    
-if you have error with stonith when run  
+if you have error with stonith when run on ALL pcs nodes  
 ``pcs property set stonith-enabled=false``  
 if you have this error: _Error: creation of symlink ganesha.conf in /etc/ganesha failed_  
 when you should disable selinux  

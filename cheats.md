@@ -961,6 +961,10 @@ Forwarding from [::1]:38219 -> 8080
 curl localhost:38219/hello  
 Hello from heketi   
 
+### Too long node evacuation (up to 7-10 minutes)  
+Start kube-controller-manager with these flags (if you are using rancher, then just upgrade controller-manager service)  
+`` --node-monitor-grace-period=16s --pod-eviction-timeout=30s``  
+
 ### Find pod by ip   
 ``kubectl get pods -o wide --namespace monitoring | grep $ip``  
 
