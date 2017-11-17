@@ -105,7 +105,7 @@ _run on first node_
 ssh-copy-id -i /var/lib/glusterd/nfs/secret.pem.pub root@test-nfs-rk-1  
 ssh-copy-id -i /var/lib/glusterd/nfs/secret.pem.pub root@test-nfs-rk-2  
 scp /var/lib/glusterd/nfs/secret.* root@test-nfs-rk-2:/var/lib/glusterd/nfs/``  
-_run on all nodes_  
+_run on node-1 and node-2_  
 ``ssh -i /var/lib/glusterd/nfs/secret.pem root@test-nfs-rk-1  
 exit  
 ssh -i /var/lib/glusterd/nfs/secret.pem root@test-nfs-rk-2  
@@ -123,6 +123,7 @@ gluster volume create cluster-demo replica 3 arbiter 1 test-nfs-rk-1:/opt/gluste
 ``  
 ``mkdir /etc/ganesha/bak/``  
 vim [/etc/ganesha/bak/ganesha.conf](/listings/2017-10-30-extglusterNFSk8s/ganesha-ha.conf)  
+vim /usr/lib/pcsd/remote.rb - add sleep 5 on line 774 before pcsd_restart  
 start ganesha-ha creation  
 ``gluster nfs-ganesha enable``  
 debug config  

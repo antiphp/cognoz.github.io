@@ -1,6 +1,6 @@
 ---
 layout: post
-title: GLuster - Changing peer's hostnames
+title: Gluster - Changing peer's hostnames
 tags: gluster cloud-init sed
 ---
 ### Changing of gluster peers hostnames

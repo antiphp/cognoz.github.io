@@ -5,7 +5,7 @@ permalink: /about/
 ---
 
 ### Whoami
-Hard-working guy from Moscow. 25 years old, 4 years' experience in IT.  
+Hard-working guy from Moscow. 26 years old, 3 years' experience in IT.  
 ### What i'm doing    
 K8S, OpenStack, CICD, Linux, HA - that kind of stuff (integration, development and monitoring)  
 ### What else    
