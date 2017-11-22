@@ -103,6 +103,11 @@ psk =``
 vim /etc/default/corosync  
 ``change NO on YES``  
 
+### Git insecure certificates  
+``git config http.sslVerify false``
+or  
+``git -c http.sslVerify=false clone https://example.com/path/to/git``    
+
 ### Using deprecated branches  
 ``git checkout kilo-eol``  
 
@@ -953,7 +958,43 @@ nova interface-attach --port-id #port_id #instance_id``
 ``neutron router-update #router_id --routes type=dict list=true \
 destination=10.0.0.0/8,nexthop=10.1.3.1``  
 
+## SaltStack  
+mighty one-liner  
+``sudo useradd saltadmin -m -s /bin/bash && sudo mkdir /home/saltadmin/.ssh/ && sudo echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDToAsqw/DBPTS9JcbrjpIJDwzYHGrCCHkgW5mWnbmwBQvyvdmQtQdB3zkKXHeFI2AanhTErmek7TYwWOw/sVbNyQ3NxSssEsbI8sjnT7uzSE3qI+lHAMFxggYZJeFCvMBh2GbsCITg0+jiuBmp46HutphkRzEA9qCfNrK4m4nh0yz7kVrZM4OMCpMWwZ+0HtqA6SBKPL4DyIwmGYRBUYxQXyJLQMlD/K9+bpZv+69kCDERlOPbTGWQaxAx9c+sOvC43AaddDvtp6/Cmezir8kd6avdRhlpSpYubGcWv4n0M689L3kfiD1CT4kQkuyO8wnryVbDsJKmdtfqx2esng1H saltadmin@skl-salt-master-101' > /home/saltadmin/.ssh/authorized_keys && sudo chown -R saltadmin:saltadmin /home/saltadmin/ && sudo apt update && sudo apt install python-minimal && echo 'saltadmin ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo``  
+
+## Nexus 3  
+### OrientDB reset admin  
+1. log via ssh  
+2. java -jar /opt/sonatype/nexus/lib/support/nexus-orient-console.jar  
+3. CONNECT plocal:/nexus-data/db/security admin admin  
+4. ``update user SET password="$shiro1$SHA-512$1024$NE+wqQq/TmjZMvfI7ENh/g==$V4yPw8T64UQ6GfJfxYq2hLsVrBY8D1v+bktfOxGdt4b/9BthpWPNUy/CBk6V9iA0nHpzYzJFWO8v/tZFtES8CA==" UPSERT WHERE id="admin"  
+delete from realm``  
+5. ``delete from realm``
+If there still no configuration tab - it's maybe not your fault, try another browser and cacheclaening
+http://uat-registry.sk.ru:8081/repository/alfa/
 ## KUBERNETES  
+
+### Grafana Auth  
+``kubectl get deploy -n kube-system  
+kubectl edit deploy monitoring-grafana``  
+``  
+- env:  
+  - name: INFLUXDB_HOST  
+    value: monitoring-influxdb  
+  - name: INFLUXDB_SERVICE_URL  
+    value: http://monitoring-influxdb:8086  
+  - name: GRAFANA_PORT  
+    value: "3000"  
+  - name: GF_AUTH_BASIC_ENABLED  
+    value: "true"  
+  - name: GF_AUTH_ANONYMOUS_ENABLED  
+    value: "false"  
+  - name: GF_SERVER_ROOT_URL  
+    value: /  
+  - name: GF_SECURITY_ADMIN_PASSWORD  
+    value: GrAfAnA  
+  - name: GRAFANA_PASSWD  
+    value: GrAfAnA``  
 ### Forward-port  
 ``kubectl port-forward heketi-37915784-8gkqp :8080``  
 Forwarding from 127.0.0.1:38219 -> 8080  
@@ -961,6 +1002,11 @@ Forwarding from [::1]:38219 -> 8080
 curl localhost:38219/hello  
 Hello from heketi   
 
+### Kubectl debug  
+``kubectl -v 10 get po``  
+
+### Check user rights  
+``kubectl auth can-i list secrets --namespace dev --as dave``  
 ### Too long node evacuation (up to 7-10 minutes)  
 Start kube-controller-manager with these flags (if you are using rancher, then just upgrade controller-manager service)  
 `` --node-monitor-grace-period=16s --pod-eviction-timeout=30s``  

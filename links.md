@@ -55,3 +55,4 @@ _Benchmarking Ceph_
 [Another CoreOS article](https://github.com/coreos/coreos-kubernetes/blob/master/Documentation/getting-started.md)  
 [kubeweekly](https://kubeweekly.com/)  
 [Cleaning rancher after k8s deleting](http://rancher.com/docs/rancher/v1.5/en/kubernetes/deleting/)  
+[RBAC + certificate auth tutorial by Bitnami](https://docs.bitnami.com/kubernetes/how-to/configure-rbac-in-your-kubernetes-cluster/)  
