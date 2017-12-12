@@ -13,6 +13,26 @@ net.ifnames=1 biosdevname=1
 ### Specify ssh options (password authentication)  
 ``ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no``  
 
+### Watch file/dir changes  
+``inotifywait -mr /var/log/ssh_audit.log``  
+
+### Simple python logging (uniq lines) in file  
+``import logging  
+import logging.handlers   
+import distutils  
+from distutils import dir_util  
+
+logger = logging.getLogger('ssh_audit')  
+logger.setLevel(logging.WARNING)  
+hdlr = logging.FileHandler('/var/log/ssh_audit.log.dup')  
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')  
+hdlr.setFormatter(formatter)  
+logger.addHandler(hdlr)  
+
+logger.warning('Authorized Key for host {0} and user {1} was reloaded'.format(host, user[2]))  
+### uniq lines  
+os.system("awk '!x[$0]++' /var/log/ssh_audit.log.dup > /var/log/ssh_audit.log")  
+``
 ### Java workarounds (jre8)  
 1. start 'configure java' app
 2. security - high level - edit security list - insert website url  
@@ -99,6 +119,9 @@ psk =``
 ### Disabling service via update-rc.d  
 ``update-rc.d drbd disable``  
 
+### Broadcast message in console  
+``wall _message_``  
+
 ### Enabling corosync autostart  
 vim /etc/default/corosync  
 ``change NO on YES``  
@@ -106,7 +129,12 @@ vim /etc/default/corosync
 ### Git insecure certificates  
 ``git config http.sslVerify false``
 or  
+`` export GIT_SSL_NO_VERIFY=1``  
+or  
 ``git -c http.sslVerify=false clone https://example.com/path/to/git``    
+
+### Git change git scheme to https  
+`` git config --global url."https://".insteadOf git://``  
 
 ### Using deprecated branches  
 ``git checkout kilo-eol``  
@@ -1005,6 +1033,8 @@ Hello from heketi
 ### Kubectl debug  
 ``kubectl -v 10 get po``  
 
+### Expose deployment on ALL nodes via nodeport  
+``kubectl expose deployment echoserver --type=NodePort``  
 ### Check user rights  
 ``kubectl auth can-i list secrets --namespace dev --as dave``  
 ### Too long node evacuation (up to 7-10 minutes)  
