@@ -8,7 +8,18 @@ permalink: /cheats/
 
 ## Basis
 ### To avoid interface name changes via udev (pass options to kernel):  
-net.ifnames=1 biosdevname=1
+``net.ifnames=1 biosdevname=1``  
+
+### SSH passpharse using in script  
+cat helper.sh  
+``exec cat``  
+cat script.sh  
+``eval $(ssh-agent)   
+export SSH_ASKPASS=./helper.sh  
+export DISPLAY=  
+echo ${PASSPHRASE} | SSH_ASKPASS=./helper.sh ssh-add ${KEY} 2> /dev/null  
+ssh targetVM  
+``  
 
 ### Specify ssh options (password authentication)  
 ``ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no``  
