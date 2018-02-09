@@ -3,7 +3,9 @@ layout: post
 title: Net basics  
 tags: net cisco  
 ---
-### Basic CISCO commands and tips from Netskills youtube course `Young Fighter's Course`  
+
+### Basic CISCO commands and tips from Netskills youtube course Young Fighter's Course  
+
 
 #### Basics  
 ``enable      #enable privileged   
