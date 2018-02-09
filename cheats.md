@@ -220,6 +220,32 @@ telnet monitor : 6789 (on ctrl node)
 status ceph-osd id=$id  
 ceph pg dump | grep stuck``    
 
+### Samba create share  
+``useradd sambashare   
+passwd sambashare  
+apt -y install samba samba-client  
+smbpasswd -a sambashare  
+
+cat /etc/samba/smb.conf  
+[global]  
+    workgroup = SAMBA  
+    security = user  
+    passdb backend = smbpasswd  
+    kernel share modes = no  
+    kernel oplocks = no  
+    map archive = no  
+    map hidden = no  
+    map read only = no  
+    map system = no  
+    store dos attributes = yes  
+[annual-reports]  
+   comment = For testing a Gluster volume exported through CIFS  
+   path = /opt/annual-reports/  
+   read only = no  
+   guest ok = yes
+service samba restart``   
+
+
 ### Windows7 doesnt use hosts file  
 _Solution by Wol_[Beware if spacing in windows 7 hosts file](http://geekswithblogs.net/JanS/archive/2009/06/17/beware-of-spacing-in-windows7-hosts-file.aspx)  
 1. cd \Windows\System32\drivers\etc ###go to the directory where the hosts file lives  
