@@ -89,6 +89,9 @@ http-server -p 81``
 ``mysqldump --all-databases --single-transaction > all_databases.sql  
 mysql -p < all_databases.sql``  
 
+### MYSQL reboostrap failed cluster  
+``mysql -e "SET GLOBAL wsrep_provider_options='pc.bootstrap=yes';"``  
+
 ### Fuel plugins - Add version: 2.0.0 in deployment_tasks via VIM  
 ``'%s/^\s&ast;role: .&ast;/  version: 2.0.0\r&/g'``  
 
@@ -211,6 +214,10 @@ vim /etc/fstab
 ### Install simple VM via virsh  
 ``qemu-img create -f qcow2 /var/lib/libvirt/images/cloud-linux.img 15G   
 virt-install --connect qemu:///system --hvm --name cloud-linux --ram 1548 --vcpus 1 --cdrom path_to_iso --disk path=/var/lib/libvirt/images/cloud-linux.img,format=qcow2,bus=virtio,cache=none --network network=default,model=virtio --memballoon model=virtio --vnc --os-type=linux --accelerate --noapic --keymap=en-us --video=cirrus --force``  
+
+
+### Ceph Prevent Rebalancing  
+``ceph osd set noout``  
 
 ### Ceph debugging
 ``ceph -s ( Check your active flags (like norecovery, nobackflip, etc...))  
@@ -888,6 +895,12 @@ HAPX=${QA[0]}
 HASV=${QA[1]}  
 ITEM=${QA[2]}``  
 
+### ARP Debug  
+``arp -na   
+arping -I <interface> dst  
+arp -d IP (delete if mismathing mac)  
+tcpdump -vv -an -i b_management -e arp``  
+
 ## Murano Bugs  
 vim /usr/lib/python2.7/dist-packages/murano/api/v1/catalog.py  
 ``search def get_ui  
@@ -1024,8 +1037,36 @@ nova interface-attach --port-id #port_id #instance_id``
 destination=10.0.0.0/8,nexthop=10.1.3.1``  
 
 ## SaltStack  
-mighty one-liner  
+### mighty one-liner  
 ``sudo useradd saltadmin -m -s /bin/bash && sudo mkdir /home/saltadmin/.ssh/ && sudo echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDToAsqw/DBPTS9JcbrjpIJDwzYHGrCCHkgW5mWnbmwBQvyvdmQtQdB3zkKXHeFI2AanhTErmek7TYwWOw/sVbNyQ3NxSssEsbI8sjnT7uzSE3qI+lHAMFxggYZJeFCvMBh2GbsCITg0+jiuBmp46HutphkRzEA9qCfNrK4m4nh0yz7kVrZM4OMCpMWwZ+0HtqA6SBKPL4DyIwmGYRBUYxQXyJLQMlD/K9+bpZv+69kCDERlOPbTGWQaxAx9c+sOvC43AaddDvtp6/Cmezir8kd6avdRhlpSpYubGcWv4n0M689L3kfiD1CT4kQkuyO8wnryVbDsJKmdtfqx2esng1H saltadmin@skl-salt-master-101' > /home/saltadmin/.ssh/authorized_keys && sudo chown -R saltadmin:saltadmin /home/saltadmin/ && sudo apt update && sudo apt install python-minimal && echo 'saltadmin ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo``  
+
+### Changed hostnames on minion  
+``on salt-minion  
+1. update /etc/salt/minion_id   
+2. rm -rf /etc/salt/pki/minion/*
+3. systemctl restart salt-minion  
+on salt-master  
+1. salt-key -L  
+2. salt-key -a $id``  
+
+### Simple Salt master and Salt minion configs  
+Salt-master  
+``roots:  
+  base:  
+    - /home/saltadmin/SALT/salt  
+hash_type: sha256  
+pillar_roots:  
+  base:  
+    - /home/saltadmin/SALT/pillar  
+log_file: /var/log/salt/master  
+log_level: warning  
+log_level_logfile: trace  
+``  
+Salt-minion  
+``master: 10.1.35.9  
+hash_type: sha256  
+file_recv_max_size: 10000  
+``  
 
 ## Nexus 3  
 ### OrientDB reset admin  
