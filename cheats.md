@@ -211,10 +211,17 @@ vim /etc/fstab
     same thing with vm2  
 4. start keepalived, check connectivity  
 
+### Keepalived scripts not working  
+vrrp_script definition must be declared above vrrp_instance. It will not work in any other case.   
+
 ### Install simple VM via virsh  
 ``qemu-img create -f qcow2 /var/lib/libvirt/images/cloud-linux.img 15G   
 virt-install --connect qemu:///system --hvm --name cloud-linux --ram 1548 --vcpus 1 --cdrom path_to_iso --disk path=/var/lib/libvirt/images/cloud-linux.img,format=qcow2,bus=virtio,cache=none --network network=default,model=virtio --memballoon model=virtio --vnc --os-type=linux --accelerate --noapic --keymap=en-us --video=cirrus --force``  
 
+### Issue with virt-sparsify on late kernel 4.40 (kernel panic)  
+1. https://bugs.launchpad.net/ubuntu/+source/supermin/+bug/1743300/comments/11  
+2. Download kernel packages 4.10.0-20..42 in Dir  
+3. export variables like its done in 1743300 bug  
 
 ### Ceph Prevent Rebalancing  
 ``ceph osd set noout``  
@@ -447,6 +454,13 @@ Generate right self-signed certs
 echo  kibana-lol.it.com.cert >> kibana-lol.it.bundle  
 echo  kibana-lol.it.com.pem  >> kibana-lol.it.bundle``  
 
+### Certbot let-s encrypt manual DNS verification and renewing   
+``add-apt-repository ppa:certbot/certbot  
+  apt-get install python-certbot-nginx  
+  certbot certonly --manual -d DOMAIN1 -d DOMAIN2 -d DOMAIN3 --preferred-challenges dns``  
+  After that, text to guy that is responsible for dns challenges for certbot  
+
+
 ### Jenkins ssl (Docker)  
 ``docker exec -it -u root `docker ps | grep jenkins|awk '{print $1}'` bash  
 openssl pkcs12 -export -in .crt -inkey .key -out jenkins.p12  
@@ -660,6 +674,9 @@ In this case, use this workaround on nodes on discover phase:
 dd if=/dev/zero of=/dev/vdb bs=1M count=64  
 12. If you have more than one nodegroup you should check accordance between nodegroups and group_id of nodes or your deployment will like failed with non-understandable error in nailgun like '24' '22' 'gateway' and so.  
 
+### RabbitMQ HA  
+1. Queues should be durable and have ONLY 1 matching policy, like  
+``
 ## Elasticsearch and LMA  
 
 ## Influx  
@@ -1040,6 +1057,12 @@ destination=10.0.0.0/8,nexthop=10.1.3.1``
 ### mighty one-liner  
 ``sudo useradd saltadmin -m -s /bin/bash && sudo mkdir /home/saltadmin/.ssh/ && sudo echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDToAsqw/DBPTS9JcbrjpIJDwzYHGrCCHkgW5mWnbmwBQvyvdmQtQdB3zkKXHeFI2AanhTErmek7TYwWOw/sVbNyQ3NxSssEsbI8sjnT7uzSE3qI+lHAMFxggYZJeFCvMBh2GbsCITg0+jiuBmp46HutphkRzEA9qCfNrK4m4nh0yz7kVrZM4OMCpMWwZ+0HtqA6SBKPL4DyIwmGYRBUYxQXyJLQMlD/K9+bpZv+69kCDERlOPbTGWQaxAx9c+sOvC43AaddDvtp6/Cmezir8kd6avdRhlpSpYubGcWv4n0M689L3kfiD1CT4kQkuyO8wnryVbDsJKmdtfqx2esng1H saltadmin@skl-salt-master-101' > /home/saltadmin/.ssh/authorized_keys && sudo chown -R saltadmin:saltadmin /home/saltadmin/ && sudo apt update && sudo apt install python-minimal && echo 'saltadmin ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo``  
 
+### problems with multipline pillar and file.managed  
+`` USE IDENT  
+ file.managed:  
+    - name: /var/opt/mssql/secrets/passwd  
+    - contents: |  
+        {{ pillar['SA_passwd'] | indent(8) }}``  
 ### Changed hostnames on minion  
 ``on salt-minion  
 1. update /etc/salt/minion_id   
@@ -1051,7 +1074,7 @@ on salt-master
 
 ### Simple Salt master and Salt minion configs  
 Salt-master  
-``roots:  
+``file_roots:  
   base:  
     - /home/saltadmin/SALT/salt  
 hash_type: sha256  
