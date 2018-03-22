@@ -206,13 +206,13 @@ vim /etc/fstab
 ### Openstack keepalived vip in instances  
 1. create new neutron port  
 2. install keepalived, configure (Search by tag keepalived on this site)  
-3. ``neutron port-update  $VIP_portid --allowed-address-pairs type=dict list=true   ip_address=VIP,mac_address=mac1 ip_address=VIP,mac_address=mac2``    
-4. ``neutrom port-update $vm1_porti --allowed-address-pairs type=dict list=true   ip_address=$ip1,mac_address=vm1_mac ip_address=$vip,mac_address=vm1_mac``    
-    same thing with vm2  
-4. start keepalived, check connectivity  
+3. ``neutron port-update  $vm1_portid --allowed-address-pairs type=dict list=true   ip_address=VIP,mac_address=mac1 ip_address=vm_ip1,mac_address=mac_vm1``    
+4. ``neutrom port-update $vm2_portid --allowed-address-pairs type=dict list=true   ip_address=VIP,mac_address=mac_vm2 ip_address=vm_ip2,mac_address=mac_vm2``  
+5. Open ICMP rule in security group  
+6. start keepalived, check connectivity  
 
 ### Keepalived scripts not working  
-vrrp_script definition must be declared above vrrp_instance. It will not work in any other case.   
+vrrp_script definition must be declared ABOVE(!!!IMPORTANT!!!) vrrp_instance. It will not work in any other case.   
 
 ### Install simple VM via virsh  
 ``qemu-img create -f qcow2 /var/lib/libvirt/images/cloud-linux.img 15G   
@@ -374,12 +374,12 @@ ansible-playbook -i inventory/mycluster/hosts.ini cluster.yml``
 1. find astute.yaml, and values  influxdb_dbname, influxdb_username, influxdb_userpass and in vips section -  vips>influxdb>ipaddr
 2. access database
 ``influx -host IPADDR -username INFLUXDB_USERNAME -password INFLUXDB_USERPASS -database INFLUXDB_DBNAME  
-SHOW MEASUREMENTS  
 precision rfc3339  
+SHOW MEASUREMENTS
 SHOW DIAGNOSTICS  
 SELECT * FROM node_status GROUP BY * ORDER BY DESC LIMIT 1  
 SHOW FIELD KEYS FROM virt_memory_total``  
-3. If there is no metrics in influx you can try to restart  heka/hindsight:  
+3. If there is no metrics in influx you can try to restart  heka/hindsight on nodes with kafka:  
 ``ps aux | grep heka;  for i in $dddd; do kill -9 $i; done``  
 
 ### Influx cache maximum memory size exceeded #6109  
@@ -717,6 +717,12 @@ Select .... from ... as as;``
 ### check cluster status  
 ``curl localhost:9200/_cluster/health``  
 
+### Delete old indexes  
+vim /etc/elasticsearch/delete_indices.yaml  
+``      value: "^log|events|notification.*$"  
+        unit_count: 14``  
+curator /etc/elasticsearch/delete_indices.yaml  
+
 ### figure out which indices are in trouble  
 ``curl 'localhost:9200/\_cluster/health?level=indices&pretty'``  
 
@@ -746,6 +752,8 @@ pretty=true&size=10000``
 ``curl http://ES:9200/log-2016-11-15/_flush?force  
 then run  
 curl -XPOST 'http://ES:9200/_cluster/reroute'``  
+If it's not working you can try to delete this indices  
+``curl -XDELETE localhost:9200/log-2016-11-15``  
 
 ### checking logs  
 ``ls -l /var/cache/log_collector/output_queue/elasticsearch_output/  
@@ -759,6 +767,11 @@ this kind of messages (idle pack) are not critical as long as they are changing 
 vim /etc/log_collector/global.toml  
 ``increase poolsize to 200  
 crm resource restart p_clone-log_collector``  
+
+### Python query for health status in case of curl timeout  
+``from elasticsearch import Elasticsearch  
+es = Elasticsearch()  
+print(es.cluster.health(request_timeout=6000))``  
 
 ## Rally  
 ### One-node-deployment ib venv  
