@@ -40,9 +40,9 @@ formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)  
 logger.addHandler(hdlr)  
 
-logger.warning('Authorized Key for host {0} and user {1} was reloaded'.format(host, user[2]))  
+logger.warning('Authorized Key for host {0} and user {1} was   reloaded'.format(host, user[2]))``  
 ### uniq lines  
-os.system("awk '!x[$0]++' /var/log/ssh_audit.log.dup > /var/log/ssh_audit.log")  
+``os.system("awk '!x[$0]++' /var/log/ssh_audit.log.dup >   /var/log/ssh_audit.log")   
 ``
 ### Java workarounds (jre8)  
 1. start 'configure java' app
@@ -56,7 +56,7 @@ and remove this algorithm from all 'disable' lines
 `` echo 'string' | ssh ubuntu@10.1.3.3 "cat >> /target/file"``  
 
 ### Get only response code from server  
-curl -s -o /dev/null -I -w "%{http_code}"  http://ip:port  
+``curl -s -o /dev/null -I -w "%{http_code}"  http://ip:port``  
 
 ### Check internet speed in cli (via speedtest.com by ookla)  
 ``curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -``  
@@ -238,10 +238,10 @@ ceph pg dump | grep stuck``
 ``useradd sambashare   
 passwd sambashare  
 apt -y install samba samba-client  
-smbpasswd -a sambashare  
+smbpasswd -a sambashare``    
 
 cat /etc/samba/smb.conf  
-[global]  
+``[global]  
     workgroup = SAMBA  
     security = user  
     passdb backend = smbpasswd  
@@ -256,7 +256,7 @@ cat /etc/samba/smb.conf
    comment = For testing a Gluster volume exported through CIFS  
    path = /opt/annual-reports/  
    read only = no  
-   guest ok = yes
+   guest ok = yes  
 service samba restart``   
 
 
@@ -288,7 +288,7 @@ pcp_attach_node -h /var/run/postgresql -p 9898 0 (return node after reboot)``
 Some mcollective useful commands  
 ``mco rpc -v excurte_shell_command execute cmd="shotgun2 short-report" -I master``  
 
-##Cisco  
+## Cisco   
 ### Monitoring in console  
 ``term mon``  
 
@@ -314,8 +314,9 @@ _cdp vpc_
 TRUNK  
 7. configure if-range  
 8. spanning tree  
-9. assign if-range to portchannel  
-_Example_  
+9. assign if-range to portchannel   
+
+Example  
 ``eth1809-3: conf t  
 eth1809-3(config): interface port-channel 1  
 eth1809-3(config): negotiate auto  
@@ -388,9 +389,9 @@ _Sample from logs_
 
 Solution  
 vim tsdb/engine/tsm1/cache.go  
-``   @@ -306,6 +306,12 @@ func (c &ast;Cache) Delete(keys []string) {
-       }  
-   }  
+``@@ -306,6 +306,12 @@ func (c &ast;Cache) Delete(keys []string) {  
+       }   
+   }   
 
 +func (c &ast;Cache) SetMaxSize(size uint64) {  
 +    c.mu.Lock()  
@@ -530,10 +531,10 @@ link
 ``update-ca-certificates``  
 
 ### Fuel postdeploy ca add  
-``1. Add cert in UI  
-2. fuel node --node $i --tasks upload_configuration  
-3. fuel node --node $id --tasks $ssl_tasks $haproxy-service-tasks $keystone-service-tasks  
-4. Profit``  
+1. Add cert in UI  
+2. ``fuel node --node $i --tasks upload_configuration``    
+3. ``fuel node --node $id --tasks $ssl_tasks $haproxy-service-tasks $keystone-service-tasks``    
+4. Profit    
 
 ### why curl is working but clients are not  
 Python-requests looks into /etc/ssl/certs/ , but right after installation _certify_ looks into  
