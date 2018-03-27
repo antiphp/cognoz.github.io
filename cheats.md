@@ -594,6 +594,16 @@ solution
 solution  
 ``chmod 777 /var/run/docker.sock in jenkins container``  
 
+## HELM  
+### Installing heapster + grafana + prometheus on kubespray v2.4.0  
+``helm -n kube-system --name heapster install --set rbac.create=true stable/heapster   
+kubectl -n kube-system get po | grep dashboard ; kubectl delete po $name``    
+``helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/  
+helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring  
+helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring  
+helm install -n monitoring --name grafana --set auth.anonymous.enabled=false --set adminUser=admin --set adminPassword=admin --set ingress.enabled=true --set ingress.fqdn=grafana.dev.domain.com  coreos/grafana``  
+Go after that in grafana, and change corresponding prometheus datasource   (should be http://kube-prometheus-prometheus:9090)  
+
 ## Rancher  
 ### bugs  
 1. if you are experiencing some net-shit (like no bridge-net failures, empty json response and so)
