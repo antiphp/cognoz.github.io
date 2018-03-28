@@ -364,7 +364,11 @@ CONFIG_FILE=inventory/mycluster/hosts.ini python3   contrib/inventory_builder/in
 cat inventory/mycluster/group_vars/all.yml  
 cat inventory/mycluster/group_vars/k8s-cluster.yml   
     docker_dns_servers_strict: false  
+cat roles/kubernetes/node/defaults/main.yml  
+    kube_cadvisor_port: 4194  
+    kubelet_bind_address: 0.0.0.0  
 ansible-playbook -i inventory/mycluster/hosts.ini cluster.yml``   
+If you want to change stuff in kubelets after deploying, go to /etc/kubernetes/kubelet.env and restart kubelet service  
 
 
 
@@ -603,6 +607,10 @@ helm install coreos/prometheus-operator --name prometheus-operator --namespace m
 helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring  
 helm install -n monitoring --name grafana --set auth.anonymous.enabled=false --set adminUser=admin --set adminPassword=admin --set ingress.enabled=true --set ingress.fqdn=grafana.dev.domain.com  coreos/grafana``  
 Go after that in grafana, and change corresponding prometheus datasource   (should be http://kube-prometheus-prometheus:9090)  
+Also you need to disable tls in kube-prometheus-exporter-kubelets (if you are experiencing prometheus 401 errors in kubelets), so just go and edit  
+``kubectl -n monitoring edit servicemonitor kube-prometheus-exporter-kubelets``  
+and if you are usint kubelets-exporter  
+``kubectl -n monitoring edit servicemonitor exporter-kubelets``  
 
 ## Rancher  
 ### bugs  
