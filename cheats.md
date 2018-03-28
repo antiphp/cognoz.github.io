@@ -974,12 +974,17 @@ vim /usr/lib/python2.7/dist-packages/murano/api/v1/catalog.py
 ``search def get_ui  
 insert line tempf.flush()``  
 
-## Mysql create base  
+## Mysql  
+### create base for grafana  
 Grafana  
 ``create database grafana;  
 create user 'grafana'@'%' identified by 'grafana';  
 grant all privileges on grafana.&ast; to 'grafana'@'%';  
 quit;``  
+
+## Postgres  
+### Update value in json field via jsonb  
+``UPDATE report SET content = jsonb_set(content::JSONB, '{"1.1."}','"new_value"') where member_id='1';``  
  
 ## Puppet notes  
 ### Default parameter values   
