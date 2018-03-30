@@ -346,31 +346,6 @@ cz-eth1809-3(config-sys-qos)#   service-policy type network-qos jumbo``
 5. vswitch edit  
 6. Disable all security checkbox  
 
-### Kubespray via ansible on 7 Ubuntu vms  
-on all nodes:  
-``apt install python-minimal
-echo '127.0.0.1 hostname' >> /etc/hosts``  
-on master:  
-``apt-get update  
-apt-get install software-properties-common  
-apt-add-repository ppa:ansible/ansible  
-apt-get update  
-apt-get install ansible  
-apt install  python-netaddr  
-git clone https://github.com/kubernetes-incubator/kubespray.git  
-cp -rfp inventory/sample inventory/mycluster  
-declare -a IPS=(10.10.1.3 10.10.1.4 10.10.1.5)  
-CONFIG_FILE=inventory/mycluster/hosts.ini python3   contrib/inventory_builder/inventory.py ${IPS[@]}  
-cat inventory/mycluster/group_vars/all.yml  
-cat inventory/mycluster/group_vars/k8s-cluster.yml   
-    docker_dns_servers_strict: false  
-cat roles/kubernetes/node/defaults/main.yml  
-    kube_cadvisor_port: 4194  
-    kubelet_bind_address: 0.0.0.0  
-ansible-playbook -i inventory/mycluster/hosts.ini cluster.yml``   
-If you want to change stuff in kubelets after deploying, go to /etc/kubernetes/kubelet.env and restart kubelet service  
-
-
 
 ### Disconnected /deactivated datastore  
 #### Check your license first  
@@ -610,7 +585,7 @@ Go after that in grafana, and change corresponding prometheus datasource   (shou
 Also you need to disable tls in kube-prometheus-exporter-kubelets (if you are experiencing prometheus 401 errors in kubelets), so just go and edit  
 ``kubectl -n monitoring edit servicemonitor kube-prometheus-exporter-kubelets``  
 and if you are usint kubelets-exporter  
-``kubectl -n monitoring edit servicemonitor exporter-kubelets``  
+``kubectl -n monitoring edit servicemonitor exporter-kubelets``
 
 ## Rancher  
 ### bugs  
