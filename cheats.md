@@ -10,6 +10,8 @@ permalink: /cheats/
 ### To avoid interface name changes via udev (pass options to kernel):  
 ``net.ifnames=1 biosdevname=1``  
 
+### How prevent kernel to detect soft RAID  
+``nomdmonddf nomdmonisw``  
 ### SSH passpharse using in script  
 cat helper.sh  
 ``exec cat``  
@@ -113,10 +115,18 @@ vim   /etc/sysconfig/network-scripts/ifcfg-NIC
 
 ### Check crm disk status  (full disk)  
 ``crm node status-attr  show "#health_disk"      
-delete flag``    
+delete flag  
+crm node status-attr skl-os-ctrl01.skolkovo.local delete "#health_disk"``      
 
 ### Recursive sed replacement in files  
 ``find . -type f -exec sed -i 's/foo/bar/g' {} +``  
+
+### Recursive cut/execute  
+``find $i -type f -name *.log -exec cp /dev/null {} \;``  
+or create script and execute it  
+``find $i -type f -name *.log -exec script;``  
+or use arguments  
+``find ./ -type f -exec grep -iHf ~/patterns.txt  {} + > ~/<log_destination>/username.txt``    
 
 ### Recursive Disk Usage  
 ``du -h --max-depth=1 /var/log | sort -hr``  
@@ -270,11 +280,15 @@ _Solution by Wol_[Beware if spacing in windows 7 hosts file](http://geekswithblo
 6. ipconfig /flushdns --possibly unnecessary, but I did it this way and it worked  
 7. attrib +R hosts --make hosts file Read Only, which adds as much security as you think it does  
 
-## Postgresql Pgpool  
+## Postgresql Pgpool Patroni  
 Check recovery nodes  
 ``sudo -u postgres psql -h 172.21.3.41 -p 5432 -x -c "show pool_nodes;"  
 sudo -u postgres psql -h 172.21.3.229 -p 5432 -x -c "select pg_is_in_recovery();"``  
 
+
+Change postgres parametrs cia etcd in patroni:  
+``etcdctl ls --recursive -p | grep -v '/$' | xargs -n 1 -I% sh -c 'echo -n %:; etcdctl get %;'
+etcdctl set /service/psql_cluster/config '{"ttl":30,"maximum_lag_on_failover":1048576,"retry_timeout":10,"postgresql":{"use_pg_rewind":true,"parameters":{"max_connections": 1500}},"loop_wait":10}'``  
 ### Testing LB  
 ``sudo -u postgres pgbench -i  
 sudo -u postgres pgbench -p 5432 -h pgpool_vip -c 10 -S -T 10 postgres  
@@ -302,6 +316,16 @@ _on switch_
 ``Grep: | include ....``    
 _Check config_  
 ``show run conf | inc``  
+
+### qemu  
+Inspect qcow2 image  
+``qemu-img convert name.qcow2 name.raw  
+parted name.raw  
+unit B  
+print  | determine offset  
+mount -o loop,offset=1048576 cfg01-day01-2018.4.0.raw /opt/mount/  
+``  
+
 
 ## Cisco LACP  
 _cdp vpc_  
@@ -833,11 +857,13 @@ nested_level: 5``
 
 ### ceph log per osd  
 ``ceph daemon osd.0 log dump``  
-ceph log per osd grep slowest recent ops
+ceph log per osd grep slowest recent ops  
 ``ceph daemon osd.0 dump_historic_ops``  
 utlilization of ceph  
 ``ceph osd reweight-by-utilization 115``  
-normal utilization is 120% average_util*120 = % drive full osd
+normal utilization is 120% average_util*120 = % drive full osd  
+reweight ceph  
+``ceph osd crush reweight osd.13 0.8``  
 
 ### Ceph fio instance testing  
  ``fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --name=test --filename=test --bs=4k --iodepth=64 --runtime=120 --readwrite=randrw --rwmixread=75 --size=15G``  
@@ -1093,6 +1119,9 @@ nova interface-attach --port-id #port_id #instance_id``
 destination=10.0.0.0/8,nexthop=10.1.3.1``  
 
 ## SaltStack  
+###  Grains  
+list grains  
+``salt \* grains.ls (or salt-call grains.ls local)``  
 ### mighty one-liner  
 ``sudo useradd saltadmin -m -s /bin/bash && sudo mkdir /home/saltadmin/.ssh/ && sudo echo 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDToAsqw/DBPTS9JcbrjpIJDwzYHGrCCHkgW5mWnbmwBQvyvdmQtQdB3zkKXHeFI2AanhTErmek7TYwWOw/sVbNyQ3NxSssEsbI8sjnT7uzSE3qI+lHAMFxggYZJeFCvMBh2GbsCITg0+jiuBmp46HutphkRzEA9qCfNrK4m4nh0yz7kVrZM4OMCpMWwZ+0HtqA6SBKPL4DyIwmGYRBUYxQXyJLQMlD/K9+bpZv+69kCDERlOPbTGWQaxAx9c+sOvC43AaddDvtp6/Cmezir8kd6avdRhlpSpYubGcWv4n0M689L3kfiD1CT4kQkuyO8wnryVbDsJKmdtfqx2esng1H saltadmin@skl-salt-master-101' > /home/saltadmin/.ssh/authorized_keys && sudo chown -R saltadmin:saltadmin /home/saltadmin/ && sudo apt update && sudo apt install python-minimal && echo 'saltadmin ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo``  
 
@@ -1141,7 +1170,8 @@ delete from realm``
 If there still no configuration tab - it's maybe not your fault, try another browser and cacheclaening
 http://uat-registry.sk.ru:8081/repository/alfa/
 ## KUBERNETES  
-
+### Force delete stale pods  
+``kubectl delete po POD_NAME  --grace-period=0 --force``  
 ### Grafana Auth  
 ``kubectl get deploy -n kube-system  
 kubectl edit deploy monitoring-grafana``  

@@ -1,0 +1,69 @@
+image:
+  repository: gcr.io/google-containers/fluentd-elasticsearch
+  tag: v2.0.4
+  pullPolicy: IfNotPresent
+output:
+  host: 10.220.101.86
+  port: 9200
+  buffer_chunk_limit: 2M
+  buffer_queue_limit: 8
+service:
+  type: ClusterIP
+  externalPort: 80
+  ports:
+    - name: "fluentd"
+      protocol: TCP
+      containerPort: 24224
+ingress:
+  enabled: false
+  annotations:
+  tls:
+configMaps:
+  general.conf: |
+    <match fluentd.**>
+      @type null
+    </match>
+    <source>
+      @type http
+      port 9880
+      bind 0.0.0.0
+    </source>
+    <source>
+      @type monitor_agent
+      bind 0.0.0.0
+      port 24220
+      tag fluentd.monitor.metrics
+    </source>
+  system.conf: |-
+    <system>
+      root_dir /tmp/fluentd-buffers/
+    </system>
+  forward-input.conf: |
+    <source>
+      @type forward
+      port 24224
+      bind 0.0.0.0
+    </source>
+  output.conf: |
+    <match **>
+      @id elasticsearch
+      @type elasticsearch
+      @log_level info
+      include_tag_key true
+      logstash_format false
+      <buffer>
+        @type file
+        path /var/log/fluentd-buffers/kubernetes.system.buffer
+        flush_mode interval
+        retry_type exponential_backoff
+        flush_thread_count 2
+        flush_interval 5s
+        retry_forever
+        retry_max_interval 30
+        overflow_action block
+      </buffer>
+    </match>
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

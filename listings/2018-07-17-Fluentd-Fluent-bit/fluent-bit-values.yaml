@@ -1,0 +1,60 @@
+on_minikube: false
+image:
+  fluent_bit:
+    repository: fluent/fluent-bit
+    tag: 0.13.0
+  pullPolicy: Always
+metrics:
+  enabled: false
+  service:
+    port: 2020
+    type: ClusterIP
+trackOffsets: false
+backend:
+  type: forward
+  forward:
+    host: fluentd
+    port: 24224
+  es:
+    host: 10.220.101.86
+    port: 9200
+    index: kubernetes
+    type: flb_type
+    logstash_prefix: kubernetes
+    http_user: anonymous_user
+    http_passwd:
+    tls: "off"
+    tls_verify: "on"
+    tls_ca: ""
+    tls_debug: 1
+parsers:
+  regex: []
+  json: []
+  http:
+    host: 127.0.0.1
+    port: 80
+    uri: "/"
+    format: msgpack
+env: []
+podAnnotations: {}
+existingConfigMap: ""
+extraVolumes: []
+extraVolumeMounts: []
+resources:
+  limits:
+    memory: 100Mi
+  requests:
+    cpu: 100m
+    memory: 100Mi
+tolerations: []
+nodeSelector: {}
+filter:
+  kubeURL: https://kubernetes.default.svc:443
+  kubeCAFile: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+  kubeTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+  kubeTag: kube
+rbac:
+  create: true
+serviceAccount:
+  create: true
+  name:
