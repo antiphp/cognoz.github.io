@@ -1,15 +1,7 @@
-### General tips
-#### OpenShift Ansible origin/release-3.9
+### General tips  
+#### OpenShift Ansible origin/release-3.9  
 
-
-##deploy  
-
-Openshift
-git clone https://github.com/openshift/openshift-ansible.git  
-git checkout origin/release-3.9  
-
-
-####ON ALL HOSTS  
+### ON ALL HOSTS  
 vim /etc/ssh/sshd_config - (permitRootLogin prohibit-password, PasswordAuthentication no;)  
 vim /root/.ssh/authorized_keys - paste your key  
 service sshd restart  
@@ -29,35 +21,15 @@ for i in 1 2 3 4 5 7; do ssh -x os$i.exampler.com 'yum -y install wget git net-t
 vim docker  
 ``# /etc/sysconfig/docker  
 
-# Modify these options if you want to change the way the docker daemon runs  
 OPTIONS='--selinux-enabled --log-driver=journald --signature-verification=false --insecure-registry 172.30.0.0/16'  
 if [ -z "${DOCKER_CERT_PATH}" ]; then  
     DOCKER_CERT_PATH=/etc/docker  
-fi  
+fi``  
 
-# Do not add registries in this file anymore. Use /etc/containers/registries.conf  
-# from the atomic-registries package.  
-#  
-
-# Location used for temporary files, such as those created by  
-# docker load and build operations. Default is /var/lib/docker/tmp  
-# Can be overriden by setting the following environment variable.  
-# DOCKER_TMPDIR=/var/tmp  
-
-# Controls the /etc/cron.daily/docker-logrotate cron job status.  
-# To disable, uncomment the line below.  
-# LOGROTATE=false  
-
-# docker-latest daemon can be used by starting the docker-latest unitfile.  
-# To use docker-latest client, uncomment below lines  
-#DOCKERBINARY=/usr/bin/docker-latest  
-#DOCKERDBINARY=/usr/bin/dockerd-latest  
-#DOCKER_CONTAINERD_BINARY=/usr/bin/docker-containerd-latest  
-#DOCKER_CONTAINERD_SHIM_BINARY=/usr/bin/docker-containerd-shim-latest``  
 for i in 1 2 3 4 5 7; do scp docker os$i.exampler.com:/etc/sysconfig/docker; systemctl restart docker; done  
 for i in 1 2 3 4 5 7; do ssh -x os$i.exampler.com ‘systemctl restart docker’; done  
 
-##Deploy Node  
+## Deploy Node  
 
 yum -y install ansible pyOpenSSL python-lxml java-1.8.0-openjdk-headless httpd-tools patch python2-passlib     
 git clone https://github.com/openshift/openshift-ansible.git  
@@ -92,28 +64,29 @@ grafadmin:$apr1$gGoz5HDo$k7ft2vFTNXhWykxtdjead/
 test@com:$apr1$ehx/M4nF$0wd3uK7VFzLWc2pU1Segsd/  
 cognoz:$apr1$d986J3RM$kCQfaztYcKOzBI2aPssdB.Ef.``  
 
-for i in 1.1.1.39 1.1.1.69 1.1.1.74 1.1.1.83 1.1.1.37 1.1.1.56; do ssh -x $i 'yum -y install NetworkManager; systemctl enable NetworkManager; systemctl start NetworkManager'; done  
+``for i in 1.1.1.39 1.1.1.69 1.1.1.74 1.1.1.83 1.1.1.37 1.1.1.56; do ssh -x $i 'yum -y install NetworkManager; systemctl enable NetworkManager; systemctl start NetworkManager'; done``  
 
-SELINUX  
+_SELINUX_  
 ON ALL NODES   
 vim /etc/default/grub    
-GRUB_CMDLINE_LINUX="consoleblank=0 fsck.repair=yes crashkernel=auto selinux=1 enforcing=1 rhgb quiet"  
+``GRUB_CMDLINE_LINUX="consoleblank=0 fsck.repair=yes crashkernel=auto selinux=1 enforcing=1 rhgb quiet"  
 grub2-mkconfig -o /boot/grub2/grub.cfg  
 touch /.autorelabel  
 OPTIONALLY -  
      useradd -m -s /bin/bash centos  
      cp -r /root/.ssh /home/centos/  
-     chown -R centos:centos /home/centos  
+     chown -R centos:centos /home/centos``    
 reboot  
 
-##DEPLOY START  
-DEPLOY Node  
-ansible-playbook -i hosts playbooks/prerequisites.yml  
-ansible-playbook -i hosts playbooks/deploy_cluster.yml  
+## DEPLOY START  
+_DEPLOY Node_  
+``ansible-playbook -i hosts playbooks/prerequisites.yml  
+ansible-playbook -i hosts playbooks/deploy_cluster.yml``    
+
 
 ON MASTER  
-
-oc login -u system:admin  
+``oc login -u system:admin  
+oc get nodes``    
 
 vim /etc/docker/daemon.json  
-{ “insecure-registries”: [“172.30.0.0/16”] }  
+``{ “insecure-registries”: [“172.30.0.0/16”] }``    
