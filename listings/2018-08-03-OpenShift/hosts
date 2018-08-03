@@ -1,0 +1,74 @@
+[OSEv3:children]
+masters
+nodes
+etcd
+nfs
+
+# Set variables common for all OSEv3 hosts
+[OSEv3:vars]
+ansible_ssh_user=root
+
+ansible_become=true
+openshift_release=v3.9.0
+
+openshift_deployment_type=origin
+openshift_master_default_subdomain=apps.exampler.com
+
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+openshift_master_htpasswd_file=/etc/origin/master/htpasswd
+openshift_disable_check=memory_availability,disk_availability,docker_storage,docker_storage_driver
+
+openshift_hosted_registry_storage_kind=nfs
+openshift_enable_unsupported_configurations=True
+openshift_hosted_registry_storage_access_modes=['ReadWriteMany']
+#openshift_hosted_registry_storage_host=nfs.ovh
+openshift_hosted_registry_storage_nfs_options='*(rw,root_squash)'
+openshift_hosted_registry_storage_nfs_directory=/var/nfs/registry
+openshift_hosted_registry_storage_volume_name=registry-volume
+openshift_hosted_registry_storage_volume_size=110Gi
+
+openshift_hosted_metrics_deploy=true
+#
+openshift_hosted_metrics_public_url=hawkular.exampler.com
+#
+openshift_hosted_metrics_storage_kind=nfs
+openshift_hosted_metrics_storage_nfs_options='*(rw,root_squash)'
+openshift_hosted_metrics_storage_access_modes=['ReadWriteOnce']
+#openshift_hosted_metrics_storage_host=nfs.ovh
+openshift_hosted_metrics_storage_nfs_directory=/var/nfs/metrics
+openshift_hosted_metrics_storage_volume_name=metrics
+openshift_hosted_metrics_storage_volume_size=20Gi
+
+openshift_hosted_logging_deploy=true
+openshift_hosted_logging_storage_kind=nfs
+openshift_hosted_logging_storage_access_modes=['ReadWriteOnce']
+#openshift_hosted_logging_storage_host=nfs.ovh
+openshift_hosted_logging_storage_nfs_options='*(rw,root_squash)'
+openshift_hosted_logging_storage_nfs_directory=/var/nfs/logs
+openshift_hosted_logging_storage_volume_name=logging
+openshift_hosted_logging_storage_volume_size=10Gi
+
+osm_default_node_selector='env=apps'
+os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
+
+openshift_hosted_prometheus_deploy=true
+openshift_prometheus_namespace=openshift-metrics
+openshift_prometheus_node_selector={"region":"infra"}
+
+[masters]
+master01.exampler.com openshift_public_hostname=master01.exampler.com openshift_hostname=master01.exampler.com
+
+[etcd]
+master01.exampler.com
+
+[nodes]
+master01.exampler.com openshift_public_hostname=master01.exampler.com openshift_hostname=master01.exampler.com
+
+node01.exampler.com openshift_node_labels="{'region': 'infra', 'zone': 'default', 'env': 'apps'}" openshift_public_hostname=node01.exampler.com openshift_hostname=node01.exampler.com
+node02.exampler.com openshift_node_labels="{'region': 'infra', 'zone': 'default', 'env': 'apps'}" openshift_public_hostname=node02.exampler.com openshift_hostname=node02.exampler.com
+node03.exampler.com openshift_node_labels="{'zone': 'default', 'env': 'apps'}" openshift_public_hostname=node03.exampler.com openshift_hostname=node03.exampler.com
+node04.exampler.com openshift_node_labels="{'zone': 'default', 'env': 'apps'}" openshift_public_hostname=node04.exampler.com openshift_hostname=node04.exampler.com
+
+
+[nfs]
+os7.exampler.com

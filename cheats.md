@@ -10,6 +10,13 @@ permalink: /cheats/
 ### To avoid interface name changes via udev (pass options to kernel):  
 ``net.ifnames=1 biosdevname=1``  
 
+### Check open ports without netstat and sudo  
+``ss -4tpla`` or ``ss -a``  
+
+### Kubernetes get pod ips by selectors  
+``kubectl get pods --selector=app=service_test_pod -o jsonpath='{.items[*].status.podIP}'
+10.0.1.2 10.0.2.2``   
+
 ### How prevent kernel to detect soft RAID  
 ``nomdmonddf nomdmonisw``  
 ### SSH passpharse using in script  
@@ -603,8 +610,8 @@ solution
 kubectl -n kube-system get po | grep dashboard ; kubectl delete po $name``    
 ``helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/  
 helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring  
-helm install coreos/kube-prometheus --name kube-prometheus --namespace monitoring  
-helm install -n monitoring --name grafana --set auth.anonymous.enabled=false --set adminUser=admin --set adminPassword=admin --set ingress.enabled=true --set ingress.fqdn=grafana.dev.domain.com  coreos/grafana``  
+helm install coreos/kube-prometheus --set global.rbacEnabled=true --name kube-prometheus --namespace monitoring  
+helm install -n monitoring --name grafana --set auth.anonymous.enabled=false --set adminUser=admin --set adminPassword=admin --set ingress.enabled=true --set ingress.hosts[0]=grafana.dev.sk.ru  coreos/grafana``  
 Go after that in grafana, and change corresponding prometheus datasource   (should be http://kube-prometheus-prometheus:9090)  
 Also you need to disable tls in kube-prometheus-exporter-kubelets (if you are experiencing prometheus 401 errors in kubelets), so just go and edit  
 ``kubectl -n monitoring edit servicemonitor kube-prometheus-exporter-kubelets``  
