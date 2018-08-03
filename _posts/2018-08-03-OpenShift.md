@@ -1,4 +1,9 @@
-### General tips  
+---
+layout: post  
+title: OpenShift Ansible    
+tags: openshift linux ansible
+---
+
 #### OpenShift Ansible origin/release-3.9  
 
 ### ON ALL HOSTS  
