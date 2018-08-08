@@ -1,3 +1,4 @@
+[root@os7 ~]# cat xa
 [OSEv3:children]
 masters
 nodes
@@ -6,16 +7,18 @@ nfs
 
 # Set variables common for all OSEv3 hosts
 [OSEv3:vars]
-ansible_ssh_user=root
+ansible_user=root
 
 ansible_become=true
-openshift_release=v3.9.0
+openshift_release="3.9"
+openshift_metrics_image_version=v3.9
+openshift_metrics_project=openshift-metrics
 
 openshift_deployment_type=origin
 openshift_master_default_subdomain=apps.exampler.com
 
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
-openshift_master_htpasswd_file=/etc/origin/master/htpasswd
+#openshift_master_htpasswd_file=/etc/origin/master/htpasswd
 openshift_disable_check=memory_availability,disk_availability,docker_storage,docker_storage_driver
 
 openshift_hosted_registry_storage_kind=nfs

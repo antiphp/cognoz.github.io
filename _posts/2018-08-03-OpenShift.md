@@ -95,3 +95,120 @@ oc get nodes``
 
 vim /etc/docker/daemon.json  
 ``{ “insecure-registries”: [“172.30.0.0/16”] }``    
+
+# Trics  
+
+### Change pvc without losing any data  
+``John Sanda 2018-06-05 10:46:12 EDT  
+The big challenge with moving components to a new namespace is avoiding   data loss. Yesterday I asked on the aos-storage list how I can migrate data from a PV. Here are the detail steps with which I was   provided:  
+
+1. Find your PV.  
+2. Check PV.Spec.PersistentVolumeReclaimPolicy. If it Delete or Recycle,  
+change it to Retain (`oc edit pv <xyz>` or `oc patch`)  
+
+Whatever happens now, the worst thing that can happen to your PV is that  
+it can get to Released phase. Data won't be deleted.  
+
+Rebind:  
+3. Create a new PVC in the new namespace. The new PVC should be the same  
+as the old PVC - storage classes, labels, selectors, ... Explicitly,  
+PVC.Spec.VolumeName *must* be set to PV.Name. This effectively turns   off  
+dynamic provisioning for this PVC. The new PVC will be Pending. That's  
+OK, the old PVC is still the one that's bound to the PV.  
+
+4. Here comes the tricky part: change PV.Spec.ClaimRef exactly in this way:  
+  PV.Spec.ClaimRef.Namespace = <new PVC namespace>  
+  PV.Spec.ClaimRef.Name = <new PVC name>  
+  PV.Spec.ClaimRef.UID = <new PVC UID>  
+
+The old PVC should get "Lost" in couple of seconds (and you can safely  
+delete it). New PVC should be "Bound". PV should be "Bound" to the new   PVC.  
+
+5. Restore original PV.Spec.PersistentVolumeReclaimPolicy, if needed.  
+
+Note that this just rebinds the PV. It does not stop pods in the old  
+namespace that use the PV and start them in the new one. Something else  
+must do that. You should delete the deployment first and re-create it in  
+the new namespace when the new PVC is bound.``   
+
+# BUGS  
+### Incorrect image tag in metric rc (v3.9.0 not v.3.9)  
+https://github.com/openshift/origin/issues/19440  
+how to fix -
+add to hosts this line  
+``openshift_metrics_image_version=v3.9``  
+
+### Problems with cassandra(hawkular metrics) create data dir -
+Do NOT create exports in /etc/exports on nfs share manually - openshift  
+will create them automatically in /etc/exports.d/openshift-ansible.exports  
+If you have already created one - do following  on nfs share
+``cat /dev/null > /etc/exports  
+systemctl restart nfs-server``  
+and this on the master node  
+``oc login -u system:admin  
+oc -n openshift-infra(or openshift-metrics)  delete po $hawkular-cassandra, $heapseter_pod $hawkular-metrics``  
+
+### Problems with registry certificate   
+see https://bugzilla.redhat.com/show_bug.cgi?id=1553838  
+If you cant get working test app (oc new-app centos/ruby-22-centos7~https://github.com/openshift/ruby-ex.git)  
+Because of this problem, you should do this on ALL (nodes / masters) nodes  
+``ls -la /etc/docker/certs.d/docker-registry.default.svc\:5000/node-client-ca.crt  
+rm -rf /etc/docker/certs.d/docker-registry.default.svc\:5000/node-client-ca.crt  
+ln -s /etc/origin/node/ca.crt /etc/docker/certs.d/docker-registry.default.svc\:5000/node-client-ca.crt``  
+and restart application  
+
+
+### Problems with registry push (500) on nfs  
+If you have this error  
+``e="2018-08-08T11:26:19.218110887Z" level=error msg="response completed with error" err.code=unknown err.detail="filesystem: mkdir /registry: file exists" err.message="unknown error" go.version=go1.9.2
+``  
+Then you should verify your nfs share  
+example:  
+cat /etc/exports.d/openshift-ansible.exports  
+``"/var/nfs/registry" *(rw,root_squash)  
+"/var/nfs/metrics/metrics" *(rw,root_squash)  
+"/exports/logging-es" *(rw,root_squash)  
+"/exports/logging-es-ops" *(rw,root_squash)  
+"/exports/etcd" *(rw,root_squash)  
+"/exports/prometheus" *(rw,root_squash)  
+"/exports/prometheus-alertmanager" *(rw,root_squash)  
+"/exports/prometheus-alertbuffer" *(rw,root_squash)  
+``  
+DO NOT create anything in this dir manually!!!!  
+If you have done this than you need to delete anything in this registry  
+dir , restart nfs-server, recreate default pvc/pv for docker registry, recreate docker pods and recreate your app  
+cat pv.yaml  
+``apiVersion: v1  
+kind: PersistentVolume  
+metadata:  
+  annotations:  
+    pv.kubernetes.io/bound-by-controller: "yes"  
+  name: registry-volume-volume  
+spec:  
+  accessModes:  
+  - ReadWriteMany  
+  capacity:  
+    storage: 110Gi  
+  nfs:  
+    path: /var/nfs/registry  
+    server: nfs-server-hostname  
+  persistentVolumeReclaimPolicy: Retain  
+``
+cat pvc.yaml  
+``apiVersion: v1  
+kind: PersistentVolumeClaim  
+metadata:  
+  annotations:  
+    pv.kubernetes.io/bind-completed: "yes"  
+    pv.kubernetes.io/bound-by-controller: "yes"  
+  name: registry-volume-claim  
+  namespace: default  
+spec:  
+  accessModes:  
+  - ReadWriteMany  
+  resources:  
+    requests:  
+      storage: 110Gi  
+  storageClassName: ""  
+  volumeName: registry-volume-volume  
+``
