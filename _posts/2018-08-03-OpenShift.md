@@ -89,6 +89,7 @@ vim /etc/docker/daemon.json
 # Trics  
 
 ### Change pvc without losing any data  
+I foound it here https://bugzilla.redhat.com/show_bug.cgi?id=1570583  
 ``John Sanda 2018-06-05 10:46:12 EDT  
 The big challenge with moving components to a new namespace is avoiding   data loss. Yesterday I asked on the aos-storage list how I can migrate data from a PV. Here are the detail steps with which I was   provided:  
 
@@ -150,8 +151,7 @@ and restart application
 
 ### Problems with registry push (500) on nfs  
 If you have this error  
-``e="2018-08-08T11:26:19.218110887Z" level=error msg="response completed with error" err.code=unknown err.detail="filesystem: mkdir /registry: file exists" err.message="unknown error" go.version=go1.9.2
-``  
+``e="2018-08-08T11:26:19.218110887Z" level=error msg="response completed with error" err.code=unknown err.detail="filesystem: mkdir /registry: file exists" err.message="unknown error" go.version=go1.9.2``  
 Then you should verify your nfs share  
 example:  
 cat /etc/exports.d/openshift-ansible.exports  
@@ -162,8 +162,7 @@ cat /etc/exports.d/openshift-ansible.exports
 "/exports/etcd" *(rw,root_squash)  
 "/exports/prometheus" *(rw,root_squash)  
 "/exports/prometheus-alertmanager" *(rw,root_squash)  
-"/exports/prometheus-alertbuffer" *(rw,root_squash)  
-``  
+"/exports/prometheus-alertbuffer" *(rw,root_squash)``  
 DO NOT create anything in this dir manually!!!!  
 If you have done this than you need to delete anything in this registry  
 dir , restart nfs-server, recreate default pvc/pv for docker registry, recreate docker pods and recreate your app  
@@ -182,8 +181,7 @@ spec:
   nfs:  
     path: /var/nfs/registry  
     server: nfs-server-hostname  
-  persistentVolumeReclaimPolicy: Retain  
-``
+  persistentVolumeReclaimPolicy: Retain``  
 cat pvc.yaml  
 ``apiVersion: v1  
 kind: PersistentVolumeClaim  
@@ -200,5 +198,4 @@ spec:
     requests:  
       storage: 110Gi  
   storageClassName: ""  
-  volumeName: registry-volume-volume  
-``
+  volumeName: registry-volume-volume``  
