@@ -162,11 +162,13 @@ cat /etc/exports.d/openshift-ansible.exports
 "/exports/etcd" *(rw,root_squash)  
 "/exports/prometheus" *(rw,root_squash)  
 "/exports/prometheus-alertmanager" *(rw,root_squash)  
-"/exports/prometheus-alertbuffer" *(rw,root_squash)``  
+"/exports/prometheus-alertbuffer" *(rw,root_squash)``
+
 DO NOT create anything in this dir manually!!!!  
 If you have done this than you need to delete anything in this registry  
 dir , restart nfs-server, recreate default pvc/pv for docker registry, recreate docker pods and recreate your app  
 cat pv.yaml  
+
 ``apiVersion: v1  
 kind: PersistentVolume  
 metadata:  
