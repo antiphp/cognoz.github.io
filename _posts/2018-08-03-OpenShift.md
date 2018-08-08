@@ -23,23 +23,21 @@ vim /etc/hosts - paste all hostnames, etc
 
 ``for i in 1 2 3 4 5 7; do ssh -x os$i.exampler.com 'yum -y install wget git net-tools bind-utils iptables-services bridge-utils bash-completion epel-release docker PyYAML python-ipaddress; yum -y update'; done``    
 
-vim docker  
-``/etc/sysconfig/docker  
-
-OPTIONS='--selinux-enabled --log-driver=journald --signature-verification=false --insecure-registry 172.30.0.0/16'  
+vim docker (sample file, we will copy it to /etc/sysconfig)  
+``OPTIONS='--selinux-enabled --log-driver=journald --signature-verification=false --insecure-registry 172.30.0.0/16'  
 if [ -z "${DOCKER_CERT_PATH}" ]; then  
     DOCKER_CERT_PATH=/etc/docker  
-fi``  
-
+fi``    
+Copy file on all nodes:  
 ``for i in 1 2 3 4 5 7; do scp docker os$i.exampler.com:/etc/sysconfig/docker; systemctl restart docker; done  
 for i in 1 2 3 4 5 7; do ssh -x os$i.exampler.com 'systemctl restart docker'; done``    
 
-## Deploy Node  
+## On Deploy Node  
 
-yum -y install ansible pyOpenSSL python-lxml java-1.8.0-openjdk-headless httpd-tools patch python2-passlib     
+``yum -y install ansible pyOpenSSL python-lxml java-1.8.0-openjdk-headless httpd-tools patch python2-passlib     
 git clone https://github.com/openshift/openshift-ansible.git  
 cd openshift-ansible   
-git checkout remotes/origin/release-3.9  
+git checkout remotes/origin/release-3.9``    
 
 vim [hosts]({{"/listings/2018-08-03-OpenShift/hosts"}})  
 
