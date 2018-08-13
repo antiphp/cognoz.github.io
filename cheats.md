@@ -292,6 +292,9 @@ Check recovery nodes
 ``sudo -u postgres psql -h 172.21.3.41 -p 5432 -x -c "show pool_nodes;"  
 sudo -u postgres psql -h 172.21.3.229 -p 5432 -x -c "select pg_is_in_recovery();"``  
 
+List clusters  
+``export PATRONI_ETCD_HOST=localhost:2379  
+patronictl list psql_cluster``  
 
 Change postgres parametrs cia etcd in patroni:  
 ``etcdctl ls --recursive -p | grep -v '/$' | xargs -n 1 -I% sh -c 'echo -n %:; etcdctl get %;'
@@ -1207,6 +1210,13 @@ Forwarding from [::1]:38219 -> 8080
 curl localhost:38219/hello  
 Hello from heketi   
 
+### Connect to etcd (kubespray)  
+On etcd node (not in container) run:  
+``netstat -ltupn | grep 2379  
+IP=`netstat -ltupn | grep 2379 | grep -v '127.0.0.1' | awk '{print $4}'`
+
+etcdctl --cert-file /etc/ssl/etcd/ssl/member-f00k8setcs01.pem --key-file /etc/ssl/etcd/ssl/member-f00k8setcs01-key.pem --endpoints https://$IP ls``  
+
 ### Kubectl debug  
 ``kubectl -v 10 get po``  
 
@@ -1226,3 +1236,9 @@ If you get an empty page when you are opening dashboard with url from _cluster i
 ``https://10.1.39.235/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy``  
 When you should try complete url for dashboard:  
 ``https://10.1.39.235/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy/#!/workload?namespace=default``  
+
+## CALICO  
+Get your current mtu  
+``calicoctl config get --raw=felix IpInIpMtu``  
+Setup lower mtu  
+``calicoctl config set --raw=felix IpInIpMtu 1400``  

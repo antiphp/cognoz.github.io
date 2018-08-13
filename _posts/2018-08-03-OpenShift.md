@@ -86,6 +86,16 @@ oc get nodes``
 vim /etc/docker/daemon.json  
 ``{ "insecure-registries": ["172.30.0.0/16"] }``    
 
+# Basic operations  
+### Create new user  
+``oc create user rklimenko  
+oc adm policy add-cluster-role-to-user cluster-admin rklimenko  
+htpasswd -c /etc/origin/master/htpasswd rklimenko  
+``  
+Log in on https://master_ip:8443  
+
+
+
 # Trics  
 
 ### Change pvc without losing any data  
@@ -201,3 +211,15 @@ spec:
       storage: 110Gi  
   storageClassName: ""  
   volumeName: registry-volume-volume``  
+
+## PostDeploy  
+Add compute label to nodes without it  
+``oc project default  
+oc get nodes -o wide  
+oc label node node01.finomancer.com node-role.kubernetes.io/compute="true"  
+oc label node node02.finomancer.com node-role.kubernetes.io/compute="true"``    
+
+Add svc-ha label to compute nodes (it will be used for ipfailover)  
+``for i in 1 2 3 4; do echo $i; oc describe nodes node0$i.finomancer.com | head -n 14; done  
+for i in 1 2 3 4; do oc label node node0$i.finomancer.com ha-svc-nodes="failovervip"; done  
+for i in 1 2 3 4; do echo $i; oc describe nodes node0$i.finomancer.com | head -n 14; done``  
