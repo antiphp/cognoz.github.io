@@ -16,13 +16,12 @@ Test environment:
 ``git clone https://github.com/kubernetes/charts.git``   
 
 #### Copy charts  
-``mkdir mycharts; cp -r charts/stable/fluent-bit charts/incubator/fluentd mycharts/``  
+``mkdir mycharts; cp -r charts/stable/fluentd-elasticsearch mycharts/``  
 
 #### Customize values  
-``cd mycharts; vim fluent-bit/values.yaml``  
-[fluent-bit/values.yaml]({{ "/listings/2018-07-17-Fluentd-Fluent-bit/fluent-bit-values.yaml" }})  
-[fluentd/values.yaml]({{ "/listings/2018-07-17-Fluentd-Fluent-bit/fluentd-values.yaml" }})  
+``cd mycharts; vim fluentd-elasticsearch/values.yaml``  
+[fluentd-elasticsearch/values.yaml]({{ "/listings/2018-07-17-Fluentd-Fluent-bit/fluentd-values.yaml" }})  
 
 #### Deploy  
-``helm install fluent-bit/ --name fluent-bit   
-helm install fluentd/ --name fluentd``      
+``kubectl create ns logging  
+helm install --name fluentd-elasticsearch --namespace logging fluentd-elasticsearch/``    
