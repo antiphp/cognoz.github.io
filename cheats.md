@@ -562,6 +562,10 @@ As last resort u can check your chain one more time - maybe you have there bundl
 ### ldap 2 less  
 ``ldapsearch -x -LLL -h ****.ru -p 3268 -D openstack_ldap_user@*****.ru -w 'D*****2%$******X5(' -b DC=ti,DC=local -s sub "(sAMAccountName=a.sh******)" -P 3 -e ! chaining=referralsRequired``  
 ``ldapsearch -x -LLL -h 127.0.0.1 -p 389 -D cn=administrator,dc=local,dc=ru -w BNkmv/OEt+z1su_g_A_p_q_PjO6uA1C1 -b dc=***********,dc=ru -s sub "(sAMAccountName=a.*****ev)"``  
+itkey
+``ldapsearch -x -D 'cn=name,ou=Service Accounts,ou=IT,ou=IT Key Services,dc=itkeyservices,dc=loc' -w 'pass' -H ldap://ip -b "ou=IT Key Services,dc=itkeyservices,dc=loc"``  
+sk  
+``ldapsearch -L -x -D 'domain\user' -w "pass" -b 'OU=Users,OU=Foundation,DC=skolkovo,DC=local' '(&(objectCategory=person)(objectClass=*)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))' '(uid: sAMAccountName)'``  - not sure about 1.2.840 part  
 
 ## Python using ssl verify cert  
 ``import requests  
