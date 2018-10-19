@@ -36,40 +36,15 @@ for i in 1 2 3 4 5 7; do ssh -x os$i.exampler.com 'systemctl restart docker'; do
 
 Setup DNS server  
 ``yum install -y epel-release   
-yum install -y named ``  
-vim /etc/named.cond  
-``listen-on port 53 { any; };
-allow-query     { any; };
-zone "test-os.com" IN {
-                type master;
-                file "/etc/named/test-os.com.zone";
-                allow-update { none; };
-        };``  
-vim /etc/named/test-os.com.zone  
-``$TTL 86400
-@       IN  SOA     ns1.test-os.com. ns2.test-os.com. (
-        2017011301      ;Serial
-        3600    ;Refresh
-        1800    ;Retry
-        604800  ;Expire
-        86400   ;Minimum TTL
-)
-        IN      NS      ns1.test-os.com.
-        IN      NS      ns2.test-os.com.
-        IN      MX      10 mail.test-os.com.
-
-@       IN      A       10.220.106.245
-ns1     IN      A       10.220.106.245
-ns2     IN      A       10.220.106.245
-oss     IN      A       10.220.106.250
-mail    IN      A       10.220.106.245
-www     IN      A       10.220.106.245``  
+yum install -y named ``   
+vim [/etc/named.cond]({{"/listings/2018-08-03-OpenShift/named.conf"}})  
+vim [/etc/named/test-os.com.zone]({{"/listings/2018-08-03-OpenShift/test-os.com.zone"}})    
 Enable service and firewall  
 ``systemctl enable named  
 systemctl restart named  
 firewall-cmd --permanent --add-port=53/tcp   
 firewall-cmd --permanent --add-port=53/udp  
-firewall-cmd --reload``  
+firewall-cmd --reload``   
 
 Check it -  
 ``ssh vm2  
