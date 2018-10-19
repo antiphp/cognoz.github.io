@@ -65,11 +65,13 @@ ns2     IN      A       10.220.106.245
 oss     IN      A       10.220.106.250
 mail    IN      A       10.220.106.245
 www     IN      A       10.220.106.245
-``
-``systemctl enable named  
+``  
+``Enable service and firewall  
+systemctl enable named  
 systemctl restart named  
 firewall-cmd --permanent --add-port=53/tcp   
-firewall-cmd --permanent --add-port=53/udp``  
+firewall-cmd --permanent --add-port=53/udp  
+firewall-cmd --reload``  
 
 Check it -  
 ``ssh vm2  
