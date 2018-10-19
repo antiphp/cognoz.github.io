@@ -45,7 +45,7 @@ zone "test-os.com" IN {
                 file "/etc/named/test-os.com.zone";
                 allow-update { none; };
         };
-``
+``  
 vim /etc/named/test-os.com.zone  
 ``$TTL 86400
 @       IN  SOA     ns1.test-os.com. ns2.test-os.com. (
@@ -66,11 +66,14 @@ oss     IN      A       10.220.106.250
 mail    IN      A       10.220.106.245
 www     IN      A       10.220.106.245
 ``
+``systemctl enable named  
+systemctl restart named  
+firewall-cmd --permanent --add-port=53/tcp   
+firewall-cmd --permanent --add-port=53/udp  
 yum -y install ansible pyOpenSSL python-lxml java-1.8.0-openjdk-headless httpd-tools patch python2-passlib     
 git clone https://github.com/openshift/openshift-ansible.git  
 cd openshift-ansible   
 git checkout remotes/origin/release-3.9``    
-
 vim [hosts]({{"/listings/2018-08-03-OpenShift/hosts"}})  
 
 NFS (on deployment host)  
