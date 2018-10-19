@@ -69,8 +69,14 @@ www     IN      A       10.220.106.245
 ``systemctl enable named  
 systemctl restart named  
 firewall-cmd --permanent --add-port=53/tcp   
-firewall-cmd --permanent --add-port=53/udp  
-yum -y install ansible pyOpenSSL python-lxml java-1.8.0-openjdk-headless httpd-tools patch python2-passlib     
+firewall-cmd --permanent --add-port=53/udp``  
+
+Check it -  
+``ssh vm2  
+dig @10.220.106.245 oss.test-os.com  
+``  
+Install packages and os  
+``yum -y install ansible pyOpenSSL python-lxml java-1.8.0-openjdk-headless httpd-tools patch python2-passlib     
 git clone https://github.com/openshift/openshift-ansible.git  
 cd openshift-ansible   
 git checkout remotes/origin/release-3.9``    
