@@ -565,7 +565,7 @@ As last resort u can check your chain one more time - maybe you have there bundl
 itkey
 ``ldapsearch -x -D 'cn=name,ou=Service Accounts,ou=IT,ou=IT Key Services,dc=itkeyservices,dc=loc' -w 'pass' -H ldap://ip -b "ou=IT Key Services,dc=itkeyservices,dc=loc"``  
 sk  
-``ldapsearch -L -x -D 'domain\user' -w "pass" -b 'OU=Users,OU=Foundation,DC=skolkovo,DC=local' '(&(objectCategory=person)(objectClass=*)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))' '(uid: sAMAccountName)'``  - not sure about 1.2.840 part  
+``ldapsearch -L -H ldap://ip -x -D 'domain\user' -w "pass" -b 'OU=Users,OU=Foundation,DC=skolkovo,DC=local' '(&(objectCategory=person)(objectClass=*)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))' '(uid: sAMAccountName)'``  - not sure about 1.2.840 part  
 
 ## Python using ssl verify cert  
 ``import requests  

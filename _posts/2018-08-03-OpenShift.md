@@ -34,7 +34,39 @@ for i in 1 2 3 4 5 7; do ssh -x os$i.exampler.com 'systemctl restart docker'; do
 
 ## On Deploy Node  
 
-``yum -y install ansible pyOpenSSL python-lxml java-1.8.0-openjdk-headless httpd-tools patch python2-passlib     
+Setup DNS server  
+``yum install -y epel-release   
+yum install -y named ``  
+vim /etc/named.cond  
+``listen-on port 53 { any; };
+allow-query     { any; };
+zone "test-os.com" IN {
+                type master;
+                file "/etc/named/test-os.com.zone";
+                allow-update { none; };
+        };
+``
+vim /etc/named/test-os.com.zone  
+``$TTL 86400
+@       IN  SOA     ns1.test-os.com. ns2.test-os.com. (
+        2017011301      ;Serial
+        3600    ;Refresh
+        1800    ;Retry
+        604800  ;Expire
+        86400   ;Minimum TTL
+)
+        IN      NS      ns1.test-os.com.
+        IN      NS      ns2.test-os.com.
+        IN      MX      10 mail.test-os.com.
+
+@       IN      A       10.220.106.245
+ns1     IN      A       10.220.106.245
+ns2     IN      A       10.220.106.245
+oss     IN      A       10.220.106.250
+mail    IN      A       10.220.106.245
+www     IN      A       10.220.106.245
+``
+yum -y install ansible pyOpenSSL python-lxml java-1.8.0-openjdk-headless httpd-tools patch python2-passlib     
 git clone https://github.com/openshift/openshift-ansible.git  
 cd openshift-ansible   
 git checkout remotes/origin/release-3.9``    
