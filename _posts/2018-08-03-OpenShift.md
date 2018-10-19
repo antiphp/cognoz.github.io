@@ -38,7 +38,7 @@ Setup DNS server
 ``yum install -y epel-release   
 yum install -y named ``   
 vim [/etc/named.cond]({{"/listings/2018-08-03-OpenShift/named.conf"}})  
-vim [/etc/named/test-os.com.zone]({{"/listings/2018-08-03-OpenShift/test-os.com.zone"}})    
+vim [/etc/named/test-os.com.zone]({{"/listings/2018-08-03-OpenShift/test-zone"}})    
 Enable service and firewall  
 ``systemctl enable named  
 systemctl restart named  
