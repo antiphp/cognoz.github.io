@@ -240,6 +240,13 @@ virt-install --connect qemu:///system --hvm --name cloud-linux --ram 1548 --vcpu
 2. Download kernel packages 4.10.0-20..42 in Dir  
 3. export variables like its done in 1743300 bug  
 
+### LXC containers  
+Serious bug:  
+on boot of multiple lxc containers, source bridge will get MAC from random container, and after that, Min MAC ADDRESS among container interfaces.  
+To prevent it you should put option   
+``hw_bridge MACADDRESS``  
+in source bridge interfaces config.  
+
 ### Ceph Prevent Rebalancing  
 ``ceph osd set noout``  
 
