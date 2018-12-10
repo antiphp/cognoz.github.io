@@ -13,6 +13,96 @@ permalink: /cheats/
 ### Check open ports without netstat and sudo  
 ``ss -4tpla`` or ``ss -a``  
 
+### List all Prometheus Labels
+curl / browser  
+http://serverip:serverport/api/v1/label/__name__/values
+
+### Export / Import Grafana Dashboards from one instance to another  
+Export  
+``curl -k -u admin:admin "ip:port/api/dashboards/uid/$UID | jq '.dashboard.id = null' > dash.json"``  
+Import  
+``curl -u admin:admin -H "Content-Type: application/json" -d @dash.json -X POST http://ip:port/api/dashboards/db``   
+
+#### Workaround to force Nginx Ingress reload it's configuration  
+``kubectl patch ingress myingress -p '{"metadata":{"labels":{"dummy":"some_unique_new_value"}}}'``  
+
+#### Consul  
+#### Start as client  
+``consul agent -bind=10.36.22.50 -retry-join=10.36.22.100 -config-dir=/etc/consul.d -data-dir=/opt/consul -encrypt "string"``  
+#### Could not decrypt message  
+on client or server do  ``rm -rf data_dir/cerf/*``  
+#### How expose udp/tcp services via nginx ingress  
+kubectl -n ingress-nginx edit svc ingress-nginx   
+``ports:
+- name: dns
+  port: 54
+  protocol: UDP
+  targetPort: 54
+``  
+kubectl -n sphaera create -f test.yaml   
+``apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: test
+  name: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+      - name: test
+        image: ubuntu
+        tty: true
+        ports:
+        - containerPort: 54
+          protocol: UDP
+``
+kubectl -n sphaera create -f test-svc.yaml   
+``apiVersion: v1
+kind: Service
+metadata:
+  name: test-svc
+spec:
+  ports:
+  - port: 54
+    protocol: UDP
+    targetPort: 54
+  selector:
+    app: test
+``
+kubectl -n ingress-nginx edit cm udp-services   
+``apiVersion: v1
+data:
+  "54": sphaera/test-svc:54
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"ConfigMap","metadata":{"annotations":{},"name":"udp-services","namespace":"ingress-nginx"}}
+  name: udp-services
+  namespace: ingress-nginx
+``
+Check connectivity  
+In ubuntu container  
+``apt update && apt install netcat  
+netcat -ul -p54``  
+in another place  
+``echo reply-me | ./nc.traditional -u VIP 54``  
+
+### Check websocket  
+``wget https://github.com/vi/websocat/releases (ubuntu/win)
+websocat -q -uU ws://mediaserver.kurento.ru/kurento; echo $?;
+check  server logs``
+
+### Huge node.js apps build  
+``docker-compose build --build-arg NODE_OPTIONS=--max-old-space-size=5600 my.app``
 ### Kubernetes get pod ips by selectors  
 ``kubectl get pods --selector=app=service_test_pod -o jsonpath='{.items[*].status.podIP}'
 10.0.1.2 10.0.2.2``   
