@@ -113,12 +113,12 @@ Ceph-volume command is incompatible with Ubuntu Trusty  [issue](https://tracker.
 So, we need to manually create disk partitions and prepare them for bluestore osds  
 We will use 2 partitons per disk - one for osd data and one raw block device for bluestore (without seperate db/wal partitions). In this example, our target device is /dev/sdd with osd-id=6.   
 ##### Step 1. Remove old osd.  
-``ceph osd out 6
-ceph osd rm 6
+``ceph osd out 6``
+Wait for rebalance, and then it will be done, umount /var/lib/ceph/osd/ceph-6 dir, and zap everything
+``ceph osd rm 6
 ceph auth del osd.6
-ceph osd crush rm osd.6``  
-Wait for rebalance, and then it will be done, umount /var/lib/ceph/osd/ceph-6 dir, and zap everything  
-``umount  /var/lib/ceph/osd/ceph-6
+ceph osd crush rm osd.6
+umount  /var/lib/ceph/osd/ceph-6
 sgdisk -Z /dev/sdd``  
 
 ##### Step 2. Partitions, dirs.  
