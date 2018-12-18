@@ -110,4 +110,37 @@ env DEBIAN_FRONTEND=noninteractive DEBIAN_PRIORITY=critical apt-get --assume-yes
 
 #### Upgrading osd with Filestore to Bluestore  
 Ceph-volume command is incompatible with Ubuntu Trusty  [issue](https://tracker.ceph.com/issues/23496)  
-So, right now i don't have any ideas about this process....
+So, we need to manually create disk partitions and prepare them for bluestore osds  
+We will use 2 partitons per disk - one for osd data and one raw block device for bluestore (without seperate db/wal partitions). In this example, our target device is /dev/sdd with osd-id=6.   
+##### Step 1. Remove old osd.  
+``ceph osd out 6
+ceph osd rm 6
+ceph auth del osd.6
+ceph osd crush rm osd.6``  
+Wait for rebalance, and then it will be done, umount /var/lib/ceph/osd/ceph-6 dir, and zap everything  
+``umount  /var/lib/ceph/osd/ceph-6
+sgdisk -Z /dev/sdd``  
+
+##### Step 2. Partitions, dirs.  
+``sgdisk --new=1:0:+1GB --change-name=1:osd_data_6 --partition-guid=1:$(uuidgen) --mbrtogpt -- /dev/sdd
+sgdisk --largest-new=2 --change-name=2:bluestore_block_6 --partition-guid=2:$(uuidgen) --mbrtogpt -- /dev/sdd
+mkfs -t xfs -f -i size=2048 -- /dev/sdd1
+ceph osd create
+mkdir /var/lib/ceph/osd/ceph-6  
+chown -R ceph:ceph /var/lib/ceph/osd/ceph-6/ /dev/sdd*``
+
+##### Step 3. Creating keys, fsid, adding osd.
+``ceph-osd --setuser ceph -i 6 --mkkey --mkfs #VERY IMPORTANT!!! (maybe you need to delete some block/fsid/keyrings there)  
+ceph auth add osd.6 osd 'allow *' mon 'allow rwx' mgr 'allow profile osd' -i /var/lib/ceph/osd/ceph-6/keyring
+ceph osd crush add 6 0.05 host=node-61``  
+
+##### Step 4. Modifying CRUSH. Modifying UDEV. Starting osd.  
+``ceph osd getcrushmap -o ma-crush-map
+crushtool -d ma-crush-map -o ma-crush-map.txt
+vim ma-crush-map.txt   
+crushtool -c ma-crush-map.txt -o ma-crush-new-map  
+vim /etc/udev/rules.d/99-ceph.rules #IMPORTANT
+          KERNEL=="sdd*", SUBSYSTEM=="block", ENV{DEVTYPE}=="partition", OWNER="ceph", GROUP="ceph", MODE="0660"
+          ENV{DM_LV_NAME}=="osd-*", OWNER="ceph", GROUP="ceph", MODE="0660"
+start ceph-osd id=6``  
+I hope that everything in your env went smooth and nice!   
