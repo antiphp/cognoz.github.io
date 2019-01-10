@@ -6,7 +6,7 @@ tags: linux ceph
 
 #### Draft scheme - How to upgrade ceph cluster from Firefly release(ver. 0.8 Mirantis MOS7 build) to Luminous.  
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
 This instruction has NOT tested yet! It's more like a draft scheme.
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
