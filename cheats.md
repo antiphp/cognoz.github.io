@@ -13,6 +13,22 @@ permalink: /cheats/
 ### Check open ports without netstat and sudo  
 ``ss -4tpla`` or ``ss -a``  
 
+### List all Prometheus Labels
+curl / browser  
+http://serverip:serverport/api/v1/label/__name__/values
+
+### Export / Import Grafana Dashboards from one instance to another  
+Export  
+``curl -k -u admin:admin "ip:port/api/dashboards/uid/$UID | jq '.dashboard.id = null' > dash.json"``  
+Import  
+``curl -u admin:admin -H "Content-Type: application/json" -d @dash.json -X POST http://ip:port/api/dashboards/db``   
+
+#### Problems with lab novnc openstack console ? (1006)  
+``ssh compute  
+vim /etc/nova/nova.conf  
+  novncproxy_base_url=https://public_vip_ctrl:6080/vnc_auto.html  
+service nova-compute restart``  
+ 
 #### Workaround to force Nginx Ingress reload it's configuration  
 ``kubectl patch ingress myingress -p '{"metadata":{"labels":{"dummy":"some_unique_new_value"}}}'``  
 
