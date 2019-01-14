@@ -17,6 +17,10 @@ permalink: /cheats/
 curl / browser  
 http://serverip:serverport/api/v1/label/__name__/values
 
+### Ceph tell  
+`` ceph tell mon.* injectargs '--mon-allow-pool-delete=true'  
+ceph tell osd.* injectargs '--osd_backfill_full_ratio 0.92'``  
+
 ### Export / Import Grafana Dashboards from one instance to another  
 Export  
 ``curl -k -u admin:admin "ip:port/api/dashboards/uid/$UID | jq '.dashboard.id = null' > dash.json"``  
@@ -28,7 +32,7 @@ Import
 vim /etc/nova/nova.conf  
   novncproxy_base_url=https://public_vip_ctrl:6080/vnc_auto.html  
 service nova-compute restart``  
- 
+
 #### Workaround to force Nginx Ingress reload it's configuration  
 ``kubectl patch ingress myingress -p '{"metadata":{"labels":{"dummy":"some_unique_new_value"}}}'``  
 
