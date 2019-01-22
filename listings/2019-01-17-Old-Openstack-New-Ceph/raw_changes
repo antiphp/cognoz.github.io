@@ -1,0 +1,103 @@
+На 3х контроллерах
+vim /etc/haproxy/conf.d/080-glance-api.cfg - убрать 1 контрол
+vim /etc/haproxy/conf.d/081-glance-new-api.cfg
+listen glance-new-api
+  bind 10.220.106.101:9293 ssl crt /var/lib/astute/haproxy/public_haproxy.pem
+  bind 10.220.109.2:9293
+  server node-55 10.220.109.9:9293
+На время стопаем cinder-volume на этом хосте
+service cinder-volume stop
+
+scp -r ceph_new 10.220.109.9:/etc/
+ssh 10.220.109.9
+mv /etc/ceph/ /etc/ceph_old
+ln -s /etc/ceph_new /etc/ceph
+chown glance:glance /etc/ceph/ceph.client.images.keyring
+chown cinder:cinder /etc/ceph/ceph.client.volumes.keyring
+
+scp -r libs.tar 10.220.109.9:/opt/
+tar -xf /opt/libs.tar
+vim /etc/default/glance-api
+  export LD_LIBRARY_PATH="/opt/cool_libs/"
+
+iptables -I INPUT 1 -p tcp --dport 9293  -m comment --comment "Accept new glance api" -j ACCEPT
+service iptables-persistent save
+service glance-api restart; crm resource restart p_haproxy
+openstack endpoint create --publicurl https://public.fuel.local:9293 --adminurl http://10.220.109.2:9293 --internalurl http://10.220.109.2:9293 --region RegionLuminous glance
+проверка -
+wget http://download.cirros-cloud.net/0.4.0/cirros-0.4.0-x86_64-disk.img
+glance image-create --container-format bare --disk-format raw --name cirros_new_ceph_new_libs --file cirros-0.4.0-x86_64-disk.img --progress
+
+
+CINDER
+
+ssh 10.220.109.9
+vim /etc/cinder/cinder.conf
+enabled_backends=ceph-2
+...
+удалить все относящееся к rbd
+...
+[ceph-2]
+volume_backend_name=ceph-2
+volume_driver=cinder.volume.drivers.rbd.RBDDriver
+rbd_user=volumes
+rbd_ceph_conf=/etc/ceph/ceph.conf
+rbd_pool=volumes
+rbd_secret_uuid=a5d0dd94-57c4-ae55-ffe0-7e3732a24455
+host=rbd:volume
+
+service cinder-volume stop
+chmod -R 644 /etc/ceph_new/*
+
+
+
+COMPUTE
+ssh cmp-2
+vim upgrade-ceph.sh
+set -x
+mkdir -p ceph_upgrade/apt-lists/
+mv /etc/apt/sources.list.d/mos* ceph_upgrade/apt-lists/
+apt remove -y ceph-deploy
+wget -q -O- 'https://download.ceph.com/keys/release.asc' | sudo apt-key add -
+apt-add-repository 'deb https://download.ceph.com/debian-luminous/ trusty main'
+apt update
+apt install -y ceph
+service libvirtd restart
+scp -r IP:/etc/ceph/ceph_new /etc/ceph_new
+ln -s /etc/ceph_new /etc/ceph
+chmod 644 -R /etc/ceph/*
+chown nova:nova /etc/ceph/ceph.client.compute.keyring
+cat /etc/ceph/ceph.client.compute.keyring
+virsh secret-set-value a5d0dd94-57c4-ae55-ffe0-7e3732a24455 $KEY
+
+
+
+
+
+TEST
+openstack project create merg
+openstack role add admin merg admin
+neutron net-create --provider:network_type vxlan --provider:segmentation_id 34567 net03
+neutron subnet-create --gateway 10.10.10.254 --enable-dhcp  $NET_ID 10.10.10.0/24
+neutron router-create net03
+neutron router-interface-add $ROUTER_ID $SUBNET_NET03_ID
+for i in {1..5}; do nova boot --image 1520723f-feb7-4719-a89a-f658ddb1f89a --flavor 1 --key-name rk --nic net-id=b5580c77-469b-4c07-992b-1bbb17ff4b0c --availability-zone nova:node-60.domain.tld vm$i
+neutron floatingip-create $net_04ext_id
+done
+for i in {1..5}; do cinder create --display-name tst$i; done
+nova volume-attach $instance_id $volume_id
+
+nova list | awk '{print $2}' | xargs -n1 nova stop - (copy to instance file near exp_imp.sh script)
+cinder list | awk '{print $2}' - copy to volumes file (near exp_imp.sh script)
+
+ssh ceph-lum1
+cd volumes
+vim volumes
+./exp_imp.sh
+cd ../compute
+./exp_imp.sh
+nova service-disable .... nova-compute
+
+nova list | awk '{print $2}' | xargs -n1 nova migrate
+./mysql_nova.sh
+nova list | awk '{print $2}' | xargs -n1 nova start

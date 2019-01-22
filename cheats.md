@@ -7,6 +7,9 @@ permalink: /cheats/
 ## Use ctrl + f
 
 ## Basis
+
+### Change tty console in NoVNC Openstack Instance  
+``alt+rightarrow / alt+leftarrow``   
 ### To avoid interface name changes via udev (pass options to kernel):  
 ``net.ifnames=1 biosdevname=1``  
 
@@ -20,6 +23,12 @@ http://serverip:serverport/api/v1/label/__name__/values
 ### Ceph tell  
 `` ceph tell mon.* injectargs '--mon-allow-pool-delete=true'  
 ceph tell osd.* injectargs '--osd_backfill_full_ratio 0.92'``  
+
+### Ceph flatten and Delete OpenStack Images  
+``rbd -p images ls -l  
+rbd -p compute ls -l  
+rbd -p compute flatten 43bfc2e8-5842-47c3-ad14-e6ce89c14061_disk  
+rbd -p images rm --force 96b69c9c-f96d-4e4a-a7ca-8af478413f2a@snap``  
 
 ### Export / Import Grafana Dashboards from one instance to another  
 Export  

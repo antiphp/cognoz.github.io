@@ -63,37 +63,42 @@ list of files
  Next step: Copy New Ceph keyrings and conf to target nodes, make link. permissions    
  ``scp -r ceph IP:/etc/ceph_new  
  ssh IP  
- mv /etc/ceph/ /etc/ceph_old  
+ mv /etc/ceph/ /etc/ceph_old  (OPenstack services dont have keyring option, so we are doing links)  
  ln -s /etc/ceph_new /etc/ceph/  
  cd /etc/ceph  
  chown cinder:cinder *volumes*  *backups*
  chown glance:glance *images*
  chown nova:nova *compute*``  
 
-Configure backends on nodes with cinder-volume:  
+Configure backend on ONE! node with cinder-volume:  
 vim /etc/cinder/cinder.conf  
 ``[DEFAULT]
-enabled_backends = ceph-1,ceph-2  
+enabled_backends = ceph-2  
 ....
-[ceph-1]
-volume_backend_name=ceph-1
-volume_driver=cinder.volume.drivers.rbd.RBDDriver
-rbd_user=volumes
-rbd_ceph_conf=/etc/ceph_old/ceph.conf
-rbd_pool=volumes
-rbd_secret_uuid=old_secret_uuid
-host=rbd:volumes
 
 [ceph-2]
 volume_backend_name=ceph-2
 volume_driver=cinder.volume.drivers.rbd.RBDDriver
 rbd_user=volumes
-rbd_ceph_conf=/etc/ceph_new/ceph.conf
+rbd_ceph_conf=/etc/ceph/ceph.conf
 rbd_pool=volumes
 rbd_secret_uuid=WE_CREATE_IT_LATER  
 host=rbd:volumes``  
 
+Also, do not forget about types  
+``cinder --os-username admin --os-tenant-name admin type-create lvm
+cinder --os-username admin --os-tenant-name admin type-key lvm set volume_backend_name=LVM_iSCSI
+cinder --os-username admin --os-tenant-name admin extra-specs-list (just to check the settings are there)``  
+
 If you have create the same pools on new ceph cluster that on old one (and users), then you didn't need to change glace-api conf.  
+Commands to create pools / users  
+``ceph osd pool create volumes 128 replicated replicated_rule  
+ceph osd pool create images 128 replicated replicated_rule
+ceph osd pool create compute 128 replicated replicated_rule
+ceph osd pool create backups 128 replicated replicated_rule
+# if you have old users just do ceph auth del client.user ``  
+BE EXCEPTIONALLY CAREFULL WITH KEYS - Ceph changed its format  
+
 On compute host, we need to generate new secret for ceph cluster:  
 Using instructions from here http://docs.ceph.com/docs/giant/rbd/libvirt/ do:  
 ``cat > secret.xml <<EOF
@@ -126,3 +131,8 @@ on controller
 ``for i in glance-api cinder-volume; do service $i restart; done``
 Check logs:  
 less /var/log/cinder/cinder-volume.log (shift+F to tail)  
+
+
+<host name='10.220.109.15' port='6789'/>
+<host name='10.220.109.16' port='6789'/>
+<host name='10.220.109.17' port='6789'/>
