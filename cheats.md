@@ -8,6 +8,18 @@ permalink: /cheats/
 
 ## Basis
 
+### JQ parsing  
+Get pretty-printed version  
+``cat test.json | jq '.'``  
+Get only metadata section  
+``cat test.json | jq '.metadata'``  
+Accessing field inside metadata  
+``cat test.json | jq '.metadata .key'``  
+Accessing values inside arrays  
+``cat test.json | jq '.metadata[0]'``  
+Using conditionals  
+``cat test.json |  jq .[] | jq 'select(.name == "vtb-rheltest-01").nics[1].ipAddress'``  
+
 ### Change tty console in NoVNC Openstack Instance  
 ``alt+rightarrow / alt+leftarrow``   
 
@@ -21,7 +33,7 @@ permalink: /cheats/
 wrong date on machine  
 
 ### Enable netsted virtualization in KVM guest  
-virsh edit vm
+virsh edit vm  
 ``<cpu>
 <feature policy='require' name='vmx'/>
 </cpu>``  
@@ -31,35 +43,7 @@ virsh edit vm
 
 ### List all Prometheus Labels
 curl / browser  
-http://serverip:serverport/api/v1/label/__name__/values
-
-### Ceph usefull flags during migraton / evacuation etc  
-ceph set ..
-``noout  
-noin
-nodeepsrubbing
-noscrubbing
-nobackfilling  
-norebalance (on later versions)``  
-
-### Ceph tell  
-`` ceph tell mon.* injectargs '--mon-allow-pool-delete=true'  
-ceph tell osd.* injectargs '--osd_backfill_full_ratio 0.92'``  
-Decrease deep-srubbing influence on environment  
-Scheduling on night  
-``ceph tell osd.* injectargs '--osd_scrub_begin_hour 0'  
-ceph tell osd.* injectargs '--osd_scrub_end_hour 8'``    
-Decrease chunk size for scrubbing  
-``ceph tell osd.* injectargs '--osd_scrub_sleep .2'  
-ceph tell osd.* injectargs '--osd-scrub-chunk-min 1'  
-ceph tell osd.* injectargs '--osd-scrub-chunk-max 2'``  
-
-
-### Ceph flatten and Delete OpenStack Images  
-``rbd -p images ls -l  
-rbd -p compute ls -l  
-rbd -p compute flatten 43bfc2e8-5842-47c3-ad14-e6ce89c14061_disk  
-rbd -p images rm --force 96b69c9c-f96d-4e4a-a7ca-8af478413f2a@snap``  
+``http://serverip:serverport/api/v1/label/__name__/values``  
 
 ### Export / Import Grafana Dashboards from one instance to another  
 Export  
@@ -67,21 +51,21 @@ Export
 Import  
 ``curl -u admin:admin -H "Content-Type: application/json" -d @dash.json -X POST http://ip:port/api/dashboards/db``   
 
-#### Problems with lab novnc openstack console ? (1006)  
+### Problems with lab novnc openstack console ? (1006)  
 ``ssh compute  
 vim /etc/nova/nova.conf  
   novncproxy_base_url=https://public_vip_ctrl:6080/vnc_auto.html  
 service nova-compute restart``  
 
-#### Workaround to force Nginx Ingress reload it's configuration  
+### Workaround to force Nginx Ingress reload it's configuration  
 ``kubectl patch ingress myingress -p '{"metadata":{"labels":{"dummy":"some_unique_new_value"}}}'``  
 
-#### Consul  
-#### Start as client  
+## Consul  
+### Start as client  
 ``consul agent -bind=10.36.22.50 -retry-join=10.36.22.100 -config-dir=/etc/consul.d -data-dir=/opt/consul -encrypt "string"``  
-#### Could not decrypt message  
+### Could not decrypt message  
 on client or server do  ``rm -rf data_dir/cerf/*``  
-#### How expose udp/tcp services via nginx ingress  
+### How expose udp/tcp services via nginx ingress  
 kubectl -n ingress-nginx edit svc ingress-nginx   
 ``ports:
 - name: dns
@@ -159,6 +143,7 @@ check  server logs``
 
 ### How prevent kernel to detect soft RAID  
 ``nomdmonddf nomdmonisw``  
+
 ### SSH passpharse using in script  
 cat helper.sh  
 ``exec cat``  
@@ -169,7 +154,6 @@ export DISPLAY=
 echo ${PASSPHRASE} | SSH_ASKPASS=./helper.sh ssh-add ${KEY} 2> /dev/null  
 ssh targetVM  
 ``  
-
 ### Specify ssh options (password authentication)  
 ``ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no``  
 
@@ -190,6 +174,7 @@ hdlr.setFormatter(formatter)
 logger.addHandler(hdlr)  
 
 logger.warning('Authorized Key for host {0} and user {1} was   reloaded'.format(host, user[2]))``  
+
 ### uniq lines  
 ``os.system("awk '!x[$0]++' /var/log/ssh_audit.log.dup >   /var/log/ssh_audit.log")   
 ``
@@ -258,7 +243,7 @@ mysql -p < all_databases.sql``
 add this change to script - (RHEL)  
 vim   /etc/sysconfig/network-scripts/ifcfg-NIC  
 ``ETHTOOL_OPTS="-G  rx <buffer size>"``    
-#### !!!Changes to Tx buffer are not recommended because of devices on other side of link  
+### !!!Changes to Tx buffer are not recommended because of devices on other side of link  
 
 ### Check crm disk status  (full disk)  
 ``crm node status-attr  show "#health_disk"      
@@ -386,17 +371,6 @@ on boot of multiple lxc containers, source bridge will get MAC from random conta
 To prevent it you should put option   
 ``hw_bridge MACADDRESS``  
 in source bridge interfaces config.  
-
-### Ceph Prevent Rebalancing  
-``ceph osd set noout``  
-
-### Ceph debugging
-``ceph -s ( Check your active flags (like norecovery, nobackflip, etc...))  
-ceph osd tree  
-ceph health detail (| grep blocked)  
-telnet monitor : 6789 (on ctrl node)  
-status ceph-osd id=$id  
-ceph pg dump | grep stuck``    
 
 ### Samba create share  
 ``useradd sambashare   
@@ -529,7 +503,7 @@ cz-eth1809-3(config-sys-qos)#   service-policy type network-qos jumbo``
 
 
 ### Disconnected /deactivated datastore  
-#### Check your license first  
+``Check your license first``    
 
 ### Influxdb openstack access  
 1. find astute.yaml, and values  influxdb_dbname, influxdb_username, influxdb_userpass and in vips section -  vips>influxdb>ipaddr
@@ -543,7 +517,7 @@ SHOW FIELD KEYS FROM virt_memory_total``
 3. If there is no metrics in influx you can try to restart  heka/hindsight on nodes with kafka:  
 ``ps aux | grep heka;  for i in $dddd; do kill -9 $i; done``  
 
-### Influx cache maximum memory size exceeded #6109  
+### Influx cache maximum memory size exceeded 6109  
 _Sample from logs_  
 ``14:52:07 reading file /data1/influxdb/wal/sysnoc/default/2/\_00703.wal, size 10504926 [cacheloader] 2016/03/24 14:52:09 reading file   /data1/influxdb/wal/sysnoc/default/2/\_00704.wal, size 10494123 run: open server: open tsdb store: [shard 2] cache maximum memory size exceeded``  
 
@@ -577,7 +551,7 @@ restart influxdb
 ``service influxdb restart``  
 
 ## Haproxy  
-### If haproxy cannot start on all nodes after deployment ('cannot bind soc' after /usr/lib/ocf/resource.d/fuel/ns_haproxy reload), check this nonlocal_bind bug  
+If haproxy cannot start on all nodes after deployment ('cannot bind soc' after /usr/lib/ocf/resource.d/fuel/ns_haproxy reload), check this nonlocal_bind bug   
 [bug](https://bugs.launchpad.net/fuel/+bug/1659205)
 
 Solution  
@@ -705,7 +679,6 @@ Another thought. You  can append your certificate to ca_certificates.crt and run
 As last resort u can check your chain one more time - maybe you have there bundle's open part while it should not be there.  
 
 ## LDAP  
-
 ### ldap 2 less  
 ``ldapsearch -x -LLL -h ****.ru -p 3268 -D openstack_ldap_user@*****.ru -w 'D*****2%$******X5(' -b DC=ti,DC=local -s sub "(sAMAccountName=a.sh******)" -P 3 -e ! chaining=referralsRequired``  
 ``ldapsearch -x -LLL -h 127.0.0.1 -p 389 -D cn=administrator,dc=local,dc=ru -w BNkmv/OEt+z1su_g_A_p_q_PjO6uA1C1 -b dc=***********,dc=ru -s sub "(sAMAccountName=a.*****ev)"``  
@@ -1010,18 +983,56 @@ nested_level: 5``
 
 ## Ceph Osd Rbd  
 
+### Ceph usefull flags during migraton / evacuation etc  
+ceph set ..
+``noout  
+noin
+nodeepsrubbing
+noscrubbing
+nobackfilling  
+norebalance (on later versions)``  
+
+### Ceph tell  
+`` ceph tell mon.* injectargs '--mon-allow-pool-delete=true'  
+ceph tell osd.* injectargs '--osd_backfill_full_ratio 0.92'``  
+Decrease deep-srubbing influence on environment  
+Scheduling on night  
+``ceph tell osd.* injectargs '--osd_scrub_begin_hour 0'  
+ceph tell osd.* injectargs '--osd_scrub_end_hour 8'``    
+Decrease chunk size for scrubbing  
+``ceph tell osd.* injectargs '--osd_scrub_sleep .2'  
+ceph tell osd.* injectargs '--osd-scrub-chunk-min 1'  
+ceph tell osd.* injectargs '--osd-scrub-chunk-max 2'``  
+
+### Ceph flatten and Delete OpenStack Images  
+``rbd -p images ls -l  
+rbd -p compute ls -l  
+rbd -p compute flatten 43bfc2e8-5842-47c3-ad14-e6ce89c14061_disk  
+rbd -p images rm --force 96b69c9c-f96d-4e4a-a7ca-8af478413f2a@snap``  
+
+### Ceph Prevent Rebalancing  
+``ceph osd set noout``  
+
+### Ceph debugging
+``ceph -s ( Check your active flags (like norecovery, nobackflip, etc...))  
+ceph osd tree  
+ceph health detail (| grep blocked)  
+telnet monitor : 6789 (on ctrl node)  
+status ceph-osd id=$id  
+ceph pg dump | grep stuck``  
+
 ### Allow compute nodes to write in pool  
 ``ceph auth caps client.compute osd 'allow class-read object_prefix rbd_children, allow rwx pool=volumes, allow rwx pool=images, allow rwx pool=compute' mon 'allow r'``  
 
-### ceph noin  
-``ceph osd set noin``  
-
 ### ceph log per osd  
 ``ceph daemon osd.0 log dump``  
+
 ceph log per osd grep slowest recent ops  
 ``ceph daemon osd.0 dump_historic_ops``  
+
 utlilization of ceph  
 ``ceph osd reweight-by-utilization 115``  
+
 normal utilization is 120% average_util*120 = % drive full osd  
 reweight ceph  
 ``ceph osd crush reweight osd.13 0.8``  
@@ -1032,6 +1043,7 @@ reweight ceph
 ### Image upload to ceph rbd  
 ``rbd --pool images ls -l rados put {object-name} {file-path} --pool=data rbd -p images –image-format 2 import cirros-0.3.0-x86-64-disk.img.1 $(uuidgen) rados lspools>``  
 
+## ISCSI  
 ### ISCSI mapping из rbd (for vmware and others) through tgt  
  ``apt-get install tgt  
  tgtadm --lld iscsi --mode system --op show (‘rbd’ should appear in “Backing stores:” if your tgtd supports rbd.) rbd create iscsi-image --size 50000 tgtadm --lld iscsi --mode target --op new --tid 1 --targetname rbd tgtadm --lld iscsi --mode logicalunit --op new --tid 1 --lun 1 --backing-store iscsi-image --bstype rbd tgtadm --lld iscsi --op bind --mode target --tid 1 -I ALL``  
