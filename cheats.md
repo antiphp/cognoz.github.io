@@ -10,19 +10,50 @@ permalink: /cheats/
 
 ### Change tty console in NoVNC Openstack Instance  
 ``alt+rightarrow / alt+leftarrow``   
+
 ### To avoid interface name changes via udev (pass options to kernel):  
 ``net.ifnames=1 biosdevname=1``  
 
 ### Check open ports without netstat and sudo  
 ``ss -4tpla`` or ``ss -a``  
 
+### After revert from old snapshot or something like this SSL errors everywhere    
+wrong date on machine  
+
+### Enable netsted virtualization in KVM guest  
+virsh edit vm
+``<cpu>
+<feature policy='require' name='vmx'/>
+</cpu>``  
+
+### Calculate average from file via bash  
+``count=0; total=0; for i in $( cat file.txt ); do total=$(echo $total+$i | bc );((count++)); done; echo "scale=2; $total / $count" | bc``  
+
 ### List all Prometheus Labels
 curl / browser  
 http://serverip:serverport/api/v1/label/__name__/values
 
+### Ceph usefull flags during migraton / evacuation etc  
+ceph set ..
+``noout  
+noin
+nodeepsrubbing
+noscrubbing
+nobackfilling  
+norebalance (on later versions)``  
+
 ### Ceph tell  
 `` ceph tell mon.* injectargs '--mon-allow-pool-delete=true'  
 ceph tell osd.* injectargs '--osd_backfill_full_ratio 0.92'``  
+Decrease deep-srubbing influence on environment  
+Scheduling on night  
+``ceph tell osd.* injectargs '--osd_scrub_begin_hour 0'  
+ceph tell osd.* injectargs '--osd_scrub_end_hour 8'``    
+Decrease chunk size for scrubbing  
+``ceph tell osd.* injectargs '--osd_scrub_sleep .2'  
+ceph tell osd.* injectargs '--osd-scrub-chunk-min 1'  
+ceph tell osd.* injectargs '--osd-scrub-chunk-max 2'``  
+
 
 ### Ceph flatten and Delete OpenStack Images  
 ``rbd -p images ls -l  
