@@ -4,10 +4,6 @@ title: cheats
 permalink: /cheats/
 ---
 
-## Use ctrl + f
-
-## Basis
-
 ### JQ parsing  
 Get pretty-printed version  
 ``cat test.json | jq '.'``  
@@ -34,9 +30,9 @@ wrong date on machine
 
 ### Enable netsted virtualization in KVM guest  
 virsh edit vm  
-``<cpu>
-<feature policy='require' name='vmx'/>
-</cpu>``  
+``&lt;cpu&gt;
+&lt;feature policy='require' name='vmx'/&gt;
+&lt;/cpu&gt;``  
 
 ### Calculate average from file via bash  
 ``count=0; total=0; for i in $( cat file.txt ); do total=$(echo $total+$i | bc );((count++)); done; echo "scale=2; $total / $count" | bc``  
@@ -65,14 +61,15 @@ service nova-compute restart``
 ``consul agent -bind=10.36.22.50 -retry-join=10.36.22.100 -config-dir=/etc/consul.d -data-dir=/opt/consul -encrypt "string"``  
 ### Could not decrypt message  
 on client or server do  ``rm -rf data_dir/cerf/*``  
+
+## Exposing UDP services k8s  
 ### How expose udp/tcp services via nginx ingress  
 kubectl -n ingress-nginx edit svc ingress-nginx   
 ``ports:
 - name: dns
   port: 54
   protocol: UDP
-  targetPort: 54
-``  
+  targetPort: 54``    
 kubectl -n sphaera create -f test.yaml   
 ``apiVersion: extensions/v1beta1
 kind: Deployment
@@ -96,8 +93,7 @@ spec:
         tty: true
         ports:
         - containerPort: 54
-          protocol: UDP
-``
+          protocol: UDP``  
 kubectl -n sphaera create -f test-svc.yaml   
 ``apiVersion: v1
 kind: Service
@@ -109,8 +105,7 @@ spec:
     protocol: UDP
     targetPort: 54
   selector:
-    app: test
-``
+    app: test``  
 kubectl -n ingress-nginx edit cm udp-services   
 ``apiVersion: v1
 data:
@@ -121,8 +116,7 @@ metadata:
     kubectl.kubernetes.io/last-applied-configuration: |
       {"apiVersion":"v1","kind":"ConfigMap","metadata":{"annotations":{},"name":"udp-services","namespace":"ingress-nginx"}}
   name: udp-services
-  namespace: ingress-nginx
-``
+  namespace: ingress-nginx``  
 Check connectivity  
 In ubuntu container  
 ``apt update && apt install netcat  
@@ -133,7 +127,7 @@ in another place
 ### Check websocket  
 ``wget https://github.com/vi/websocat/releases (ubuntu/win)
 websocat -q -uU ws://mediaserver.kurento.ru/kurento; echo $?;
-check  server logs``
+check  server logs``  
 
 ### Huge node.js apps build  
 ``docker-compose build --build-arg NODE_OPTIONS=--max-old-space-size=5600 my.app``
