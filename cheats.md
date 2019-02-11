@@ -731,6 +731,28 @@ solution
 solution  
 ``chmod 777 /var/run/docker.sock in jenkins container``  
 
+### Remove node from db with preventing from pxe boot (cobbler)  
+Backup Fuel PostgreSQL databases:
+``docker exec –it $id_psql bash
+su – postgres
+pg_dumpall > dump_date.sql
+exit
+docker cp $id:/var/lib/pgsql/dump_….sql ./``  
+Dump cobbler node vars:  
+``docker exec –it $id_cobbler bash
+cobbler system dumpvars --name app-strg-05.luxoft.com >> cobbler_vars_strg_05``  
+
+Removing node from Fuel PSQL DB:
+``fuel node –node $id –force –delete-from-databases``  
+
+Creating cobbler system for node (preventing bootstrap)  
+``fuel exec –it $id_cobbler
+cobbler system add --name app-strg-05.luxoft.com --profile ubuntu_1404_x86_64
+cobbler system edit --name app-strg-05.luxoft.com --ip-address=PXE_IP --interface=$INTERFACE --mac=MAC --netmask=255.255.255.0 --static=0 --netboot-enabled=False``  
+Repeat edit command for every device:  
+``cobbler system edit --name app-strg-05.luxoft.com --interface=$INTERFACE --mac=MAC --netmask=255.255.255.0 --static=0 --netboot-enabled=False``  
+Test: Reboot node. It should skip bootstrap section (and therefore fuel “discover” state in UI)   
+
 ## HELM  
 ### Installing heapster + grafana + prometheus on kubespray v2.4.0  
 ``helm -n kube-system --name heapster install --set rbac.create=true stable/heapster   
@@ -991,6 +1013,16 @@ nodeepsrubbing
 noscrubbing
 nobackfilling  
 norebalance (on later versions)``  
+
+### Bash pipe to get Ceph backfill_toofull targets for every pg  
+``ceph health detail | grep toofull | awk '{print $2}' | xargs -n1 -I {} ceph pg {} query | grep -1 backfill_targets``  
+
+### Ceph get real usage of image
+``rbd du $id``  
+but it can take a lot of time  
+As I heard from one guy, we can create script, that will use  
+prefixes from 4MB object, count them and multiply by 4MB.  
+This script should go in parallel and very fast, so GOlang is the best choice. Also, if you have shapshots it can be tricky, cause all changes after snapshotting go in some other place, not default map, and you need active fast-diff option, so you can use diff-iterate 2 operation.  
 
 ### Ceph tell  
 `` ceph tell mon.* injectargs '--mon-allow-pool-delete=true'  
