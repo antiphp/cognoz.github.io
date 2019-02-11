@@ -1030,6 +1030,9 @@ Decrease chunk size for scrubbing
 ceph tell osd.* injectargs '--osd-scrub-chunk-min 1'  
 ceph tell osd.* injectargs '--osd-scrub-chunk-max 2'``  
 
+### Get config from mon  
+``ceph daemon /var/run/ceph/ceph-mon.*.asok config show``  
+
 ### Ceph flatten and Delete OpenStack Images  
 ``rbd -p images ls -l  
 rbd -p compute ls -l  
