@@ -1030,6 +1030,25 @@ Decrease chunk size for scrubbing
 ceph tell osd.* injectargs '--osd-scrub-chunk-min 1'  
 ceph tell osd.* injectargs '--osd-scrub-chunk-max 2'``  
 
+### Ceph replace osd (hammer, mitaka mos9)  
+Remove old device  
+``ceph osd out $osd
+stop ceph-osd id=$osd
+ceph osd crush rm osd.$osd
+ceph auth del osd.$osd
+ceph osd rm osd.$i
+umount /var/lib/ceph/osd/ceph-$i``  
+Add new device (probably you will need reboot to Linux determine new device on place of old (sdd -> sdd for example; not sdd -> sdl))   
+``parted /dev/sdd mkpart primary 1 26.2  #MB
+parted /dev/sdd mkpart primary 27.3 237  
+parted /dev/sdd mkpart primary 238 1200000  
+parted /dev/sdd set 1 bios_grub  
+sgdisk --typecode=3:4fbd7e29-9d25-41b8-afd0-062c0ceff05d -- /dev/sdd (This GUID IS NOT UNIQUE - ITs used for every osd(except journal, where guid= 45B0969E-9B03-4F30-B4C6-B4B80CEFF106))  
+ceph-deploy --ceph-conf /root/ceph.conf osd prepare localhost:sdd3  
+ceph-deploy --ceph-conf /root/ceph.conf osd activate localhost:sdd3  
+ceph auth add osd.30 mon 'allow profile osd' osd 'allow *'  
+ceph osd crush add 30 1.09 host=skl-os-ceph02.HDD (30 - osd-id, 1.09 - weight)``  
+
 ### Get config from mon  
 ``ceph daemon /var/run/ceph/ceph-mon.*.asok config show``  
 
