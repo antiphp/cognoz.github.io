@@ -1008,6 +1008,13 @@ noscrubbing
 nobackfilling  
 norebalance (on later versions)``  
 
+### Decrease backfill  
+``ceph tell osd.* injectargs '--osd-max-backfills 1'
+ceph tell osd.* injectargs '--osd-max-recovery-threads 1'
+ceph tell osd.* injectargs '--osd-recovery-op-priority 1'
+ceph tell osd.* injectargs '--osd-client-op-priority 63'
+ceph tell osd.* injectargs '--osd-recovery-max-active 1'``  
+
 ### Get current osd config  
 ``ceph -n osd.30 --show-config > 30.conf``  
 ### Get mon config  
