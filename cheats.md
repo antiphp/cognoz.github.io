@@ -1008,6 +1008,11 @@ noscrubbing
 nobackfilling  
 norebalance (on later versions)``  
 
+### Get current osd config  
+``ceph -n osd.30 --show-config > 30.conf``  
+### Get mon config  
+``ceph daemon /var/run/ceph/ceph-mon.skl-os-ctrl01.asok config show``  
+
 ### Bash pipe to get Ceph backfill_toofull targets for every pg  
 ``ceph health detail | grep toofull | awk '{print $2}' | xargs -n1 -I {} ceph pg {} query | grep -1 backfill_targets``  
 
