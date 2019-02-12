@@ -1048,6 +1048,10 @@ ceph-deploy --ceph-conf /root/ceph.conf osd prepare localhost:sdd3
 ceph-deploy --ceph-conf /root/ceph.conf osd activate localhost:sdd3  
 ceph auth add osd.30 mon 'allow profile osd' osd 'allow *'  
 ceph osd crush add 30 1.09 host=skl-os-ceph02.HDD (30 - osd-id, 1.09 - weight)``  
+### Ceph Bluestore mount via fuse  
+``systemctl stop ceph-osd@ID    
+mkdir /mnt/foo
+ceph-objectstore-tool --op fuse --data-path /var/lib/ceph/osd/ceph-75 --mountpount /mnt/foo``  
 
 ### Get config from mon  
 ``ceph daemon /var/run/ceph/ceph-mon.*.asok config show``  
