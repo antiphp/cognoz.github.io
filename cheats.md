@@ -16,6 +16,12 @@ Accessing values inside arrays
 Using conditionals  
 ``cat test.json |  jq .[] | jq 'select(.name == "vtb-rheltest-01").nics[1].ipAddress'``  
 
+### Installation of CentOS7 on old supermicro servers  
+on "Install Centos7" press tab  and add
+``nomodeset text``  to the end, press enter  
+### If you cant get intel raid menu  
+``in bios select RAID not AHCI``  
+
 ### Change tty console in NoVNC Openstack Instance  
 ``alt+rightarrow / alt+leftarrow``   
 
