@@ -30,6 +30,9 @@ reboot``
 ### If you cant get intel raid menu  
 ``in bios select RAID not AHCI``  
 
+### Get default grub version and set needed  
+``awk '/menuentry/ && /class/ {count++; print count-1"****"$0 }' /boot/grub/grub.cfg   
+
 ### Change tty console in NoVNC Openstack Instance  
 ``alt+rightarrow / alt+leftarrow``   
 
@@ -1055,6 +1058,9 @@ Decrease chunk size for scrubbing
 ``ceph tell osd.* injectargs '--osd_scrub_sleep .2'  
 ceph tell osd.* injectargs '--osd-scrub-chunk-min 1'  
 ceph tell osd.* injectargs '--osd-scrub-chunk-max 2'``  
+
+higher -> slower recovery  (optimal are 1 for hdd, 0 ssd, 0.25 hybrid)   
+``ceph tell 'osd.*' injectargs '--osd_recovery_sleep 0.5'``
 
 ### Ceph replace osd (hammer, mitaka mos9)  
 Remove old device  
