@@ -1,0 +1,57 @@
+---
+#kubectl -n ingress-nginx edit svc ingress-nginx
+ports:
+- name: dns
+  port: 54
+  protocol: UDP
+  targetPort: 54
+---
+#kubectl -n sphaera create -f test.yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: test
+  name: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test
+  template:
+    metadata:
+      labels:
+        app: test
+    spec:
+      containers:
+      - name: test
+        image: ubuntu
+        tty: true
+        ports:
+        - containerPort: 54
+          protocol: UDP``
+---
+#kubectl -n sphaera create -f test-svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-svc
+spec:
+  ports:
+  - port: 54
+    protocol: UDP
+    targetPort: 54
+  selector:
+    app: test
+---
+#kubectl -n ingress-nginx edit cm udp-services
+apiVersion: v1
+data:
+  "54": sphaera/test-svc:54
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"ConfigMap","metadata":{"annotations":{},"name":"udp-services","namespace":"ingress-nginx"}}
+  name: udp-services
+  namespace: ingress-nginx  

@@ -31,7 +31,7 @@ reboot``
 ``in bios select RAID not AHCI``  
 
 ### Get default grub version and set needed  
-``awk '/menuentry/ && /class/ {count++; print count-1"****"$0 }' /boot/grub/grub.cfg   
+``awk '/menuentry/ && /class/ {count++; print count-1"****"$0 }' /boot/grub/grub.cfg``     
 
 ### Change tty console in NoVNC Openstack Instance  
 ``alt+rightarrow / alt+leftarrow``   
@@ -46,10 +46,10 @@ reboot``
 wrong date on machine  
 
 ### Enable netsted virtualization in KVM guest  
-virsh edit vm  
-````<cpu>
-<feature policy='require' name='vmx'/>;
-</cpu>````  
+virsh edit vm   
+``<cpu>  
+<feature policy='require' name='vmx'/>;  
+</cpu>``    
 ### Calculate average from file via bash  
 ``count=0; total=0; for i in $( cat file.txt ); do total=$(echo $total+$i | bc );((count++)); done; echo "scale=2; $total / $count" | bc``  
 
@@ -78,69 +78,17 @@ service nova-compute restart``
 ### Could not decrypt message  
 on client or server do  ``rm -rf data_dir/cerf/*``  
 
-## Exposing UDP services k8s  
-### How expose udp/tcp services via nginx ingress  
-kubectl -n ingress-nginx edit svc ingress-nginx   
-``ports:
-- name: dns
-  port: 54
-  protocol: UDP
-  targetPort: 54``    
-kubectl -n sphaera create -f test.yaml   
-``apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  labels:
-    app: test
-  name: test
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: test
-  template:
-    metadata:
-      labels:
-        app: test
-    spec:
-      containers:
-      - name: test
-        image: ubuntu
-        tty: true
-        ports:
-        - containerPort: 54
-          protocol: UDP``  
-kubectl -n sphaera create -f test-svc.yaml   
-``apiVersion: v1
-kind: Service
-metadata:
-  name: test-svc
-spec:
-  ports:
-  - port: 54
-    protocol: UDP
-    targetPort: 54
-  selector:
-    app: test``  
-kubectl -n ingress-nginx edit cm udp-services   
-``apiVersion: v1
-data:
-  "54": sphaera/test-svc:54
-kind: ConfigMap
-metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"v1","kind":"ConfigMap","metadata":{"annotations":{},"name":"udp-services","namespace":"ingress-nginx"}}
-  name: udp-services
-  namespace: ingress-nginx``  
-Check connectivity  
+### Exposing UDP services k8s   
+[udp_expose]({{"/listings/cheats/udp_expose.yml"}})  
+
+#### Check connectivity  
 In ubuntu container  
 ``apt update && apt install netcat  
 netcat -ul -p54``  
 in another place  
 ``echo reply-me | ./nc.traditional -u VIP 54``  
 
-### Check websocket  
+#### Check websocket  
 ``wget https://github.com/vi/websocat/releases (ubuntu/win)
 websocat -q -uU ws://mediaserver.kurento.ru/kurento; echo $?;
 check  server logs``  
