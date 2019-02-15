@@ -19,6 +19,14 @@ Using conditionals
 ### Installation of CentOS7 on old supermicro servers  
 on "Install Centos7" press tab  and add
 ``nomodeset text``  to the end, press enter  
+#### other option  
+If you dont see your raid volume in boot menu, you
+can try following:  
+``boot in UEFI mode
+install system
+place UEFI disk as number 1 device in bios boot lists
+reboot``
+
 ### If you cant get intel raid menu  
 ``in bios select RAID not AHCI``  
 
