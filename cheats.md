@@ -47,10 +47,9 @@ wrong date on machine
 
 ### Enable netsted virtualization in KVM guest  
 virsh edit vm  
-``&lt;cpu&gt;
-&lt;feature policy='require' name='vmx'/&gt;
-&lt;/cpu&gt;``  
-
+````<cpu>
+<feature policy='require' name='vmx'/>;
+</cpu>````  
 ### Calculate average from file via bash  
 ``count=0; total=0; for i in $( cat file.txt ); do total=$(echo $total+$i | bc );((count++)); done; echo "scale=2; $total / $count" | bc``  
 
