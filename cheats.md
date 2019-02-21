@@ -118,7 +118,7 @@ ssh targetVM
 ### Watch file/dir changes  
 ``inotifywait -mr /var/log/ssh_audit.log``  
 
-### Simple python logging (uniq lines) in file  
+### Simple python logging (uniq lines) in file   
 ``import logging  
 import logging.handlers   
 import distutils  
@@ -144,6 +144,17 @@ in case of MD5RSA algorithm rejection edit with notepad file
 ``/c/program files/java/jre8.../lib/security/java.security``  
 and remove this algorithm from all 'disable' lines  
 
+## ClickHouse CentOS  
+DO NOT use official yandex repo - its garbage.  
+Instead, use altinity repo:  
+``[altinity_clickhouse]
+baseurl = https://packagecloud.io/altinity/clickhouse/el/7/$basearch
+enabled = 1
+gpgcheck = 0
+gpgkey = https://packagecloud.io/altinity/clickhouse/gpgkey
+name = Altinity ClickHouse Repo``  
+
+
 ### Echo pipeline over SSH  
 `` echo 'string' | ssh ubuntu@10.1.3.3 "cat >> /target/file"``  
 
@@ -166,6 +177,10 @@ print chains with line-numbers
 ``iptables -nvL --line-numbers``  
 delete rule by number and chain  
 ``iptables -D INPUT 3``  
+
+### OpenStack high memory usage  
+- decrease number of workers in services confs  
+- decrease number of processes/threads in /etc/uwsgi/..  
 
 ### NodeJS webserver
 ``apt-get install -y nodejs npm nodejs-legacy  
@@ -212,6 +227,9 @@ crm node status-attr skl-os-ctrl01.skolkovo.local delete "#health_disk"``
 ``find . -type f -exec sed -i 's/foo/bar/g' {} +``  
 
 ### Recursive cut/execute  
+removing logs with date  
+``find /home/debian/backups/mongodb_*  -mtime +31  -exec rm {} \;``  
+or
 ``find $i -type f -name *.log -exec cp /dev/null {} \;``  
 or create script and execute it  
 ``find $i -type f -name *.log -exec script;``  
