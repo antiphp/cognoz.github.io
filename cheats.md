@@ -1449,6 +1449,49 @@ If you get an empty page when you are opening dashboard with url from _cluster i
 When you should try complete url for dashboard:  
 ``https://10.1.39.235/api/v1/namespaces/kube-system/services/kubernetes-dashboard/proxy/#!/workload?namespace=default``  
 
+## Simple Centos bond/bridge interfaces configs  
+cat ifcfg-enp130s0f0  
+``NAME=enp130s0f0
+DEVICE=enp130s0f0
+TYPE=Ethernet
+BOOTPROTO=none
+ONBOOT=yes
+MASTER="bond0"
+SLAVE=yes
+NM_CONTROLLED=no``  
+cat bond0  
+``DEVICE=bond0
+NAME=bond0
+TYPE=Bond
+BONDING_MASTER=yes
+IPV6INIT=no
+MTU=9000
+ONBOOT=yes
+USERCTL=no
+NM_CONTROLLED=no
+BOOTPROTO=none
+BONDING_OPTS="mode=802.3ad xmit_hash_policy=layer2+3 lacp_rate=1 miimon=100"
+``
+cat ifcfg-bond0.4001
+``DEVICE=bond0.4001
+NAME=bond0.4001
+BOOTPROTO=none
+ONPARENT=yes
+MTU=9000
+VLAN=yes
+NM_CONTROLLED=no
+BRIDGE=br-storage``   
+cat br-storage  
+``DEVICE=br-storage
+TYPE=Bridge
+BOOTPROTO=none
+ONBOOT=yes
+IPADDR=IP
+PREFIX=24
+NM_CONTROLLED=no``  
+cat /etc/udev/rules.d/71-net-txqueuelen.rules  
+``SUBSYSTEM=="net", ACTION=="add", KERNEL=="*", ATTR{tx_queue_len}="10000"``  
+
 ## CALICO  
 Get your current mtu  
 ``calicoctl config get --raw=felix IpInIpMtu``  
