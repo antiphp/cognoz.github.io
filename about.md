@@ -5,9 +5,9 @@ permalink: /about/
 ---
 
 ### Whoami
-Hard-working guy from Moscow. 26 years old, 3 years' experience in IT.  
+Hard-working DevOps TeamLead from Moscow. 27 years old, 4.5 years' experience in IT.  
 ### What i'm doing    
-K8S, OpenStack, CICD, Linux, HA - that kind of stuff (integration, development and monitoring)  
+K8S, OpenStack, CICD, Linux, HA - that kind of stuff (architecture, integration, development, resource managing and monitoring)  
 ### What else    
 Musician with 15+ years' experience in live and electronic music, vegetarian, socialist.   
 ### Contact me  
