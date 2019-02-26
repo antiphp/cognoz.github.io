@@ -99,3 +99,5 @@ pcs  -f fs_cfg constraint order promote DrbdDataClone then start DrbdFS
 pcs cluster cib-push fs_cfg``  
 Check  
 ``pcs status``  
+Also  
+``pcs resource op defaults timeout=40s`` (default 20)  
