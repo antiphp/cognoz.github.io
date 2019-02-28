@@ -13,7 +13,7 @@ Accessing field inside metadata
 ``cat test.json | jq '.metadata .key'``  
 Accessing values inside arrays  
 ``cat test.json | jq '.metadata[0]'``  
-Using conditionals  
+Using conditionals
 ``cat test.json |  jq .[] | jq 'select(.name == "vtb-rheltest-01").nics[1].ipAddress'``  
 
 ### Installation of CentOS7 on old supermicro servers  
@@ -576,7 +576,35 @@ rgw keystone implicit tenants = false``
 3. restart all radosgw services on all radosgw nodes  
 ``service radosgw-all restart``  
 
-## GOlang  
+## GOlang
+
+### Get started  
+insert in the end of /root/.profile   
+``export GOROOT=/opt/go/goroot
+export GOPATH=/opt/go/go
+export PATH=$PATH:/usr/local/bin:$GOPATH/bin``  
+Make dirs  
+``mkdir -p /opt/go/go /opt/go/goroot``  
+Get Go  
+``cd /opt/go/goroot  
+curl -O https://storage.googleapis.com/golang/go1.11.2.linux-amd64.tar.gz
+tar -xf go1.11.2.linux-amd64.tar.gz``  
+Make test repo  
+``mkdir -p /opt/go/go/src/github.com/user/hello``  
+vim /opt/go/go/src/github.com/user/hello/hello.go  
+``package main
+import "fmt"
+func main() {
+    fmt.Printf("hello, world\n")
+}``  
+Setup env variables, check version and compile hello app  
+``source /root/.profile  
+go install github.com/user/hello
+go version
+$GOROOT/bin/hello``  
+That's it!
+
+### Problems  
 1. Clone repo - go get github/user/repo (alternatively, you can manually clone repo in gopath:/src/ dir )  
 2. In case of problems with goroot/gopath - unset GOROOT variable  
 3. In case of problems with http.requests&ast; (or context) calls - update GOlang to >1.8.3  
