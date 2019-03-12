@@ -1064,7 +1064,8 @@ ceph auth del osd.$osd
 ceph osd rm osd.$i
 umount /var/lib/ceph/osd/ceph-$i``  
 Add new device (probably you will need reboot to Linux determine new device on place of old (sdd -> sdd for example; not sdd -> sdl))   
-``parted /dev/sdd mkpart primary 1 26.2  #MB
+``parted /dev/sdd mklabel gpt
+parted /dev/sdd mkpart primary 1 26.2  #MB
 parted /dev/sdd mkpart primary 27.3 237  
 parted /dev/sdd mkpart primary 238 1200000  
 parted /dev/sdd set 1 bios_grub  
@@ -1240,6 +1241,15 @@ Grafana
 create user 'grafana'@'%' identified by 'grafana';  
 grant all privileges on grafana.&ast; to 'grafana'@'%';  
 quit;``  
+
+### Create base ad table for new grafana  
+``create database grafana;
+GRANT USAGE ON `grafana`.* to 'grafana'@'mysqlserver.example.com' identified by 'password';
+GRANT ALL PRIVILEGES ON grafana.* to 'grafana'@'%';
+flush privileges;
+use grafana;
+create table `session` (`key`   char(16) not null, `data`  blob, `expiry` int(11) unsigned not null, primary key (`key`)) ENGINE=MyISAM default charset=utf8;``  
+
 
 ## Postgres  
 ### Update value in json field via jsonb  
