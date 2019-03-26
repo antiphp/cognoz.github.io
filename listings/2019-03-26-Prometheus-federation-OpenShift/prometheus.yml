@@ -1,0 +1,85 @@
+global:
+  evaluation_interval: 15s
+  scrape_interval: 15s
+  scrape_timeout: 10s
+
+  external_labels:
+    environment: prometheus
+
+
+
+
+rule_files:
+  - /etc/prometheus/rules/*.rules
+
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - ip:9093
+
+scrape_configs:
+- job_name: prometheus_self
+  honor_labels: true
+  static_configs:
+  - targets: ['localhost:9090']
+- job_name: prometheus_uat
+  honor_labels: true
+  scheme: https
+  tls_config:
+    insecure_skip_verify: true
+  metrics_path: '/federate'
+  params:
+    'match[]':
+      - '{job="kubernetes-nodes"}'
+      - '{job="kubernetes-nodes-cadvisor"}'
+      - '{job="kubernetes-services"}'
+      - '{job="kubernetes-pods"}'
+      - '{job="kubernetes-services"}'
+      - '{job="kubernetes-service-endpoints"}'
+      - '{job="prometheus-pushgateway"}'
+      - '{__name__=~"job:.*"}'
+  static_configs:
+  - targets: ['prometheus.uat.oc.domain.ru:443']
+    labels:
+      env: uat
+- job_name: prometheus_prod
+  honor_labels: true
+  scheme: https
+  tls_config:
+    insecure_skip_verify: true
+  metrics_path: '/federate'
+  params:
+    'match[]':
+      - '{job="kubernetes-nodes"}'
+      - '{job="kubernetes-nodes-cadvisor"}'
+      - '{job="kubernetes-services"}'
+      - '{job="kubernetes-pods"}'
+      - '{job="kubernetes-services"}'
+      - '{job="kubernetes-service-endpoints"}'
+      - '{job="prometheus-pushgateway"}'
+      - '{__name__=~"job:.*"}'
+  static_configs:
+  - targets: ['prometheus.oc.domain.ru:443']
+    labels:
+      env: prod
+- job_name: prometheus_test
+  honor_labels: true
+  metrics_path: '/federate'
+  params:
+    'match[]':
+      - '{job="kube-state-metrics"}'
+      - '{job="kubelet"}'
+      - '{job="kube-controllers"}'
+      - '{job="apiserver"}'
+      - '{job="node-exporter"}'
+      - '{job="kubernetes-apiservers"}'
+      - '{__name__=~"job:.*"}'
+  scheme: https
+  tls_config:
+    insecure_skip_verify: true
+  bearer_token: TOKEN
+  static_configs:
+  - targets: ['prometheus-k8s-openshift-monitoring.app.group.domain:443']
+    labels:
+      env: test

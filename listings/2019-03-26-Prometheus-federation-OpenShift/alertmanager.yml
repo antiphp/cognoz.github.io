@@ -1,0 +1,24 @@
+global:
+  resolve_timeout: 3m
+  smtp_smarthost: localhost:25
+  smtp_from: alertmanager@newlma.ru
+templates:
+- '/etc/alertmanager/templates/*.tmpl'
+receivers:
+- email_configs:
+  - to: rklimenko@domain.com
+    from: rklimenko@domain.com
+    smarthost: smtp.domain.ru:25
+    auth_username: "smtp"
+    auth_password: "pass"
+  name: default
+- name: executor
+  webhook_configs:
+  - url: http://IP:8999
+
+route:
+  receiver: default
+  routes:
+  - match:
+      alertname: InstanceDown
+    receiver: default

@@ -1,0 +1,18 @@
+[Unit]
+Description=Docker Prometheus Container
+After=docker.service
+Requires=docker.service
+
+[Service]
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStart=/usr/bin/docker run --init --network host --log-opt max-size=50m --log-opt max-file=5 --name %n --user root --publish=9090:9090 --volume=/prom:/prometheus/data --volume=/etc/hosts:/etc/hosts --volume=/etc/prometheus:/etc/prometheus ep-iac-nexus-001:5000/prom/prometheus:v2.5.0\
+  --config.file=/etc/prometheus/prometheus.yml\
+  --alertmanager.timeout=10s \
+  --storage.tsdb.retention=15d
+ExecStop=/usr/bin/docker stop %n
+TimeoutStartSec=0
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

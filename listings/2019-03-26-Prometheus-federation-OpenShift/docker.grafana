@@ -1,0 +1,15 @@
+[Unit]
+Description=Docker Grafana Container
+After=docker.service
+Requires=docker.service
+
+[Service]
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStart=/usr/bin/docker run --init --log-opt max-size=50m --log-opt max-file=5 --name %n --user root --env-file=/opt/grafana/etc/grafana.env --publish=3000:3000 --volume=/opt/grafana/data:/var/lib/grafana --volume=/opt/grafana/dashboards:/dashboards ep-iac-nexus-001:5000/grafana/grafana:5.4.0
+ExecStop=/usr/bin/docker stop %n
+TimeoutStartSec=0
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
