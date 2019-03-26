@@ -16,10 +16,10 @@ Deployed OpenShift clusters with Prometheus cluster operators.
 ``ssh vm  
 yum install -y docker``     
 vim [/etc/systemd/system/docker.prometheus]({{"/listings/2019-03-26-Prometheus-federation-OpenShift/docker.prometheus"}})  
-vim [/etc/systemd/system/docker.grafana]({{"/listings/2019-03-26-Prometheus-federation-OpenShift/docker.prometheus"}})  
+vim [/etc/systemd/system/docker.grafana]({{"/listings/2019-03-26-Prometheus-federation-OpenShift/docker.grafana"}})  
 
 Main config for polling several OpenShift clusters (of course, endpoints should be resolvable)   
-vim [/etc/prometheus/prometheus.yml]({{"/listings/2019-03-26-Prometheus-federation-OpenShift/docker.prometheus"}})
+vim [/etc/prometheus/prometheus.yml]({{"/listings/2019-03-26-Prometheus-federation-OpenShift/prometheus,yml"}})
 
 Setup rule for InstanceDown  
  vim [/etc/prometheus/rules/down.rules]({{"/listings/2019-03-26-Prometheus-federation-OpenShift/rule"}})
