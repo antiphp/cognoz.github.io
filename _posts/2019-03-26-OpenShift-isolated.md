@@ -8,7 +8,7 @@ tags: openshift linux ansible
 ### Intro  
 Mission: Deploy OpenShift OKD in isolated infrastructure.
 
-###Prerequisites  
+### Prerequisites  
 VM with these roles (hardware listed for dev env):  
 - 5 masters; \#8cpu, 16ram, 100hdd
 - 5 etcd; \#8 cpu, 12ram, 100ssd
@@ -20,7 +20,7 @@ Pre-installed CentOS 7.6 on all VM's (in our case - via Vsphere Terraform plugin
 HTTPS Proxy for pulling images  
 Mirrors for rpm packages  
 
-###Prepare ansible vm  
+### Prepare ansible vm  
 ``ssh deployvm
 cp mirrors.repo /etc/yum.repos.d/
 yum makecache fast``  
@@ -48,7 +48,7 @@ cd openshift-ansible
 pip install -r requirements.txt``    
 vim [inventory/test-env]({{"/listings/2019-03-26-OpenShift-isolated/test-env"}})
 
-##Nexus  
+## Nexus  
 As you can see, we will use our private nexus registry, nexus-001:5000. So, let's set up it!  
 ``ssh nexus  
 export https_proxy='http://user:pass@PROXY_ADDRESS:PROXY_PORT'
