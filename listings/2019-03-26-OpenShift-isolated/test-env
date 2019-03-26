@@ -1,0 +1,83 @@
+# Create an OSEv3 group that contains the masters, nodes, and etcd groups
+[OSEv3:children]
+masters
+nodes
+etcd
+lb
+
+# Set variables common for all OSEv3 hosts
+[OSEv3:vars]
+# SSH user, this user should allow ssh based auth without requiring a password
+ansible_ssh_user=root
+
+# If ansible_ssh_user is not root, ansible_become must be set to true
+#ansible_become=true
+openshift_docker_selinux_enabled=False
+
+openshift_master_cluster_method=native
+openshift_master_cluster_hostname=openshift-tt.group.example
+openshift_master_cluster_public_hostname=openshift-tt.group.example
+openshift_master_cluster_public_ip='VIP'
+#openshift_master_public_hostname=openshift-tt.group.example
+openshift_master_default_subdomain=app.group.example
+openshift_docker_insecure_registries=registry.group.example
+openshift_deployment_type=origin
+os_firewall_use_firewalld=True
+openshift_docker_selinux_enable=False
+
+oreg_url=nexus-001:5000/openshift/origin-${component}:${version}
+oreg_auth_user=docker
+oreg_auth_password='pass'
+oreg_test_login=False
+
+l_openshift_cluster_monitoring_image_dicts={'origin':{'prometheus_operator':'nexus-001:5000/coreos/prometheus-operator','prometheus':'nexus-001:5000/openshift/prometheus','alertmanager':'nexus-001:5000/openshift/prometheus-alertmanager','node_exporter':'nexus-001:5000/openshift/prometheus-node-exporter','prometheus_config_reloader':'nexus-001:5000/coreos/prometheus-config-reloader','configmap_reloader':'nexus-001:5000/coreos/configmap-reload','grafana':'nexus-001:5000/grafana/grafana','kube_state_metrics':'nexus-001:5000/coreos/kube-state-metrics','kube_rbac_proxy':'nexus-001:5000/coreos/kube-rbac-proxy','oauth_proxy':'nexus-001:5000/openshift/oauth-proxy'}}
+
+l_openshift_cluster_monitoring_operator_image_dicts={'origin':'nexus-001:5000/coreos/cluster-monitoring-operator:v0.1.1'}
+#SDN shit https://docs.okd.io/3.7/install_config/configuring_sdn.html#configuring-sdn-config-pod-network-ansible
+os_sdn_network_plugin_name='redhat/openshift-ovs-multitenant'
+openshift_use_openshift_sdn=True
+osm_cluster_network_cidr=10.11.1.0/16
+osm_host_subnet_length=8
+openshift_node_proxy_mode=iptables
+#
+# Items added, as is, to end of /etc/sysconfig/docker OPTIONS
+# # Default value: "--log-driver=journald"
+openshift_docker_options='--insecure-registry nexus-001:5000'
+
+# uncomment the following to enable htpasswd authentication; defaults to DenyAllPasswordIdentityProvider
+openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
+openshift_master_htpasswd_users={'ocadmin':'$apr1$FRW2iAZS$j.VOjnoKZpFQhGbHWRYTP1'} #ocadmin:openshift
+openshift_disable_check=memory_availability,disk_availability,docker_image_availability
+# host group for masters
+[masters]
+ep-tt-m-001.group.example
+ep-tt-m-002.group.example
+ep-tt-m-003.group.example
+ep-tt-m-004.group.example
+ep-tt-m-005.group.example
+
+# host group for etcd
+[etcd]
+ep-tt-e-001.group.example
+ep-tt-e-002.group.example
+ep-tt-e-003.group.example
+ep-tt-e-004.group.example
+ep-tt-e-005.group.example
+
+[lb]
+ep-tt-i-001.group.example
+ep-tt-i-002.group.example
+ep-tt-i-003.group.example
+# host group for nodes, includes region info
+[nodes]
+ep-tt-m-001.group.example openshift_node_group_name='node-config-master'
+ep-tt-m-002.group.example openshift_node_group_name='node-config-master'
+ep-tt-m-003.group.example openshift_node_group_name='node-config-master'
+ep-tt-m-004.group.example openshift_node_group_name='node-config-master'
+ep-tt-m-005.group.example openshift_node_group_name='node-config-master'
+ep-tt-w-001.group.example openshift_node_group_name='node-config-compute'
+ep-tt-w-002.group.example openshift_node_group_name='node-config-compute'
+ep-tt-w-003.group.example openshift_node_group_name='node-config-compute'
+ep-tt-i-001.group.example openshift_node_group_name='node-config-infra'
+ep-tt-i-002.group.example openshift_node_group_name='node-config-infra'
+ep-tt-i-003.group.example openshift_node_group_name='node-config-infra'

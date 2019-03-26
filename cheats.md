@@ -16,6 +16,20 @@ Accessing values inside arrays
 Using conditionals
 ``cat test.json |  jq .[] | jq 'select(.name == "vtb-rheltest-01").nics[1].ipAddress'``  
 
+### Convert and upload tar.gz to pypiserver (OSA)  
+``mkdir /openstack/infra0{1-3}_repo_container-id/repo/pools/centos-7.6-x86_64/prometheus_client
+pip download prometheus-client
+tar -xf prometheus-client.tar.gz
+pip install wheel
+cd prometheus-client/
+python setup.py bdist_wheel
+cd openstack-ansible
+ansible -m shell -a 'ip -4 a' pkg_repo
+for i in 1 2 3; do scp prometheus_client-0.6.0/dist/prometheus_client-0.6.0-py2-none-any.whl ip.$i:/var/www/repo/pools/centos-7.6-x86_64/``  
+check  
+``cat /root/.pip/pip.conf  
+curl -L ip:port/simple | grep prometheus_client``  
+
 ### Installation of CentOS7 on old supermicro servers  
 on "Install Centos7" press tab  and add
 ``nomodeset text``  to the end, press enter  
@@ -27,8 +41,20 @@ install system
 place UEFI disk as number 1 device in bios boot lists
 reboot``
 
+### Check filesystem existence on block device
+``head -n 30 /dev/sda | hexdump``  
+
 ### If you cant get intel raid menu  
 ``in bios select RAID not AHCI``  
+
+### Using telnet to access smtp server  
+``telnet smtp.s7.ru 25
+AUTH LOGIN
+334 VXNlcm5hbWU6
+ZXBhYXNfc210cA==   #base64 username  
+334 UGFzc3dvcmQ6
+bW9vZDlEdXNo       #base64 password  
+535 5.7.0 authentication failed``  
 
 ### Get default grub version and set needed  
 ``awk '/menuentry/ && /class/ {count++; print count-1"****"$0 }' /boot/grub/grub.cfg``     
@@ -52,6 +78,17 @@ virsh edit vm
 </cpu>``    
 ### Calculate average from file via bash  
 ``count=0; total=0; for i in $( cat file.txt ); do total=$(echo $total+$i | bc );((count++)); done; echo "scale=2; $total / $count" | bc``  
+
+### Docker retag / repush images to private registry  
+``IMAGES=$(docker images | egrep 'docker.io|quay.io' | awk '{print $1":"$2}')
+REPO="ep-iac-harbor-001:5000"
+printf "$IMAGES\n" > img.txt
+while read -r img; do
+  img_img=$(echo $img | cut -d"/" -f2-10)
+  echo $REPO/$img_img
+  docker tag $img $REPO/$img_img
+  docker push $REPO/$img_img
+done<img.txt``  
 
 ### List all Prometheus Labels
 curl / browser  
