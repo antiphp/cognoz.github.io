@@ -1,6 +1,6 @@
 ---
 layout: post  
-title: Prometheus Federation with OpenShift clusters
+title: Prometheus Federation for OpenShift clusters
 tags: openshift linux ansible prometheus  
 ---
 

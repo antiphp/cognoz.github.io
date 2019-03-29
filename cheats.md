@@ -44,6 +44,9 @@ reboot``
 ### Check filesystem existence on block device
 ``head -n 30 /dev/sda | hexdump``  
 
+### check udp port  
+``nc -v -u -z -w 3 172.29.12.11 514``  
+
 ### If you cant get intel raid menu  
 ``in bios select RAID not AHCI``  
 
