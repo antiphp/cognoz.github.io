@@ -44,17 +44,17 @@ iptables -I INPUT 1 -p udp --dport 514 -j "ACCEPT"``
 
 ### Configure json templating and exporting on machine with rsyslog  
 vim /etc/rsyslog.conf
-[rsyslog.conf]({{"/listings/2019-03-29-ELK-rsyslog/rsyslog.conf}})  
+[rsyslog.conf]({{"/listings/2019-03-29-ELK-rsyslog/rsyslog.conf"}})  
 
 vim /etc/rsyslog.d/22-test.conf
-[22-messages.conf]({{"/listings/2019-03-29-ELK-rsyslog/22-messages.conf}})
+[22-messages.conf]({{"/listings/2019-03-29-ELK-rsyslog/22-messages.conf"}})
 
 Install rsyslog-mmjsonparse:  
 ``yum install -y rsyslog-mmjsonparse``  
 
 ### Configure Logstash on ELK node  
 vim /etc/logstash/conf.d/logstash.conf
-[logstash.conf]({{"/listings/2019-03-29-ELK-rsyslog/logstash.conf}})
+[logstash.conf]({{"/listings/2019-03-29-ELK-rsyslog/logstash.conf"}})
 
 ### Restart rsyslog / Logstash  
 ELK  
@@ -74,7 +74,7 @@ From VM with rsyslog in ELK direction
 From cli (or browser):  
 ``curl -L http://PUBLIC_IP:9200/_cat/indices``  
 
-Go to Kibana, create ES index "logstash-\*" with time "\@timestamp"  
+Go to Kibana, create ES index "logstash-\*" with time "@timestamp"  
 
 ### Finalization  
 That's it! Now we have our logs in pretty Kibana with mighty ES backend. On the next week I'll tell how to export logs from OpenStack LXC containers and how to automate the configuration. See ya!  
