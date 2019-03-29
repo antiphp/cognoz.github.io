@@ -37,9 +37,13 @@ permalink: /links/
 [plugins](https://rally.readthedocs.io/en/0.0.3/plugins.html)  
 
 ### CEPH  
-_Benchmarking Ceph_
 [telekom fio rbd](https://telekomcloud.github.io/ceph/2014/02/26/ceph-performance-analysis_fio_rbd.html)  
 [ceph tracker](http://tracker.ceph.com/projects/ceph/wiki/Benchmark_Ceph_Cluster_Performance)  
+[ceph scrub tuning (ru)](https://ivirt-it.ru/ceph-reduce-osd-scrub-impact/)  
+[migrating with export-diff](https://www.root314.com/ceph/2017/06/08/VM-live-migration-across-the-globe-with-Ceph-and-Openstack/)  
+[ceph perfomance issues (ru)](https://yourcmc.ru/wiki/%D0%9F%D1%80%D0%BE%D0%B8%D0%B7%D0%B2%D0%BE%D0%B4%D0%B8%D1%82%D0%B5%D0%BB%D1%8C%D0%BD%D0%BE%D1%81%D1%82%D1%8C_Ceph)  
+[change ceph osd drive](https://access.redhat.com/documentation/en-us/red_hat_ceph_storage/2/html/administration_guide/changing_an_osd_drive)  
+[ceph-ansible several options](https://access.redhat.com/documentation/en-us/red_hat_ceph_storage/2/html-single/administration_guide/index#adding_an_osd)  
 
 ### HARDWARE  
 [LSI SAS9207-8i RAID](http://backupguy.com/how-i-enable-raid-on-the-lsi-sas-9207-8i/)  
@@ -56,3 +60,6 @@ _Benchmarking Ceph_
 [kubeweekly](https://kubeweekly.com/)  
 [Cleaning rancher after k8s deleting](http://rancher.com/docs/rancher/v1.5/en/kubernetes/deleting/)  
 [RBAC + certificate auth tutorial by Bitnami](https://docs.bitnami.com/kubernetes/how-to/configure-rbac-in-your-kubernetes-cluster/)  
+
+### OpenShift  
+[Httpd Auth](http://onecloudclass.com/lab-6-configuring-authentication-2/)  
