@@ -47,6 +47,13 @@ reboot``
 ### check udp port  
 ``nc -v -u -z -w 3 172.29.12.11 514``  
 
+### change rsyslog conf in all lxc containers with restart (recursive)  
+``ssh infra  
+cd /var/lib/lxc/
+cp infra01_nova_api_container-f61f0140/rootfs/etc/rsyslog.d/51-remote-logging.conf ./
+m=$(ls -la | grep infra | awk '{print $9}'); for i in $m; do \cp -f 51-remote-logging.conf $i/rootfs/etc/rsyslog.d/; lxc-attach -n $i -- systemctl restart rsyslog; done``  
+
+
 ### If you cant get intel raid menu  
 ``in bios select RAID not AHCI``  
 
