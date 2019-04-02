@@ -47,6 +47,12 @@ reboot``
 ### check udp port  
 ``nc -v -u -z -w 3 172.29.12.11 514``  
 
+### Check memory  
+``top -o %MEM -n 1 -b | head -n20``  
+
+### Skip Gitlab CI during committing  
+``git commit -m "something [ci skip]"``  
+
 ### change rsyslog conf in all lxc containers with restart (recursive)  
 ``ssh infra  
 cd /var/lib/lxc/
