@@ -1485,6 +1485,15 @@ http://uat-registry.sk.ru:8081/repository/alfa/
 ## KUBERNETES  
 ### Force delete stale pods  
 ``kubectl delete po POD_NAME  --grace-period=0 --force``  
+
+### Check Kubernetes API availability  
+(create dummy resource and delete it via REST API):  
+``Bearer=Token
+
+curl  --insecure -XDELETE -H "Authorization: Bearer $Bearer" 'https://okd.sigma.uat.oc.s7.ru:8443/api/v1/namespaces/default/configmaps/dummyzb'
+sleep 2;
+curl -s -o /dev/null -w "%{http_code}" --insecure -XPOST  -H "Authorization: Bearer $Bearer" -H 'Content-Type: application/json' -d '{"apiVersion":"v1","kind":"ConfigMap","metadata":{"name":"dummyzb","namespace":"default"}}'  'https://okd.sigma.uat.oc.s7.ru:8443/api/v1/namespaces/default/configmaps'``  
+
 ### Grafana Auth  
 ``kubectl get deploy -n kube-system  
 kubectl edit deploy monitoring-grafana``  
