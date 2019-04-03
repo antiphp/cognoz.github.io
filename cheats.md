@@ -824,6 +824,9 @@ Also you need to disable tls in kube-prometheus-exporter-kubelets (if you are ex
 and if you are usint kubelets-exporter  
 ``kubectl -n monitoring edit servicemonitor exporter-kubelets``
 
+### get current context  
+``kubectl config get-contexts``  
+
 ## Rancher  
 ### bugs  
 1. if you are experiencing some net-shit (like no bridge-net failures, empty json response and so)
@@ -1493,6 +1496,21 @@ http://uat-registry.sk.ru:8081/repository/alfa/
 curl  --insecure -XDELETE -H "Authorization: Bearer $Bearer" 'https://okd.sigma.uat.oc.s7.ru:8443/api/v1/namespaces/default/configmaps/dummyzb'
 sleep 2;
 curl -s -o /dev/null -w "%{http_code}" --insecure -XPOST  -H "Authorization: Bearer $Bearer" -H 'Content-Type: application/json' -d '{"apiVersion":"v1","kind":"ConfigMap","metadata":{"name":"dummyzb","namespace":"default"}}'  'https://okd.sigma.uat.oc.s7.ru:8443/api/v1/namespaces/default/configmaps'``  
+
+### Haproxy frontend/backend stats via socket  
+`` echo "show stat" | nc -U /var/lib/haproxy/stats | cut -d "," -f 1,2,5-11,18,24,27,30,36,50,37,56,57,62 | column -s, -t``  
+
+### Create automatically pods via kubelet (for OS)  
+``cd /etc/origin/node/pods  
+vim mypod.yaml  
+systemctl restart origin-node.service``  
+
+### Remove Ctrl-M characters from file (^M)  
+``vim filename  
+%s/^M//g``  
+obvious, yeah)  
+Also:  
+``sed -e "s/^M//" -i filename``
 
 ### Grafana Auth  
 ``kubectl get deploy -n kube-system  
