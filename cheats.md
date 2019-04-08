@@ -28,7 +28,15 @@ ansible -m shell -a 'ip -4 a' pkg_repo
 for i in 1 2 3; do scp prometheus_client-0.6.0/dist/prometheus_client-0.6.0-py2-none-any.whl ip.$i:/var/www/repo/pools/centos-7.6-x86_64/``  
 check  
 ``cat /root/.pip/pip.conf  
-curl -L ip:port/simple | grep prometheus_client``  
+curl -L ip:port/simple | grep prometheus_client``
+
+### Easy way to recreate KVM vm's (script)   
+``#!/bin/bash
+virsh destroy vm && virsh undefine vm
+rm -f /opt/kvm/vm/vm.qcow2
+cp ./vm-centos7.qcow2 /opt/kvm/vm/vm.qcow2
+virt-install --name vm --virt-type kvm --vcpus 4  --memory 8192 --disk /opt/kvm/vm/vm.qcow2,device=disk,bus=virtio    --disk /opt/kvm/iso/vm.iso,device=cdrom   --graphics none   --boot hd,cdrom,menu=on             --network bridge=br-bond0,model=virtio             --import             --graphics vnc,listen=0.0.0.0 --os-type linux             --os-variant centos7.0   --noautoconsole``  
+
 
 ### Installation of CentOS7 on old supermicro servers  
 on "Install Centos7" press tab  and add
