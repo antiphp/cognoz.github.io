@@ -16,6 +16,21 @@ Accessing values inside arrays
 Using conditionals
 ``cat test.json |  jq .[] | jq 'select(.name == "vtb-rheltest-01").nics[1].ipAddress'``  
 
+### Openshift  
+get hostsubnets (maybe you dont have space in your network):  
+``oc get hostsubnets``  
+get oauthclient ( maybe you have wrong redirect urls):  
+``oc get ouathclient``  
+get netnamespaces  
+``oc get netnamespace``  
+get ovs ports in containers  
+``ovs-ofctl -O OpenFlow13 dump-ports-desc br0  
+ovs-appctl ofproto/trace br0 "tcp,  nw_dst=10.11.0.1, in_port=2"``    
+Problems with datastore "Unable to find VM by UUID. VM UUID: (empty or something)"  
+``please, check these  
+kubectl get nodes -o json | jq '.items[]|[.metadata.name, .spec.providerID, .status.nodeInfo.systemUUID]'  AND    
+cat /sys/class/dmi/id/product_serial``  
+
 ### Convert and upload tar.gz to pypiserver (OSA)  
 ``mkdir /openstack/infra0{1-3}_repo_container-id/repo/pools/centos-7.6-x86_64/prometheus_client
 pip download prometheus-client
@@ -29,6 +44,18 @@ for i in 1 2 3; do scp prometheus_client-0.6.0/dist/prometheus_client-0.6.0-py2-
 check  
 ``cat /root/.pip/pip.conf  
 curl -L ip:port/simple | grep prometheus_client``
+
+### ansible reboot machines  
+``ansible -m shell -a 'reboot' -i contour-auto-deployment/deployment-os/inventory/contour-inv '*'``  
+
+### Ansible ARA openstack  
+``source /opt/ansible-runtime/bin/activate
+pip install ara
+pip install ansible==2.4.6.0 (for queens)
+source <(python -m ara.setup.env)
+openstack-ansible -vv playbooks/setup-everything.yml  
+ara-manage runserver
+Browse http://127.0.0.1:9191``  
 
 ### Easy way to recreate KVM vm's (script)   
 ``#!/bin/bash
@@ -179,6 +206,10 @@ ssh targetVM
 ### Watch file/dir changes  
 ``inotifywait -mr /var/log/ssh_audit.log``  
 
+### Nginx CentOS 403 on files  
+``1. sestatus - need to be permissive  
+2. user root in conf``  
+
 ### Simple python logging (uniq lines) in file   
 ``import logging  
 import logging.handlers   
@@ -259,6 +290,19 @@ mysql -p < all_databases.sql``
 
 ### MYSQL reboostrap failed cluster  
 ``mysql -e "SET GLOBAL wsrep_provider_options='pc.bootstrap=yes';"``  
+
+### MySQL restore root privileges or password  
+``systemctl stop mysql
+mysqld_safe --skip-grant-tables &
+mysql
+UPDATE mysql.user SET Grant_priv='Y', Super_priv='Y' WHERE User='root';
+FLUSH PRIVILEGES;
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';
+#OR
+UPDATE mysql.user SET Password=PASSWORD('NEW-PASSWORD') WHERE User='root';
+FLUSH PRIVILEGES;
+SHUTDOWN;``  
+
 
 ### Fuel plugins - Add version: 2.0.0 in deployment_tasks via VIM  
 ``'%s/^\s&ast;role: .&ast;/  version: 2.0.0\r&/g'``  
@@ -1507,6 +1551,8 @@ curl -s -o /dev/null -w "%{http_code}" --insecure -XPOST  -H "Authorization: Bea
 
 ### Haproxy frontend/backend stats via socket  
 `` echo "show stat" | nc -U /var/lib/haproxy/stats | cut -d "," -f 1,2,5-11,18,24,27,30,36,50,37,56,57,62 | column -s, -t``  
+OR more convenient way )):   
+``hatop -s /run/haproxy.stat``  
 
 ### Create automatically pods via kubelet (for OS)  
 ``cd /etc/origin/node/pods  
