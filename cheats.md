@@ -16,6 +16,18 @@ Accessing values inside arrays
 Using conditionals
 ``cat test.json |  jq .[] | jq 'select(.name == "vtb-rheltest-01").nics[1].ipAddress'``  
 
+### Java wget old JDK
+Login on java website  
+Start Download  
+Stop downloading  
+Get URL with ?AuthParam=  
+wget url  
+
+## Pip upload whl to PYPIserver
+``pip install twine
+twine upload file_name.whl --repository-url https://pip.server_name.com/``  
+
+
 ### Openshift  
 get hostsubnets (maybe you dont have space in your network):  
 ``oc get hostsubnets``  
@@ -30,6 +42,15 @@ Problems with datastore "Unable to find VM by UUID. VM UUID: (empty or something
 ``please, check these  
 kubectl get nodes -o json | jq '.items[]|[.metadata.name, .spec.providerID, .status.nodeInfo.systemUUID]'  AND    
 cat /sys/class/dmi/id/product_serial``  
+
+Bug     
+``Error updating node status, will retry: failed to patch status " ......
+for node "ep-u1-i-001": The order in patch list:
+
+[map[address:172.20.59.44 type:ExternalIP] map[address:172.20.59.41 type:ExternalIP] map[address:172.20.59.44 type:InternalIP] map[address:172.20.59.41 type:InternalIP]]
+ doesn't match $setElementOrder list:``  
+ (maybe related to vsphere cloudprovider)  
+https://bugzilla.redhat.com/show_bug.cgi?id=1552644#c22  
 
 ### Convert and upload tar.gz to pypiserver (OSA)  
 ``mkdir /openstack/infra0{1-3}_repo_container-id/repo/pools/centos-7.6-x86_64/prometheus_client

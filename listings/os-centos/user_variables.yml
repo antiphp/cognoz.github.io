@@ -1,0 +1,143 @@
+---
+pip_validate_certs: false
+keystone_token_expiration: 43200
+
+debug: false
+#haproxy/keepalibed - mandotary
+virtual_router_id: 45
+haproxy_keepalived_external_vip_cidr: "{{external_lb_vip_address}}/32"
+haproxy_keepalived_internal_vip_cidr: "{{internal_lb_vip_address}}/32"
+haproxy_keepalived_external_interface: br-pub
+haproxy_keepalived_internal_interface: br-mgmt
+keepalived_ping_address: "{{internal_lb_vip_address}}"
+haproxy_use_keepalived: true
+#less resources
+nova_wsgi_processes_max: 2
+cinder_wsgi_processes_max: 2
+glance_wsgi_processes_max: 2
+keystone_wsgi_processes_max: 2
+nova_api_threads_max: 2
+glance_api_threads_max: 2
+neutron_api_threads_max: 2
+horizon_wsgi_threads_max: 2
+#offline lxc
+lxc_image_cache_server_mirrors:
+  - http://10.220.101.200
+#workaroung bug
+galera_percona_xtrabackup_repo:
+  repo: "https://repo.percona.com/percona/yum/percona-release-1.0-7.noarch.rpm"
+  state: "{{ (use_percona_upstream | bool) | ternary('present', 'absent') }}"
+
+#enable openstack-hardening
+apply_security_hardening: false
+
+#prebilling
+haproxy_extra_services:
+  - service:
+      haproxy_service_name: prebilling
+      haproxy_backend_nodes: "{{ (groups['prebilling_container'] | default([]))[:1] }}"  # list expected
+      haproxy_backup_nodes: "{{ (groups['prebilling_container'] | default([]))[1:] }}"
+      haproxy_bind: "{{ [internal_lb_vip_address] }}"
+      haproxy_backend_port: 80
+      haproxy_port: 8000
+      haproxy_balance_type: tcp
+      haproxy_timeout_client: 5000s
+      haproxy_timeout_server: 5000s
+      haproxy_service_enabled: "{{ groups['prebilling_container'] is defined and groups['prebilling_container'] | length > 0 }}"
+
+#ssh conf lxc
+# Adding custom default ssh port from LXC containers
+custom_ssh_port: 2200
+lxc_cache_sshd_configuration:
+  - { regexp: "^PermitRootLogin",         line: "PermitRootLogin prohibit-password" }
+  - { regexp: "^TCPKeepAlive",            line: "TCPKeepAlive yes" }
+  - { regexp: "^UseDNS",                  line: "UseDNS no" }
+  - { regexp: "^X11Forwarding",           line: "X11Forwarding no" }
+  - { regexp: "^PasswordAuthentication",  line: "PasswordAuthentication no" }
+  - { regexp: "^Port",                    line: "Port {{ custom_ssh_port | default('22') }}" }
+
+# Metal host packages
+lxc_hosts_distro_packages:
+  - aria2
+  - bridge-utils
+  - btrfs-progs
+  - dbus
+  - debootstrap
+  - dnsmasq
+  - git
+  - libseccomp
+  - lxc
+  - lxc-devel
+  - lxc-libs
+  - lxc-templates
+  - unzip
+  - xz
+  - vim
+  - htop
+  - iftop
+  - tcpdump
+  - less
+  - mlocate
+# LXC container packages
+lxc_cache_distro_packages:
+  - ca-certificates
+  - cronie
+  - epel-release
+  - openssh-server
+  - python2
+  - rsync
+  - sudo
+  - tar
+  - wget
+  - which
+  - yum-plugin-priorities
+  - yum-plugin-rpm-warm-cache
+  - yum-utils
+  - vim
+  - htop
+  - iftop
+  - tcpdump
+  - less
+  - mlocate
+
+# Horizon - Add URL option to Horizon
+horizon_images_allow_location: True
+
+openstack_domain: "test.com"
+#custom repos
+openstack_hosts_package_repos:
+  - name: base
+    file: CentOS-Base
+    description: "CentOS-$releasever - Base"
+    baseurl: "http://{{ nexus_address }}:8081/repository/centos7.6.1810-base/"
+    gpgcheck: no
+    enabled: yes
+  - name: updates
+    file: CentOS-Base
+    description: "CentOS-$releasever - Updates"
+    baseurl: "http://{{ nexus_address }}:8081/repository/centos7.6.1810-updates/"
+    gpgcheck: no
+    enabled: yes
+  - name: extras
+    file: CentOS-Base
+    description: "CentOS-$releasever - Extras"
+    baseurl: "http://{{ nexus_address }}:8081/repository/centos7.6.1810-extras/"
+    gpgcheck: no
+    enabled: yes
+  - name: rdo-qemu-ev
+    file: rdo
+    description: "RDO CentOS-$releasever - QEMU EV"
+    baseurl: "http://{{ nexus_address }}:8081/repository/centos7-base/virt/$basearch/kvm-common/"
+    gpgcheck: no
+    enabled: yes
+  - name: epel
+    file: epel
+    description: "CentOS-$releasever - Epel"
+    baseurl: "http://{{ nexus_address }}:8081/repository/centos7.6.1810-epel/"
+    gpgcheck: no
+    enabled: yes
+  - file: rdo-release
+    name: openstack-queens
+    description: "OpenStack Queens Repository"
+    baseurl: "http://{{ nexus_address }}:8081/repository/centos7/cloud/$basearch/openstack-queens/"
+    gpgcheck: no
