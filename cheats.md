@@ -41,7 +41,12 @@ ovs-appctl ofproto/trace br0 "tcp,  nw_dst=10.11.0.1, in_port=2"``
 Problems with datastore "Unable to find VM by UUID. VM UUID: (empty or something)"  
 ``please, check these  
 kubectl get nodes -o json | jq '.items[]|[.metadata.name, .spec.providerID, .status.nodeInfo.systemUUID]'  AND    
-cat /sys/class/dmi/id/product_serial``  
+cat /sys/class/dmi/id/product_serial``
+Get etcdctl info  
+``ETCDCTL_API=3 etcdctl get "" --from-key --endpoints https://172.20.61.11:2379 --cacert="/etc/etcd/ca.crt" --cert="/etc/etcd/server.crt" --key="/etc/etcd/server.key"``  
+
+Cronjob for sync ldap users  
+oc create -f [cronjob-sync-ldap.yml]({{"/listings/cronjob-sync-ldap.yml"}})   
 
 Bug     
 ``Error updating node status, will retry: failed to patch status " ......
