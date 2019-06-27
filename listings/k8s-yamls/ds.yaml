@@ -1,0 +1,20 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: tst-ds
+spec:
+  selector:
+    matchLabels:
+      app: tst-ds
+  template:
+    metadata:
+      labels:
+        app: tst-ds
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/compute: "true"
+      containers:
+      - name: tstds
+        image: nexus-registry.s7.aero:18116/twalter/openshift-nginx
+        imagePullPolicy: IfNotPresent
+      restartPolicy: Always

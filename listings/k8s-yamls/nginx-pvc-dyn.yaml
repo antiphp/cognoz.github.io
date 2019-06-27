@@ -1,0 +1,39 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nginx-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: sas
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: coffee
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coffee
+  template:
+    metadata:
+      labels:
+        app: coffee
+    spec:
+      containers:
+      - name: coffee
+        image: nexus-registry.s7.aero:18116/twalter/openshift-nginx
+        ports:
+        - containerPort: 8081
+        volumeMounts:
+        - mountPath: /opt
+          name: nginx-data
+      volumes:
+      - name: nginx-data
+        persistentVolumeClaim:
+          claimName: nginx-pvc

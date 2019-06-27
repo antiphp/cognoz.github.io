@@ -12,8 +12,8 @@ other variants
 wget https://download.cirros-cloud.net/0.4.0/cirros-0.4.0-x86_64-disk.img
 glance image-create --disk-format raw --container-format bare --file cirros-0.4.0-x86_64-disk.img --name cirros
 nova flavor-create g1-standard-2-8 1 1024 10 1
-nova flavor-create g1-standard-16-64 1 1024 10 1
+nova flavor-create g1-standard-16-64 2 2048 10 2
 neutron net-create --provider:network_type flat --provider:physical_network physnet1 test-flat
-neutron subnet-create --name test-flat-subnet --gateway 92.38.157.97 --dns-nameserver 172.28.0.253 --allocation-pool start=92.38.157.115,end=92.38.157.120 610c29b9-11f0-46df-a783-fee7362871a0 92.38.157.96/27
+neutron subnet-create --name test-flat-subnet --gateway 92.38.157.97 --dns-nameserver 172.28.0.253 --allocation-pool start=92.38.157.115,end=92.38.157.120 $(neutron net-list | grep test-flat | awk '{print $2}') 92.38.157.96/27
 nova boot --image $(glance image-list | grep cirros | awk '{print $2}')  --flavor 2 --nic net-name=test-flat test1
 nova boot --image $(glance image-list | grep cirros | awk '{print $2}')  --flavor 1 --nic net-name=test-flat test3

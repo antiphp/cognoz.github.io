@@ -23,6 +23,9 @@ Stop downloading
 Get URL with ?AuthParam=  
 wget url  
 
+### stupd firewalld  
+``firewall-cmd --permanent --zone=public --add-port=2234/tcp``  
+
 ## Pip upload whl to PYPIserver
 ``pip install twine
 twine upload file_name.whl --repository-url https://pip.server_name.com/``  
@@ -166,6 +169,10 @@ while read -r img; do
   docker tag $img $REPO/$img_img
   docker push $REPO/$img_img
 done<img.txt``  
+
+### Docker access crashing container  
+``docker commit CONTAINER NEWIMAGENAME
+docker run -ti --entrypoint /bin/bash NEWIMAGENAME``  
 
 ### List all Prometheus Labels
 curl / browser  
