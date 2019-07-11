@@ -26,6 +26,25 @@ wget url
 ### stupd firewalld  
 ``firewall-cmd --permanent --zone=public --add-port=2234/tcp``  
 
+### selinux (hate it)  
+basic stuff for surviving with docker and se  
+``semodule -l|grep container
+semanage fcontext -l|grep /var/lib/docker
+grep avc /var/log/audit/audit.log
+restorecon -Frv /var/lib/docker/overlay2/*
+grep docker /etc/selinux/targeted/contexts/files/file_contexts``
+
+restore right labels:  
+`` semanage fcontext -a -t container_var_lib_t '/var/lib/docker(/.*)?'
+semanage fcontext -a -t container_share_t '/var/lib/docker/.*/config/\.env'
+semanage fcontext -a -t container_file_t '/var/lib/docker/vfs(/.*)?'
+semanage fcontext -a -t container_share_t '/var/lib/docker/init(/.*)?'
+semanage fcontext -a -t container_share_t '/var/lib/docker/overlay(/.*)?'
+semanage fcontext -a -t container_share_t '/var/lib/docker/overlay2(/.*)?'
+semanage fcontext -a -t container_share_t '/var/lib/docker/containers/.*/hosts'
+semanage fcontext -a -t container_log_t '/var/lib/docker/containers/.*/.*\.log'
+semanage fcontext -a -t container_share_t '/var/lib/docker/containers/.*/hostname'``
+
 ## Pip upload whl to PYPIserver
 ``pip install twine
 twine upload file_name.whl --repository-url https://pip.server_name.com/``  
@@ -36,8 +55,8 @@ get hostsubnets (maybe you dont have space in your network):
 ``oc get hostsubnets``  
 get oauthclient ( maybe you have wrong redirect urls):  
 ``oc get ouathclient``  
-get netnamespaces  
-``oc get netnamespace``  
+get every resource in namespace (k8s too):  
+``kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get --show-kind --ignore-not-found -n openshift-monitoring``  
 get ovs ports in containers  
 ``ovs-ofctl -O OpenFlow13 dump-ports-desc br0  
 ovs-appctl ofproto/trace br0 "tcp,  nw_dst=10.11.0.1, in_port=2"``    
@@ -47,7 +66,11 @@ kubectl get nodes -o json | jq '.items[]|[.metadata.name, .spec.providerID, .sta
 cat /sys/class/dmi/id/product_serial``
 Get etcdctl info  
 ``ETCDCTL_API=3 etcdctl get "" --from-key --endpoints https://172.20.61.11:2379 --cacert="/etc/etcd/ca.crt" --cert="/etc/etcd/server.crt" --key="/etc/etcd/server.key"``  
+test fs
+``docker run -it nexus-registry.s7.aero:18116/twalter/openshift-nginx /bin/bash ``
 
+serviceaccounts.openshift.io/oauth-redirectreference.grafanark: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"grafanark}}'
+-cookie-secret=dLC55q1UX8HrgfwfFwPS5yi0SBrX1SDa
 Cronjob for sync ldap users  
 oc create -f [cronjob-sync-ldap.yml]({{"/listings/cronjob-sync-ldap.yml"}})   
 
