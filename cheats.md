@@ -23,8 +23,30 @@ Stop downloading
 Get URL with ?AuthParam=  
 wget url  
 
+### Download office365 onedrive file via wget  
+``When you take the original URL and cut the text behind the '?' and add the text: download=1
+Example:
+original shared file in Office365:
+Code: Select all
+
+https://iotc360-my.sharepoint.com/:u:/p/blabla/EdTJBkefastNuBX3n9y9NxUBJeh4Birs6_qBbTMldBiDGg?e=on40g4
+modified behind the question mark:
+Code: Select all
+
+wget https://iotc360-my.sharepoint.com/:u:/p/blabla/EdTJBkefastNuBX3n9y9NxUBJeh4Birs6_qBbTMldBiDGg?download=1``  
+
 ### stupd firewalld  
 ``firewall-cmd --permanent --zone=public --add-port=2234/tcp``  
+
+### Simple html/js code woth hostname printing
+``<html>
+<body>
+<script>
+document.write(location.hostname);
+</script>
+</body>
+</html>
+``  
 
 ### selinux (hate it)  
 basic stuff for surviving with docker and se  
@@ -67,10 +89,15 @@ cat /sys/class/dmi/id/product_serial``
 Get etcdctl info  
 ``ETCDCTL_API=3 etcdctl get "" --from-key --endpoints https://172.20.61.11:2379 --cacert="/etc/etcd/ca.crt" --cert="/etc/etcd/server.crt" --key="/etc/etcd/server.key"``  
 test fs
-``docker run -it nexus-registry.s7.aero:18116/twalter/openshift-nginx /bin/bash ``
+``docker run -it nexus-registry.s7.aero:18116/twalter/openshift-nginx /bin/bash ``  
+Right way to delete LDAP users:  
+``oc delete identity 'provider=ldap ......'``   
 
-serviceaccounts.openshift.io/oauth-redirectreference.grafanark: '{"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"grafanark}}'
--cookie-secret=dLC55q1UX8HrgfwfFwPS5yi0SBrX1SDa
+How to redirect oauth in Openshift
+``kind: ServiceAccount
+metadata:
+  annotations:
+    serviceaccounts.openshift.io/oauth-redirecturi.first: https://grafana-testfu.domain.com``
 Cronjob for sync ldap users  
 oc create -f [cronjob-sync-ldap.yml]({{"/listings/cronjob-sync-ldap.yml"}})   
 
@@ -80,8 +107,21 @@ for node "ep-u1-i-001": The order in patch list:
 
 [map[address:172.20.59.44 type:ExternalIP] map[address:172.20.59.41 type:ExternalIP] map[address:172.20.59.44 type:InternalIP] map[address:172.20.59.41 type:InternalIP]]
  doesn't match $setElementOrder list:``  
- (maybe related to vsphere cloudprovider)  
+ (maybe related to vsphere cloudprovider, but setting up nodeIp in kubelet helps 100%)    
 https://bugzilla.redhat.com/show_bug.cgi?id=1552644#c22  
+
+### Docker hacks  
+Formatting  
+``#!/bin/bash
+for container in $( docker ps -a --format {{.ID}} ); do
+	buildName="$( docker inspect --format '{{index .Config.Labels "io.openshift.build.name"}}' "${container}" )"
+	if [[ -n "${buildName}" ]]; then
+		exitCode="$( docker inspect --format '{{.State.ExitCode}}' "${container}" )"
+		if [[ "${exitCode}" != 0 ]]; then
+			docker rm -v "${container}"
+		fi
+	fi
+done``
 
 ### Convert and upload tar.gz to pypiserver (OSA)  
 ``mkdir /openstack/infra0{1-3}_repo_container-id/repo/pools/centos-7.6-x86_64/prometheus_client
@@ -99,6 +139,30 @@ curl -L ip:port/simple | grep prometheus_client``
 
 ### ansible reboot machines  
 ``ansible -m shell -a 'reboot' -i contour-auto-deployment/deployment-os/inventory/contour-inv '*'``  
+
+### reboot all components except galera and rabbit  
+``ansible -m shell keystone_all,cinder_api,glance_api,memcached,neutron_server,nova_api,nova_compute,heat_api -a 'reboot'``  
+### boot from volume  
+``nova boot  --block-device source=image,id=fb0b4daf-16f9-400b-ab78-9f93e3de2f1d,dest=volume,size=8,shutdown=preserve,bootindex=0 --key-name rk --nic net-name=flat-net --flavor tiny-vol rk2``  
+``openstack security group rule create --dst-port 80 --protocol tcp --remote-ip 0.0.0.0/0 default``  
+
+### Tune OSA  
+``ansible -m shell -a "sed -i 's/processes.*/processes = 16/g'  /etc/uwsgi/*" cinder_api
+ansible -m shell -a "sed -i 's/threads.*/threads = 16/g'  /etc/uwsgi/*" cinder_api
+ansible -m shell -a "sed -i 's/threads.*/threads = 16/g'  /etc/uwsgi/*" nova_api_metadata
+ansible -m shell -a "sed -i 's/processes.*/processes = 16/g'  /etc/uwsgi/*" nova_api_metadata
+ansible -m shell -a "sed -i 's/threads.*/threads = 32/g'  /etc/uwsgi/*" keystone
+ansible -m shell -a "sed -i 's/processes.*/processes = 32/g'  /etc/uwsgi/*"  keystone
+ansible -m shell -a "reboot" keystone,cinder_api,nova_api_metadata
+ansible -m shell -a "sed -i 's/osapi_compute_workers.*/osapi_compute_workers = 32/g'  /etc/nova/nova.conf"  nova_compute
+ansible -m shell -a "sed -i 's/metadata_workers.*/metadata_workers = 32/g'  /etc/nova/nova.conf"  nova_compute
+ansible -m shell -a "sed -i 's/^workers = 16/workers = 32/g'  /etc/nova/nova.conf"  nova_compute
+ansible -m shell -a "sed -i 's/max_instances_per_host = 50/max_instances_per_host = 500/g'  /etc/nova/nova.conf"  nova_compute
+ansible -m shell -a "systemctl restart nova-compute"  nova_compute``  
+
+### OSA reclone git repos in repo_container  
+``openstack-ansible -vv -e '{repo_build_git_reclone: True}' playbooks/repo-install.yml
+``  
 
 ### Ansible ARA openstack  
 ``source /opt/ansible-runtime/bin/activate
@@ -197,15 +261,70 @@ done<img.txt``
 ``docker commit CONTAINER NEWIMAGENAME
 docker run -ti --entrypoint /bin/bash NEWIMAGENAME``  
 
-### List all Prometheus Labels
+### List all Prometheus Labels  
 curl / browser  
 ``http://serverip:serverport/api/v1/label/__name__/values``  
+### Alertmanager PagerDuty integration  
+cat /etc/alertmanager/alertmanager.yml  
+``#
+# Ansible managed
+#
+
+global:
+  resolve_timeout: 3m
+  smtp_smarthost: localhost:25
+  smtp_from: alertmanager@newlma.ru
+templates:
+- '/etc/alertmanager/templates/*.tmpl'
+receivers:
+- email_configs:
+  - to: devops@gcore.lu
+  name: default
+- name: pagerduty
+  pagerduty_configs:
+  - severity: "critical"
+    description: "Recieved critical error, react ASAP!"
+    service_key: INTEGRATION KEY
+    url: "https://events.pagerduty.com/v2/enqueue"
+route:
+  group_by: [cluster]
+  receiver: default
+  routes:
+  - match:
+      severity: 'critical'
+    receiver: pagerduty
+``  
+### Firing test alert AlertManager  
+``#!/bin/bash
+
+name="Test alert for pagerduty"
+url='http://localhost:9093/api/v1/alerts'
+
+echo "firing up alert $name"
+
+# change url o
+curl -XPOST $url -d "[{
+        \"status\": \"firing\",
+        \"labels\": {
+                \"alertname\": \"$name\",
+                \"service\": \"test\",
+                \"severity\":\"critical\",
+                \"instance\": \"Test\"
+        },
+        \"annotations\": {
+                \"summary\": \"IT works!\"
+        },
+        \"generatorURL\": \"http://prometheus.int.example.net/<generating_expression>\"
+}]"``  
 
 ### Export / Import Grafana Dashboards from one instance to another  
 Export  
 ``curl -k -u admin:admin "ip:port/api/dashboards/uid/$UID | jq '.dashboard.id = null' > dash.json"``  
 Import  
 ``curl -u admin:admin -H "Content-Type: application/json" -d @dash.json -X POST http://ip:port/api/dashboards/db``   
+
+### Grafana freezes dashboard loading after importing new dashboard  
+``{meta {dashboard{refresh: false }}}  SHOULD BE FALSE!!!!``  
 
 ### Problems with lab novnc openstack console ? (1006)  
 ``ssh compute  
@@ -780,6 +899,29 @@ Generate right self-signed certs
 ``openssl req -x509 -newkey rsa:4096 -keyout kibana-lol.it.com.pem -out  kibana-lol.it.com.cert -days 365 -nodes  
 echo  kibana-lol.it.com.cert >> kibana-lol.it.bundle  
 echo  kibana-lol.it.com.pem  >> kibana-lol.it.bundle``  
+
+Version 2 - with CA and AltSubjectName  (CentOS)   
+First of all, copy and made these changes to openss.cnf  
+``cp /etc/pki/tls/openssl.cnf ./``  
+vim openssl.cnf  
+``req_extensions = v3_req  
+[ v3_req ]
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = harbor.example``  
+Next, made rootca key, crt, csr, and generate certs and keys  
+``openssl genrsa -out rootCA.key 4096  
+openssl req -x509 -new -nodes -key rootCA.key -sha256 -days 1024 -out rootCA.crt
+openssl genrsa -out harbor.example.key 2048
+openssl req -new -sha256 -key harbor.example.key -subj "/C=RU/ST=MS/O=ITkey, LTD./CN=harbor.example" -reqexts v3_req -config ./openssl.cnf -out harbor.example.csr  
+openssl req -in harbor.example.csr -noout -text
+openssl x509 -req -days 365 -in harbor.example.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -CAserial serial_numbers -out harbor.example.crt -extensions v3_req -extfile ./openssl.cnf``  
+Validate cert/key/SAN  
+``openssl rsa -noout -modulus -in harbor.example.key | openssl md5
+openssl x509 -noout -modulus -in harbor.example.crt | openssl md5  
+openssl x509 -in harbor.example.crt -text -noout  
+``
+
 
 ### Certbot let-s encrypt manual DNS verification and renewing   
 ``add-apt-repository ppa:certbot/certbot  
@@ -1584,6 +1726,14 @@ file_recv_max_size: 10000
 ``  
 
 ## Nexus 3  
+### Simple deploy  
+``docker pull sonatype/nexus3  
+mkdir /opt/nexus-data && chown -R 200 /opt/nexus-data  
+docker run -d -p 8081:8081 -p 5000:5000 --name nexus -v /opt/nexus-data:/nexus-data sonatype/nexus3  
+cat /opt/nexus-data/admin.password
+BROWSER:
+login, create docker hosted repo with HTTP connector 5000``  
+
 ### OrientDB reset admin  
 1. log via ssh  
 2. java -jar /opt/sonatype/nexus/lib/support/nexus-orient-console.jar  

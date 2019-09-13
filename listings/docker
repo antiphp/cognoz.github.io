@@ -1,0 +1,8 @@
+docker run -d -p 9000:9000 -v /opt/minio-data/config/:/root/.minio:Z -v /opt/minio-data/data/:/data:Z \
+  --name miniork nexus-registry.s7.aero:18116/minio:RELEASE.2019-05-14T23-57-45Z server /data
+
+docker run -d --name nex-an -p 8081:8081 -v /opt/nex:/nexus-data:Z nexus-registry.s7.aero:18116/sonatype/nexus3:3.14.0
+
+
+cat tst_img | cut -d ':' -f 1,2 |xargs -n1 docker pull -a
+docker run -d --name nex-an2 -p 8081:8081 -p 5000:5000 -v /opt/nex:/nexus-data:Z nexus-registry.s7.aero:18116/sonatype/nexus3:3.14.0

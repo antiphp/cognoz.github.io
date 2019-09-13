@@ -1,0 +1,31 @@
+apiVersion: v1
+data:
+  wild-ingress-hook-shell.sh: |
+    #!/usr/bin/env bash
+    if [[ $1 == "--config" ]] ; then
+    cat <<EOF
+    {
+       "onKubernetesEvent":[
+          {
+             "kind":"ingress",
+             "event":["update","create"]
+          }
+       ]
+    }
+    EOF
+    else
+      createdIngress=$(jq -r '.[0].resourceName' $BINDING_CONTEXT_PATH)
+      createdIngressNamespace=$(jq -r '.[0].resourceNamespace' $BINDING_CONTEXT_PATH)
+      hosts=$(oc get ingress -n $createdIngressNamespace $createdIngress  -o jsonpath='{.spec.rules[*].host}')
+      if [[ $hosts == '' ]]; then
+        echo "Invalid Host ref for ingress $createdIngress in ns $createdIngressNamespace"
+        echo "Set host of $createdIngress to invalid.domainname"
+        oc patch ingress -n $createdIngressNamespace $createdIngress  node-hub -p '{"spec": { "rules": [ {"host": "invalid.domainname"} ] } }'
+      else
+        echo "Non empty spec.rules.host, proceeding"
+      fi
+    fi
+kind: ConfigMap
+metadata:
+  name: wild-ingress-hook-shell
+  namespace: shell-operator
