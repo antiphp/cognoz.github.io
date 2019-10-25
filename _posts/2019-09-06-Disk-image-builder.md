@@ -25,11 +25,14 @@ Configure basic stuff on CentOS VM
 cd /opt
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py  
 python get-pip.py
+pip install virtualenv
+virtualenv venv
+source venv/bin/activate
 yum -y install vim python-devel kernel-devel gcc qemu-img policycoreutils-python
 pip install diskimage-builder  
 ``  
 Also, I have to install openstack clients cause my goal is to test image in the cloud, anyway.  
-``pip install python-openstackclient==3.14.3 python-novaclient==10.1.0 python-neutronclient==6.7.0 python-keystoneclient==3.15.0 python-heatclient==1.14.0 python-glanceclient==2.10.1
+  ``pip install python-openstackclient==3.14.3 python-novaclient==10.1.0 python-neutronclient==6.7.0 python-keystoneclient==3.15.0 python-heatclient==1.14.0 python-glanceclient==2.10.1
 
 vim /root/openrc
 source /root/openrc

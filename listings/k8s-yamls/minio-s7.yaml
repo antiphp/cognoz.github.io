@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: minio
+  name: minio
+spec:
+  podManagementPolicy: OrderedReady
+  replicas: 3
+  selector:
+    matchLabels:
+      app: minio
+  serviceName: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+        example: exampleLabel
+        type: staas-dev-1
+    spec:
+      containers:
+      - args:
+        - server
+        - http://minio-{0...11}.minio.minio-rk.svc.cluster.local/data
+        env:
+        - name: MINIO_ACCESS_KEY
+          value: ed1G1IcUES21J62d31Nx
+        - name: MINIO_SECRET_KEY
+          value: 7Qv4KloZd9/4u4fNh4Ws8/yNec68mhK4
+        - name: MINIO_DOMAIN
+          value: s3.amazonaws.com
+        - name: MINIO_STORAGE_CLASS_STANDARD
+          value: EC:4
+        - name: MINIO_STORAGE_CLASS_RRS
+          value: EC:2
+        - name: MINIO_DRIVE_SYNC
+          value: "off"
+        - name: MINIO_BROWSER
+          value: "off"
+        - name: MINIO_WORM
+          value: "off"
+        image: nexus-registry.s7.aero:18116/minio
+        imagePullPolicy: IfNotPresent
+        name: minio
+        ports:
+        - containerPort: 9000
+          protocol: TCP
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /data
+          name: data
+        - mountPath: /root/.minio
+          name: config
+      dnsPolicy: ClusterFirst
+      imagePullSecrets:
+      - name: nexus-staas
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+  updateStrategy:
+    type: OnDelete
+  volumeClaimTemplates:
+  - metadata:
+      creationTimestamp: null
+      name: data
+      namespace: minio-rk
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: sas
+  - metadata:
+      creationTimestamp: null
+      name: config
+      namespace: minio-rk
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 100Mi
+      storageClassName: sas

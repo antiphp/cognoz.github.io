@@ -50,9 +50,6 @@ spec:
       serviceAccount: s3
       serviceAccountName: s3
       volumes:
-      - name: s3-pvc
-        persistentVolumeClaim:
-          claimName: s3-pvc
       - name: devfuse
         hostPath:
           path: /dev/fuse

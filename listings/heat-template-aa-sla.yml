@@ -1,0 +1,129 @@
+description: Sla VM's stack
+heat_template_version: '2016-04-08'
+parameters:
+  flavor:
+    constraints:
+    - custom_constraint: nova.flavor
+    default: m1.tiny
+    type: string
+  public_net:
+    type: string
+    description: >
+      Name of public network for which floating IP addresses will be allocated
+    default: public1_net
+  image:
+    constraints:
+    - custom_constraint: glance.image
+    default: centos7-1811-x64-rk
+    type: string
+  key_name:
+    default: rk
+    type: string
+  private_network:
+    constraints:
+    - custom_constraint: neutron.network
+    default: private1_net
+    type: string
+resources:
+  allow_ssh:
+    properties:
+      description: allow all traffic from anywhere.
+      name:
+        list_join:
+        - '-'
+        - - get_param: OS::stack_name
+          - kickstart
+          - allow all incoming traffic
+      rules:
+      - direction: ingress
+        protocol: tcp
+        remote_ip_prefix: 0.0.0.0/0
+      - direction: ingress
+        protocol: udp
+        remote_ip_prefix: 0.0.0.0/0
+      - direction: ingress
+        protocol: icmp
+        remote_ip_prefix: 0.0.0.0/0
+    type: OS::Neutron::SecurityGroup
+  cloud-init-config:
+    properties:
+      cloud_config:
+        runcmd:
+        - echo 'kek'
+        users:
+        - default
+        - lock_passwd: false
+          name: stack
+          shell: /bin/bash
+    type: OS::Heat::CloudConfig
+  host:
+    depends_on:
+    - cloud-init-config
+    - port
+    properties:
+      flavor:
+        get_param: flavor
+      image:
+        get_param: image
+      key_name:
+        get_param: key_name
+      name:
+        list_join:
+        - '-'
+        - - get_param: OS::stack_name
+          - sla
+      networks:
+      - port:
+          get_resource: port
+      user_data:
+        get_resource: cloud-init-config
+      user_data_format: RAW
+    type: OS::Nova::Server
+  host2:
+    depends_on:
+    - port2
+    properties:
+      flavor:
+        get_param: flavor
+      image:
+        get_param: image
+      key_name:
+        get_param: key_name
+      name:
+        list_join:
+        - '-'
+        - - get_param: OS::stack_name
+          - sla-2
+      networks:
+      - port:
+          get_resource: port2
+      user_data_format: RAW
+    type: OS::Nova::Server
+  port:
+    depends_on:
+    - allow_ssh
+    properties:
+      network:
+        get_param: private_network
+      security_groups:
+      - get_resource: allow_ssh
+    type: OS::Neutron::Port
+  host_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_param: public_net }
+      port_id: { get_resource: port }
+  port2:
+    depends_on:
+    - allow_ssh
+    properties:
+      network:
+        get_param: private_network
+      security_groups:
+      - get_resource: allow_ssh
+    type: OS::Neutron::Port
+  host2_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_param: public_net }
+      port_id: { get_resource: port2 }

@@ -1,0 +1,193 @@
+---
+cidr_networks: &cidr_networks
+  container: 192.168.241.128/26
+  storage: 192.168.242.128/27
+  tunnel: 192.168.247.32/27
+
+#Common layer (environment variables)
+network-host_template: &network-containers
+  neutron_agents_container: 0
+  neutron_server_container: 0
+
+infra-hosts_template: &controller_hosts
+  cu1k1-vct01:
+    ip: &ctrl01-ip 192.168.241.131
+  cu1k1-vct02:
+    ip: &ctrl02-ip 192.168.241.132
+  cu1k1-vct03:
+    ip: &ctrl03-ip 192.168.241.133
+
+network-hosts_template: &network_hosts
+  cu1k1-nns101:
+    ip: &nnode01-ip 192.168.245.1
+  cu1k1-nns201:
+    ip: &nnode02-ip 192.168.245.2
+
+compute-hosts_template: &compute_hosts
+  cu1k1-kcs301:
+    ip: 192.168.245.33
+  cu1k1-kcs302:
+    ip: 192.168.245.34
+  cu1k1-kcs303:
+    ip: 192.168.245.35
+  cu1k1-kcs304:
+    ip: 192.168.245.36
+  cu1k1-kcs305:
+    ip: 192.168.245.37
+  cu1k1-kcs306:
+    ip: 192.168.245.38
+  cu1k1-kcs307:
+    ip: 192.168.245.39
+  cu1k1-kcs308:
+    ip: 192.168.245.40
+  cu1k1-kcs309:
+    ip: 192.168.245.41
+  cu1k1-kcs310:
+    ip: 192.168.245.42
+  cu1k1-kcs311:
+    ip: 192.168.245.43
+  cu1k1-kcs312:
+    ip: 192.168.245.44
+  cu1k1-kcs313:
+    ip: 192.168.245.45
+  cu1k1-kcs314:
+    ip: 192.168.245.46
+  cu1k1-kcs315:
+    ip: 192.168.245.47
+# compute with GPU
+  cu1k1-kgs301:
+    ip: 192.168.245.49
+  cu1k1-kgs302:
+    ip: 192.168.245.50
+  cu1k1-kgs303:
+    ip: 192.168.245.51
+  cu1k1-kgs304:
+    ip: 192.168.245.52
+
+
+cinder-backend_template: &cinder_backend
+  cinder_backends:
+    limit_container_types: cinder_volume
+    volumes_hdd:
+      volume_driver: cinder.volume.drivers.rbd.RBDDriver
+      rbd_pool: ukvm1_volumes
+      rbd_ceph_conf: /etc/ceph/ceph.conf
+      rbd_flatten_volume_from_snapshot: 'false'
+      rbd_max_clone_depth: 5
+      rbd_store_chunk_size: 4
+      rados_connect_timeout: -1
+      volume_backend_name: cinder-volumes
+      rbd_secret_uuid: "{{ cinder_ceph_client_uuid }}"
+      rbd_user: "{{ cinder_ceph_client }}"
+      backend_host: rbd:volumes
+
+
+#End of the common layer
+
+used_ips:
+  - "192.168.241.129,192.168.241.133" # controllers - mgmt
+  - "192.168.241.190" # gateway
+  - "192.168.242.129,192.168.242.133" # controllers - storage
+  - "192.168.242.158" # gateway
+  - "192.168.247.33,192.168.247.52" # computes - prv network for VXLAN traffic
+  - "192.168.247.62" # gateway
+
+global_overrides:
+  cidr_networks: *cidr_networks
+  foreman_host: 192.168.241.129
+  keystone_private_address: 192.168.241.70
+  keystone_public_address: keystone.uni.sbercloud.ru
+  internal_lb_vip_address: 192.168.241.130
+  external_lb_vip_address: 192.168.254.130
+  management_bridge: "br-mgmt"
+  tunnel_bridge: "br-vxlan"
+  provider_networks:
+    - network:
+        container_bridge: "br-mgmt"
+        container_type: "veth"
+        container_interface: "eth1"
+        ip_from_q: "container"
+        type: "raw"
+        container_mtu: "1400"
+        group_binds:
+          - all_containers
+          - hosts
+        is_container_address: true
+        is_ssh_address: true
+        static_routes:
+          - cidr: 192.168.245.0/24
+            gateway: 192.168.241.190
+    - network:
+        container_bridge: "br-vxlan"
+        container_type: "veth"
+        container_interface: "eth10"
+        host_bind_override: "eth10"
+        ip_from_q: "tunnel"
+        type: "vxlan"
+        range: "1:10000"
+        net_name: "vxlan"
+        group_binds:
+          - neutron_openvswitch_agent
+    - network:
+        container_bridge: "br-strg"
+        container_type: "veth"
+        container_interface: "eth2"
+        ip_from_q: "storage"
+        type: "raw"
+        container_mtu: "1400"
+        static_routes:
+          - cidr: 192.168.249.0/24
+            gateway: 192.168.242.158
+        group_binds:
+          - glance_api
+          - cinder_api
+          - cinder_volume
+          - nova_compute
+
+shared-infra_hosts: *controller_hosts
+haproxy_hosts: *controller_hosts
+storage-infra_hosts: *controller_hosts
+image_hosts: *controller_hosts
+compute-infra_hosts: *controller_hosts
+log_hosts: *controller_hosts
+repo-infra_hosts: *controller_hosts
+compute_hosts: *compute_hosts
+log_hosts: *controller_hosts
+
+network_hosts:
+  cu1k1-vct01:
+    ip: *ctrl01-ip
+    affinity:
+      <<: *network-containers
+      neutron_server_container: 1
+  cu1k1-vct02:
+    ip: *ctrl02-ip
+    affinity:
+      <<: *network-containers
+      neutron_server_container: 1
+  cu1k1-vct03:
+    ip: *ctrl03-ip
+    affinity:
+      <<: *network-containers
+      neutron_server_container: 1
+  cu1k1-nns101:
+    ip: *nnode01-ip
+    affinity:
+      <<: *network-containers
+      neutron_agents_container: 1
+  cu1k1-nns201:
+    ip: *nnode02-ip
+    affinity:
+      <<: *network-containers
+      neutron_agents_container: 1
+
+storage_hosts:
+  cu1k1-vct01:
+    ip: *ctrl01-ip
+    container_vars: *cinder_backend
+  cu1k1-vct02:
+    ip: *ctrl02-ip
+    container_vars: *cinder_backend
+  cu1k1-vct03:
+    ip: *ctrl03-ip
+    container_vars: *cinder_backend

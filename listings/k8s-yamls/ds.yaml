@@ -18,3 +18,19 @@ spec:
         image: nexus-registry.s7.aero:18116/twalter/openshift-nginx
         imagePullPolicy: IfNotPresent
       restartPolicy: Always
+
+
+
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: ingress-nginx
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+
+      nodeSelector:
+        node-role.kubernetes.io/infra: "true"

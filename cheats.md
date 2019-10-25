@@ -77,6 +77,11 @@ get hostsubnets (maybe you dont have space in your network):
 ``oc get hostsubnets``  
 get oauthclient ( maybe you have wrong redirect urls):  
 ``oc get ouathclient``  
+delete all evicted pods:  
+``kubectl get po -a --all-namespaces -o json | \
+jq  '.items[] | select(.status.reason!=null) | select(.status.reason | contains("Evicted")) |
+"kubectl delete po \(.metadata.name) -n \(.metadata.namespace)"' | xargs -n 1 bash -c``  
+
 get every resource in namespace (k8s too):  
 ``kubectl api-resources --verbs=list --namespaced -o name | xargs -n 1 kubectl get --show-kind --ignore-not-found -n openshift-monitoring``  
 get ovs ports in containers  
@@ -85,7 +90,30 @@ ovs-appctl ofproto/trace br0 "tcp,  nw_dst=10.11.0.1, in_port=2"``
 Problems with datastore "Unable to find VM by UUID. VM UUID: (empty or something)"  
 ``please, check these  
 kubectl get nodes -o json | jq '.items[]|[.metadata.name, .spec.providerID, .status.nodeInfo.systemUUID]'  AND    
-cat /sys/class/dmi/id/product_serial``
+cat /sys/class/dmi/id/product_serial``  
+Problems with starting privileged container (2 different securityContext):    
+``use securityContext IN container spec, not pod:  
+securityContext:
+  privileged: true
+image: nexus-registry.s7.aero:18116/heptio-images/velero:v1.1.0
+imagePullPolicy: IfNotPresent
+name: restic
+resources: {}
+terminationMessagePath: /dev/termination-log
+terminationMessagePolicy: File
+volumeMounts:
+- mountPath: /host_pods
+  mountPropagation: HostToContainer
+  name: host-pods
+securityContext:
+  runAsUser: 0
+``  
+also dont forget about  
+``oc adm policy add-scc-to-user privileged system:serviceaccount:testrk2:testnice``  
+
+and about joining networks))  
+``oc adm pod-network join-projects --to=velero kube-system``  
+
 Get etcdctl info  
 ``ETCDCTL_API=3 etcdctl get "" --from-key --endpoints https://172.20.61.11:2379 --cacert="/etc/etcd/ca.crt" --cert="/etc/etcd/server.crt" --key="/etc/etcd/server.key"``  
 test fs
@@ -264,6 +292,9 @@ docker run -ti --entrypoint /bin/bash NEWIMAGENAME``
 ### List all Prometheus Labels  
 curl / browser  
 ``http://serverip:serverport/api/v1/label/__name__/values``  
+### Alertmanager multiple jobs query  
+``up{env="ed-8",job="consul_libvirt"} == 0 and ON(instance)  up{env="ed-8",job="consul_node_exporter"} == 0``  
+
 ### Alertmanager PagerDuty integration  
 cat /etc/alertmanager/alertmanager.yml  
 ``#
@@ -425,8 +456,8 @@ name = Altinity ClickHouse Repo``
 ### Echo pipeline over SSH  
 `` echo 'string' | ssh ubuntu@10.1.3.3 "cat >> /target/file"``  
 
-### Get only response code from server  
-``curl -s -o /dev/null -I -w "%{http_code}"  http://ip:port``  
+### Simulate Low load on server (1M file)   
+``while true; do rsync --bwlimit=1000000 /usr/local/bin/node_exporter lold; sleep 2; done``    
 
 ### Check internet speed in cli (via speedtest.com by ookla)  
 ``curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -``  
@@ -550,6 +581,21 @@ or
 
 ### Using deprecated branches  
 ``git checkout kilo-eol``  
+
+### Repush tag  
+Delete and push:  
+``git checkout v1.1.0
+git add -A
+git commit -m "something"
+git tag -d v1.1.0
+git tag v1.1.0
+git push origin v1.1.0 -f``  
+
+### Weird login after pushing  
+Presumably, you have a wrong email in git global config.
+Push strategy = simple also could help  
+``git config --global  -e
+git config --global push.default simple``  
 
 ### Enable password cache in git store  
 ``git config credential.helper cache``  
@@ -860,18 +906,22 @@ rgw keystone implicit tenants = false``
 
 ### Get started  
 insert in the end of /root/.profile   
-``export GOROOT=/opt/go/goroot
-export GOPATH=/opt/go/go
-export PATH=$PATH:/usr/local/bin:$GOPATH/bin``  
-Make dirs  
-``mkdir -p /opt/go/go /opt/go/goroot``  
+``export GOROOT=/usr/local/go
+export GOPATH=$HOME/GoProjects
+export PATH=$GOPATH/bin:$GOROOT/bin:$PATH``  
 Get Go  
-``cd /opt/go/goroot  
-curl -O https://storage.googleapis.com/golang/go1.11.2.linux-amd64.tar.gz
-tar -xf go1.11.2.linux-amd64.tar.gz``  
+``cd /opt/
+wget https://dl.google.com/go/go1.13.1.linux-amd64.tar.gz
+tar -xzf go1.13.1.linux-amd64.tar.gz
+mv go /usr/local
+export GOROOT=/usr/local/go
+mkdir $HOME/GoProjects
+export GOPATH=$HOME/GoProjects
+export PATH=$GOPATH/bin:$GOROOT/bin:$PATH``  
+
 Make test repo  
-``mkdir -p /opt/go/go/src/github.com/user/hello``  
-vim /opt/go/go/src/github.com/user/hello/hello.go  
+``mkdir -p $HOME/GoProjects/src/github.com/user/hello``  
+vim $HOME/GoProjects/src/github.com/user/hello/hello.go  
 ``package main
 import "fmt"
 func main() {
@@ -1047,17 +1097,17 @@ exit
 docker cp $id:/var/lib/pgsql/dump_….sql ./``  
 Dump cobbler node vars:  
 ``docker exec –it $id_cobbler bash
-cobbler system dumpvars --name app-strg-05.luxoft.com >> cobbler_vars_strg_05``  
+cobbler system dumpvars --name app-strg-05.name.com >> cobbler_vars_strg_05``  
 
 Removing node from Fuel PSQL DB:
 ``fuel node –node $id –force –delete-from-databases``  
 
 Creating cobbler system for node (preventing bootstrap)  
 ``fuel exec –it $id_cobbler
-cobbler system add --name app-strg-05.luxoft.com --profile ubuntu_1404_x86_64
-cobbler system edit --name app-strg-05.luxoft.com --ip-address=PXE_IP --interface=$INTERFACE --mac=MAC --netmask=255.255.255.0 --static=0 --netboot-enabled=False``  
+cobbler system add --name app-strg-05.name.com --profile ubuntu_1404_x86_64
+cobbler system edit --name app-strg-05.name.com --ip-address=PXE_IP --interface=$INTERFACE --mac=MAC --netmask=255.255.255.0 --static=0 --netboot-enabled=False``  
 Repeat edit command for every device:  
-``cobbler system edit --name app-strg-05.luxoft.com --interface=$INTERFACE --mac=MAC --netmask=255.255.255.0 --static=0 --netboot-enabled=False``  
+``cobbler system edit --name app-strg-05.name.com --interface=$INTERFACE --mac=MAC --netmask=255.255.255.0 --static=0 --netboot-enabled=False``  
 Test: Reboot node. It should skip bootstrap section (and therefore fuel “discover” state in UI)   
 
 ## HELM  
@@ -1746,6 +1796,11 @@ http://uat-registry.sk.ru:8081/repository/alfa/
 ## KUBERNETES  
 ### Force delete stale pods  
 ``kubectl delete po POD_NAME  --grace-period=0 --force``  
+
+### Delete all Evicted pods in all namespaces  
+``kubectl get po -a --all-namespaces -o json | \
+jq  '.items[] | select(.status.reason!=null) | select(.status.reason | contains("Evicted")) |
+"kubectl delete po \(.metadata.name) -n \(.metadata.namespace)"' | xargs -n 1 bash -c``  
 
 ### Check Kubernetes API availability  
 (create dummy resource and delete it via REST API):  
