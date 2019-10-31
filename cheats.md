@@ -38,6 +38,9 @@ wget https://iotc360-my.sharepoint.com/:u:/p/blabla/EdTJBkefastNuBX3n9y9NxUBJeh4
 ### stupd firewalld  
 ``firewall-cmd --permanent --zone=public --add-port=2234/tcp``  
 
+### Megacli Basic info  
+``MegaCli -LDInfo -Lall -aALL``  
+
 ### Simple html/js code woth hostname printing
 ``<html>
 <body>
@@ -47,6 +50,10 @@ document.write(location.hostname);
 </body>
 </html>
 ``  
+
+### Get ram usage staticstics
+``ps aux  | awk '{print $6/1024 " MB\t\t" $11}'  | sort -n``  
+
 
 ### selinux (hate it)  
 basic stuff for surviving with docker and se  
@@ -71,6 +78,45 @@ semanage fcontext -a -t container_share_t '/var/lib/docker/containers/.*/hostnam
 ``pip install twine
 twine upload file_name.whl --repository-url https://pip.server_name.com/``  
 
+## Cool prompt for compute servers  
+Paste it in any .bash_* file  
+``cluster_id="id"
+role_id="compute"
+role="$cluster_id $role_id"
+if [[ -n $cluster_id ]]
+then
+    if [[ $role_id == "compute" ]]
+    then
+        virsh -h 2&>1
+        if [[ $? == 0 ]]
+        then
+            virsh_cmd="virsh"
+        fi
+        docker exec nova_libvirt virsh -h 2&>1
+        if [[ $? == 0 ]]
+        then
+            virsh_cmd="docker exec nova_libvirt virsh"
+        fi
+        if [[ -n $virsh_cmd ]]
+        then
+            role="$cluster_id $role_id \$($virsh_cmd list | grep -c instance)|\$($virsh_cmd list --inactive | grep -c instance)VMs"
+            unset virsh_cmd
+        fi
+    fi
+else
+    if [[ -n $role_id ]]
+    then
+        role=$role_id
+    else
+        role="none"
+    fi
+fi
+export PS1="\[\e[00;32m\]\u@($role) \h\[\e[0m\]\[\e[00;37m\]:\[\e[0m\]\[\e[00;36m\][\w]\[\e[0m\]\[\e[00;37m\]:#\[\e[0m\] "
+export PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME%%.*}\007"'
+unset role
+unset role_id
+unset cluster_id
+``  
 
 ### Openshift  
 get hostsubnets (maybe you dont have space in your network):  
@@ -292,6 +338,13 @@ docker run -ti --entrypoint /bin/bash NEWIMAGENAME``
 ### List all Prometheus Labels  
 curl / browser  
 ``http://serverip:serverport/api/v1/label/__name__/values``  
+
+### Prometheus delete metrics by name/label  
+( add --web.enable-admin-api flag to prometheus )  
+``curl -X POST -g 'http://localhost:9090/api/v1/admin/tsdb/delete_series?match[]={__name__="cloudapi_instance_ok"}'
+curl -X POST -g 'http://localhost:9090/api/v1/admin/tsdb/delete_series?match[]={instance="ruslanbalkin-dev"}'``  
+
+
 ### Alertmanager multiple jobs query  
 ``up{env="ed-8",job="consul_libvirt"} == 0 and ON(instance)  up{env="ed-8",job="consul_node_exporter"} == 0``  
 
