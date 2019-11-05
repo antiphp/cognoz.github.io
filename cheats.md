@@ -117,6 +117,8 @@ unset role
 unset role_id
 unset cluster_id
 ``  
+2 охуенно
+4 программист
 
 ### Openshift  
 get hostsubnets (maybe you dont have space in your network):  
