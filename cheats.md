@@ -39,7 +39,7 @@ wget https://iotc360-my.sharepoint.com/:u:/p/blabla/EdTJBkefastNuBX3n9y9NxUBJeh4
 ``firewall-cmd --permanent --zone=public --add-port=2234/tcp``  
 
 ### Megacli Basic info  
-``MegaCli -LDInfo -Lall -aALL``  
+``MegaCli -LDInfo -Lall -aALL``   
 
 ### Simple html/js code woth hostname printing
 ``<html>
@@ -53,6 +53,15 @@ document.write(location.hostname);
 
 ### Get ram usage staticstics
 ``ps aux  | awk '{print $6/1024 " MB\t\t" $11}'  | sort -n``  
+
+### Apt - adding new deb packages in repo    
+``apt-get install dpkg-dev  
+mkdir -p /usr/local/mydebs
+cd /usr/local/mydebs
+dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
+#Get files locally via apt  
+echo "deb file:/usr/local/mydebs ./ >> /etc/apt/sources.list
+apt update"  
 
 
 ### selinux (hate it)  
