@@ -34,11 +34,7 @@ cp ansible/inventory/* .``
 1. Configure all network interfaces (for data plane and control)  
 2. Install python-minimal  
 3. Configure passwordless access from deploymen VM
-4. You need either raw block devices or configure VG (pvcreate,vgcreate..) for OSD's
-5. If you want to use raw block devices, you need to create partitions there via gdisk or analog.
-6. Configure group_vars/osds.yml group_vars/all.yml  
 
-So, lets start.  
 #### Configuration of interfaces    
 cat /etc/netplan/01-netcfg.yaml  
 ``network:
@@ -46,15 +42,15 @@ cat /etc/netplan/01-netcfg.yaml
   renderer: networkd
   ethernets:
     ens160:
-      addresses: [ 10.220.104.54/24 ]
+      addresses: [ 10.220.104.53/24 ]
       gateway4: 10.220.104.254
       nameservers:
           addresses:
               - "8.8.8.8"
     ens192:
-      addresses: [ 10.220.103.54/24 ]
-    ens224:
-      addresses: [ 10.220.101.54/24 ]``  
+      addresses: [ 10.220.103.53/24 ]
+    ens256:
+      addresses: [ 10.220.102.53/24 ]``   
 netplan apply  
 
 #### Install python-minimal  
@@ -128,3 +124,4 @@ Now, check basic statuses:
 ``cinder service-list; nova service-list; neutron agent-list``  
 
 ### Links  
+https://docs.openstack.org/kolla-ansible/latest/user/operating-kolla.html
