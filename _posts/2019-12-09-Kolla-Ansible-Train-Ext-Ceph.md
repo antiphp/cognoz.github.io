@@ -126,4 +126,5 @@ source /opt/venv/bin/activate
 pip install openstackclient``  
 Now, check basic statuses:  
 ``cinder service-list; nova service-list; neutron agent-list``  
-  
+
+### Links  

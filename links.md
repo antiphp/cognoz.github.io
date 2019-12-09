@@ -7,6 +7,10 @@ permalink: /links/
 ### Linux  
 [sysctl simple tcp tutorial (russian)](https://habrahabr.ru/company/otus/blog/340870/)  
 
+### Openstack  
+[operating kolla](https://docs.openstack.org/kolla-ansible/latest/user/operating-kolla.html)
+[galera recovery OSA](https://docs.openstack.org/openstack-ansible/newton/developer-docs/ops-galera-recovery.html)  
+
 ### CI/CD   
 [gitlab current merge-request pipeline restriction](https://gitlab.com/gitlab-org/gitlab-ce/issues/23902)  
 
