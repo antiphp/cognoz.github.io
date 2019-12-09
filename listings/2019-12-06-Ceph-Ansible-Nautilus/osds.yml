@@ -1,0 +1,7 @@
+---
+copy_admin_key: true
+lvm_volumes:
+  - data: /dev/sdb1
+    db: /dev/sdd1
+  - data: /dev/sdc1
+    db: /dev/sdd2

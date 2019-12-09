@@ -1,0 +1,49 @@
+---
+ceph_stable_release: nautilus
+ceph_repository: community
+ceph_origin: repository
+ntp_service_enabled: true
+ntp_daemon_type: chronyd
+cephx: true
+monitor_interface: ens160
+public_network: 10.220.104.0/24
+cluster_network: 10.220.103.0/24
+osd_objectstore: bluestore
+openstack_config: true
+openstack_glance_pool:
+  name: "images"
+  pg_num: "32"
+  pgp_num: "32"
+  rule_name: "replicated_rule"
+  type: 1
+  erasure_profile: ""
+  expected_num_objects: ""
+  application: "rbd"
+  size: "3"
+  min_size: "2"
+openstack_cinder_pool:
+  name: "volumes"
+  pg_num: "64"
+  pgp_num: "64"
+  rule_name: "replicated_rule"
+  type: 1
+  erasure_profile: ""
+  expected_num_objects: ""
+  application: "rbd"
+  size: "3"
+  min_size: "2"
+openstack_nova_pool:
+  name: "vms"
+  pg_num: "128"
+  pgp_num: "128"
+  rule_name: "replicated_rule"
+  type: 1
+  erasure_profile: ""
+  expected_num_objects: ""
+  application: "rbd"
+  size: "3"
+  min_size: "2"
+openstack_pools:
+  - "{{ openstack_glance_pool }}"
+  - "{{ openstack_cinder_pool }}"
+  - "{{ openstack_nova_pool }}"

@@ -50,6 +50,19 @@ document.write(location.hostname);
 </body>
 </html>
 ``  
+### journalctl  
+``journalctl --since "2019-12-20 17:15:00"``  
+
+### Cloud image set pass  
+``apt update; apt -y install libguestfs-tools
+wget https://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img  
+virt-customize -a xenial-server-cloudimg-amd64-disk1.img --root-password password:coolpass``  
+
+### Recreate ovs ports with options  
+``ovs-vsctl add-port br-tun vxlan-0adc6d0a  -- set interface vxlan-0adc6d0a type=vxlan options:df_default="true" options:dst_port="5789" options:egress_pkt_mark="0" options:in_key=flow options:local_ip="10.220.107.4" options:out_key=flow options:remote_ip=10.220.107.10``  
+
+### Determine qdhcp NS via network  
+``for ns in $(ip netns | grep qdhcp | tr '\n' ' '); do echo $ns; ip netns exec $ns ip -4 a | grep 192.168.174; done``  
 
 ### Get ram usage staticstics
 ``ps aux  | awk '{print $6/1024 " MB\t\t" $11}'  | sort -n``  
@@ -86,6 +99,9 @@ semanage fcontext -a -t container_share_t '/var/lib/docker/containers/.*/hostnam
 ## Pip upload whl to PYPIserver
 ``pip install twine
 twine upload file_name.whl --repository-url https://pip.server_name.com/``  
+
+## OSA build pip wheels cmd  
+``pip wheel --timeout 120 --wheel-dir /tmp/openstack-wheel-output --find-links /var/www/repo/links --find-links /tmp/openstack-wheel-output --constraint /var/www/repo/os-releases/17.1.17/ubuntu-16.04-x86_64/requirements_constraints.txt  --no-binary libvirt-python --no-binary cryptography  --index-url https://pypi.python.org/simple --trusted-host pypi.python.org  --build /tmp/openstack-builder --requirement /var/www/repo/os-releases/17.1.17/ubuntu-16.04-x86_64/requirements.txt  2>&1 | ts > /var/log/repo/wheel_build.log``  
 
 ## Cool prompt for compute servers  
 Paste it in any .bash_* file  
@@ -126,10 +142,11 @@ unset role
 unset role_id
 unset cluster_id
 ``  
-2 охуенно
-4 программист
 
 ### Openshift  
+simulate OOM  
+``https://access.redhat.com/solutions/47692``  
+
 get hostsubnets (maybe you dont have space in your network):  
 ``oc get hostsubnets``  
 get oauthclient ( maybe you have wrong redirect urls):  
@@ -208,13 +225,18 @@ for container in $( docker ps -a --format {{.ID}} ); do
 	fi
 done``
 
+### Ansible ad-hoc with dynamic_inventory  
+Ex. 1. Testing new nova code  
+``ansible -m copy -a 'src=virt dest=/openstack/venvs/nova-17.1.17/lib/python2.7/site-packages/nova/' -i /opt/openstack-ansible/inventory/dynamic_inventory.py nova_api_container
+ansible -m shell -a 'rm -rf /var/log/nova/*; reboot' -i /opt/openstack-ansible/inventory/dynamic_inventory.py nova_api_container``  
+
 ### Convert and upload tar.gz to pypiserver (OSA)  
 ``mkdir /openstack/infra0{1-3}_repo_container-id/repo/pools/centos-7.6-x86_64/prometheus_client
 pip download prometheus-client
 tar -xf prometheus-client.tar.gz
 pip install wheel
 cd prometheus-client/
-python setup.py bdist_wheel
+ls
 cd openstack-ansible
 ansible -m shell -a 'ip -4 a' pkg_repo
 for i in 1 2 3; do scp prometheus_client-0.6.0/dist/prometheus_client-0.6.0-py2-none-any.whl ip.$i:/var/www/repo/pools/centos-7.6-x86_64/``  
@@ -643,6 +665,18 @@ or
 ### Git change git scheme to https  
 `` git config --global url."https://".insteadOf git://``  
 
+### Stash /unstash git
+``git stash #hide files
+git stash pop #undo``
+
+### Git remove binary files  
+``git log -p | grep ^Binary
+#paste all needed names in fl_del files
+fls=$(awk '{print $1}' ../fl_del | sort -u | tr '\n' ' ')
+for i in $fls; do git filter-branch --force --index-filter "git rm -rf --cached --ignore-unmatch $i" HEAD --all; done
+git push --force origin --all
+``
+
 ### Using deprecated branches  
 ``git checkout kilo-eol``  
 
@@ -677,7 +711,7 @@ git-review #Voila!``
 repeat all steps for all branches   
 
 ### Sed all files in dir  
-``find . -type f -print0 | xargs -0 sed -i 's/str1/str2/g'``  
+``find . -type f -print0 | xargs-0 sed -i 's/str1/str2/g'``  
 
 ### FC scsi bus rescan  
 ``echo 1 > /sys/class/fc_host/host#/issue_lip``  
@@ -1428,7 +1462,11 @@ nested_level: 5``
 ``rally task start rally.git/rally/certification/openstack/task.yaml --task-args-file rally.git/rally/certification/openstack/task_arguments.yaml``  
 
 ## Ceph Osd Rbd  
-
+Legacy  
+start osd via service:  
+``start ceph-osd id=14``  
+some fstab entries:  
+``/dev/sdk3 /var/lib/ceph/osd/ceph-14 xfs rw,relatime,attr2,inode64,allocsize=4096k,logbsize=256k,noquota 0 0``  
 ### Ceph usefull flags during migraton / evacuation etc  
 ceph set ..
 ``noout  
@@ -1498,6 +1536,11 @@ ceph osd crush add 30 1.09 host=skl-os-ceph02.HDD (30 - osd-id, 1.09 - weight)``
 ``systemctl stop ceph-osd@ID    
 mkdir /mnt/foo
 ceph-objectstore-tool --op fuse --data-path /var/lib/ceph/osd/ceph-75 --mountpount /mnt/foo``  
+
+### Delete old osds without monitors  
+``systemctl stop ceph-osd@1  
+umount /dev/sdb1
+ceph-disk zap /dev/sdb``  
 
 ### Get config from mon  
 ``ceph daemon /var/run/ceph/ceph-mon.*.asok config show``  
@@ -1858,6 +1901,10 @@ delete from realm``
 If there still no configuration tab - it's maybe not your fault, try another browser and cacheclaening
 http://uat-registry.sk.ru:8081/repository/alfa/
 ## KUBERNETES  
+### Diagnostic net pod  
+``kubectl run --generator=run-pod/v1 tmp-shell --rm -i --tty --image nicolaka/netshoot -- /bin/bash
+#more info - https://github.com/nicolaka/netshoot``  
+
 ### Force delete stale pods  
 ``kubectl delete po POD_NAME  --grace-period=0 --force``  
 
