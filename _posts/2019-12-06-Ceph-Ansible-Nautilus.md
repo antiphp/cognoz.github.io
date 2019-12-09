@@ -24,13 +24,20 @@ virtualenv /opt/venv
 source /opt/venv/bin/activate  
 pip install -r requirements.txt
 ``  
+Also, you need to configure group_vars/osds.yml group_vars/all.yml:  
+cd /opt/ceph-ansible/  
+vim group_vars/osds.yml (Pay attention to partition/device setup)    
+[group_vars/osds.yml]({{"/listings/2019-12-06-Ceph-Ansible-Nautilus/osds.yml"}})  
+vim group_vars/all.yml  
+[group_vars/all.yml]({{"/listings/2019-12-06-Ceph-Ansible-Nautilus/all.yml"}})  
+
+
 ### Prepare target hosts  
 1. Configure all network interfaces (for data plane and control)  
 2. Install python-minimal  
 3. Configure passwordless access from deploymen VM
 4. You need either raw block devices or configure VG (pvcreate,vgcreate..) for OSD's
 5. If you want to use raw block devices, you need to create partitions there via gdisk or analog.
-6. Configure group_vars/osds.yml group_vars/all.yml  
 
 So, lets start.  
 #### Configuration of interfaces    
@@ -56,7 +63,7 @@ netplan apply
 deployhost:  
 ``ssh-keygen;  
 cat /root/.ssh/id_rsa.pub (copy in buffer)``  
-target1:  
+target1-3:  
 `` echo $(key) >> /root/.ssh/authorized_keys``  
 
 #### Prepare hosts file  
@@ -87,14 +94,7 @@ ansible -m shell -a '(echo n;echo p;echo 1;echo;echo;echo;echo w;echo Y) | gdisk
 #### Check existing block devices  
 ``ansible -m shell -a 'lsblk' -i hosts '*'``  
 
-#### Configure group_vars/osds.yml group_vars/all.yml   
-cd /opt/ceph-ansible/  
-vim group_vars/osds.yml  
-[group_vars/osds.yml]({{"/listings/2019-12-06-Ceph-Ansible-Nautilus/osds.yml"}})  
-vim group_vars/all.yml  
-[group_vars/all.yml]({{"/listings/2019-12-06-Ceph-Ansible-Nautilus/all.yml"}})  
-
-#### Deploy  
+### Deploy  
 ``cd /opt/ceph-ansible  
 cp site.yml.sample site.yml  
 ansible-playbook -vv -i hosts site.yml``  
