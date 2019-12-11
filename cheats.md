@@ -363,6 +363,8 @@ while read -r img; do
   docker tag $img $REPO/$img_img
   docker push $REPO/$img_img
 done<img.txt``  
+### In oneline
+``for img in $(docker images | awk '{print $1":"$2}' | grep -v REPOSITORY | tr '\n' ' '); do docker tag $img harbor.cognoz/$img; docker push harbor.cognoz/$img; done``  
 
 ### Docker access crashing container  
 ``docker commit CONTAINER NEWIMAGENAME
@@ -371,6 +373,9 @@ docker run -ti --entrypoint /bin/bash NEWIMAGENAME``
 ### List all Prometheus Labels  
 curl / browser  
 ``http://serverip:serverport/api/v1/label/__name__/values``  
+
+### Query via API some job for timerange  
+``curl 'http://PROMIP:9090/api/v1/query_range?query=%7Bjob%3D%27consul_libvirt%27%7D&start=2019-12-04T20:10:30.781Z&end=2019-12-11T10:11:00.781Z&step=150s'``    
 
 ### Prometheus delete metrics by name/label  
 ( add --web.enable-admin-api flag to prometheus )  

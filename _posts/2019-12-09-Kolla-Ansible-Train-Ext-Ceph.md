@@ -123,5 +123,20 @@ pip install openstackclient``
 Now, check basic statuses:  
 ``cinder service-list; nova service-list; neutron agent-list``  
 
+### Other stuff  
+#### Customize roles  
+If you are using venv as I do then path is:  
+``/opt/venv/share/kolla-ansible/ansible/roles``    
+
+#### Mirror images in registry  
+``for img in $(docker images | awk '{print $1":"$2}' | grep -v REPOSITORY | tr '\n' ' '); do docker tag $img harbor.cognoz/$img; docker push harbor.cognoz/$img; done``  
+
+#### Destroing Environment
+``cd /opt/kolla-ansible  
+source /etc/kolla/admin-openrc.sh
+source /opt/venv/bin/activate
+nova list --all-tenants #first, you need to delete all instances  
+kolla-ansible -i multinode destroy --yes-i-really-really-mean-it``  
+
 ### Links  
 https://docs.openstack.org/kolla-ansible/latest/user/operating-kolla.html
