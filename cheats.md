@@ -331,9 +331,13 @@ m=$(ls -la | grep infra | awk '{print $9}'); for i in $m; do \cp -f 51-remote-lo
 AUTH LOGIN
 334 VXNlcm5hbWU6
 ZXBhYXNfa110cA==   #base64 username  
-334 UGFzc3dvcmQ6
+334 UGFzc3dvcmQ6m
 bW9vZDlc2No       #base64 password  
 535 5.7.0 authentication failed``  
+
+### Send email via Linux CLI (ext smtp server)  
+``apt-get install heirloom-mailx  
+echo "This is the message body and contains the message" | mailx -v -r "someone@example.com" -s "This is the subject" -S smtp="mail.example.com:587" -S smtp-auth=login -S smtp-auth-user="someone@example.com" -S smtp-auth-password="abc123" -S ssl-verify=ignore yourfriend@gmail.com``  
 
 ### Get default grub version and set needed  
 ``awk '/menuentry/ && /class/ {count++; print count-1"****"$0 }' /boot/grub/grub.cfg``     
