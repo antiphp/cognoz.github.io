@@ -36,8 +36,8 @@ vim /usr/local/bin/os_exporter_usage_mon.sh
 ``#!/bin/bash
 set -x
 LOG=/var/log/os_exporter_usage_mon.log
-echo "Current date: $(date +%d.%m)  $(date +%H:%M:%S)" >> $LOG
 echo "----------------------------------------------------------" >> $LOG
+echo "Current date: $(date +%d.%m)  $(date +%H:%M:%S)" >> $LOG
 echo "USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME" >> $LOG
 echo "$(ps axuf | grep openstack_expo | grep -v grep | cut -d'/' -f1)" >> $LOG``  
 And restart everything  
