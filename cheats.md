@@ -16,6 +16,11 @@ Accessing values inside arrays
 Using conditionals
 ``cat test.json |  jq .[] | jq 'select(.name == "vtb-rheltest-01").nics[1].ipAddress'``  
 
+### Systemd stuff
+Reaaaly weird bug in Centos7.6 with systemd-219-67.el7  -
+starting some exporter (https://github.com/czerwonk/ping_exporter) with flag   --config.path="path" not equal to   
+starting with flag --config.path="path" (this failed)...  
+
 ### Java wget old JDK
 Login on java website  
 Start Download  
