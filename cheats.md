@@ -236,18 +236,16 @@ Ex. 1. Testing new nova code
 ansible -m shell -a 'rm -rf /var/log/nova/*; reboot' -i /opt/openstack-ansible/inventory/dynamic_inventory.py nova_api_container``  
 
 ### Convert and upload tar.gz to pypiserver (OSA)  
-``mkdir /openstack/infra0{1-3}_repo_container-id/repo/pools/centos-7.6-x86_64/prometheus_client
+``cd /opt; mkdir prometheus-client/
+cd prometheus-client
 pip download prometheus-client
-tar -xf prometheus-client.tar.gz
-pip install wheel
-cd prometheus-client/
-ls
-cd openstack-ansible
-ansible -m shell -a 'ip -4 a' pkg_repo
-for i in 1 2 3; do scp prometheus_client-0.6.0/dist/prometheus_client-0.6.0-py2-none-any.whl ip.$i:/var/www/repo/pools/centos-7.6-x86_64/``  
+cd /opt/openstack-ansible/
+ansible -m shell -a 'ls /var/www/repo/pools/' repo_container
+ansible -m copy -a 'src=/opt/prometheus-client dest=/var/www/repo/pools/ubuntu-16.04-x86_64/' repo_container``  
+
 check  
 ``cat /root/.pip/pip.conf  
-curl -L ip:port/simple | grep prometheus_client``
+curl -L ip:port/simple | grep prometheus_client``  
 
 ### ansible reboot machines  
 ``ansible -m shell -a 'reboot' -i contour-auto-deployment/deployment-os/inventory/contour-inv '*'``  
