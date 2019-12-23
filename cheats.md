@@ -1348,8 +1348,10 @@ dd if=/dev/zero of=/dev/vdb bs=1M count=64
 12. If you have more than one nodegroup you should check accordance between nodegroups and group_id of nodes or your deployment will like failed with non-understandable error in nailgun like '24' '22' 'gateway' and so.  
 
 ### RabbitMQ HA  
-1. Queues should be durable and have ONLY 1 matching policy, like  
-``
+1. Queues should be durable and have ONLY 1 matching policy  
+2. list non empty queues -
+``rabbitmqctl list_queues name consumers messages -p /neutron  | awk -F' ' '$2!="0"'``  
+
 ## Elasticsearch and LMA  
 
 ## Influx  
@@ -1765,6 +1767,11 @@ exec { "Prepare OSD $name":
  }  
 }  
 process_osd { $dev : }``  
+
+### Bridges  
+FDB (in case of changed net provider, for example):  
+``bridge fdb show dev vxlan-16700141
+bridge fdb replace 00:1d:aa:79:85:05 dev vxlan-16700141 master``  
 
 ## NEUTRON provider network FUEL deployment  
 ### Get future deployment settings  
