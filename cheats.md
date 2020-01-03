@@ -290,6 +290,8 @@ rm -f /opt/kvm/vm/vm.qcow2
 cp ./vm-centos7.qcow2 /opt/kvm/vm/vm.qcow2
 virt-install --name vm --virt-type kvm --vcpus 4  --memory 8192 --disk /opt/kvm/vm/vm.qcow2,device=disk,bus=virtio    --disk /opt/kvm/iso/vm.iso,device=cdrom   --graphics none   --boot hd,cdrom,menu=on             --network bridge=br-bond0,model=virtio             --import             --graphics vnc,listen=0.0.0.0 --os-type linux             --os-variant centos7.0   --noautoconsole``  
 
+### Change label on partiton  
+``e2label /dev/sda1 ROOT``  
 
 ### Installation of CentOS7 on old supermicro servers  
 on "Install Centos7" press tab  and add
