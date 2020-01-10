@@ -1,7 +1,7 @@
 ---
 layout: post  
 title: Monitoring Process Resources Usage With Standard Linux Tools
-tags: monitoring linux systemd
+tags: monitoring linux systemctl
 ---
 
 

@@ -1,7 +1,7 @@
 ---
 layout: post  
 title: Deploying Kolla Openstack release Train with Ironic on 1 baremetal node
-tags: kolla openstack ironic centos
+tags: kolla openstack ironic centos swift docker registry
 ---
 
 
@@ -20,8 +20,9 @@ Of course you can use a VM instead of baremetal. But keep in mind that AIO funct
 - Install packages via yum like docker-ce/virtualenv;  
 - Create venv;  
 - Install a lot of pip stuff in venv;  
-- Install kolla-ansible in venv;     
-- Pre-Pull train binary images from kolla hub (Optional - I have a very very bad internet connection on this node, so it's easier to pre-pull them with infinite loop in bash);  
+- Install kolla/kolla-ansible in venv;     
+- Build images on remote machine;
+- Copy registry with images from remote machine to dest node;  
 - Configure kolla's ymls;  
 - Configure disk/disks/partitions for Swift;  
 - Change Swift task with hardcoded partition (If you don't have a dedicated device for Swfit, overwise use community's swift preparation instruction);  
@@ -61,7 +62,9 @@ pip install ./
 pip install tox
 tox -e genconfig
 cp -r etc/* /etc/
-vim /etc/kolla/kolla-build.conf #[DEFAULT]/regex - change it accordingly to your needs (I use regex: "".*"" for all images)  
+vim /etc/kolla/kolla-build.conf
+#[DEFAULT]/regex - change it accordingly to your needs (I use regex:
+"regex = "fluentd|nova-.*|ironic-.*|neutron-.*|glance-.*|placement-.*|heat-.*|horizon|keystone-.*|swift-.*|openvswitch-.*|kolla-toolbox|mariadb|haproxy|dnsmasq|cron|iscsid|memcached|rabbitmq|keepalived|chrony"" for all needed images)    
 kolla-build``  
 Now, run local docker registry  and push there all builded images  
 ``bash
@@ -151,11 +154,39 @@ kolla-ansible -i /etc/kolla/dt-1.inv deploy
 kolla-ansible -i /etc/kolla/dt-1.inv post-deploy``  
 
 ### Post-deploy  
+First of all, its possible that swift containers will get "permission denied" from mounted storage (you can check this in /var/log/kolla/swift/.. log after object container creation (openstack container create test)). In that case, do:  
 ``bash
 chmod 777 -R /srv/node/  #wrong permissions for swift  
 docker ps | grep swift | awk '{print $1}' | xargs -n1 docker stop
 docker ps -a | grep swift | awk '{print $1}' | xargs -n1 docker start
-mount | grep sda2``
+mount | grep sda2``  
+Second, Kolla doesn't do swift temp-url for glance. Hence, if you try to deploy node via baremetal service, you will get 'An auth plugin is required to determine endpoint URL' (bug: https://bugs.launchpad.net/kolla-ansible/+bug/1741950). To fix it you need to configure swift endpoints in ironic-conductor and configure temp-url key in swift ironic account:  
+Get account info:  
+``source code/openrc-dt1
+export OS_PROJECT_NAME=service
+export OS_USERNAME=ironic
+export OS_PASSWORD=pass
+openstack object store account show``  
+Set temp-url key:  
+``bash
+source code/openrc-dt1
+export OS_PROJECT_NAME=service
+export OS_USERNAME=ironic
+export OS_PASSWORD=B5OnAJHYoRq1OuCy5rgUtAODidBTuQyaUQAi8PaR
+openstack object store account set --property Temp-Url-Key=0e827e0e497dc06dc35e8000``  
+Fill this data in ironic-conductor conf:  
+vim /etc/kolla/ironic-conductor/ironic.conf  
+``bash
+[glance]  
+swift_account = AUTH_e75374a7e3b14b2f9c4e9c9ec4f7119a
+swift_api_version = v1
+swift_container = glance
+swift_endpoint_url = http://10.101.166.200:8080
+swift_temp_url_key = 0e827e0e497dc06dc35e8000``  
+Restart all ironic containers:  
+``bash
+docker ps | grep ironic | awk '{print $1}' | xargs -n1 docker restart``  
+
 
 ### other stuff  (optional)  
 #### Reconfigure env  
