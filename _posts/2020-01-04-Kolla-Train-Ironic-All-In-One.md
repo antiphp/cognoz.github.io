@@ -30,21 +30,18 @@ Of course you can use a VM instead of baremetal. But keep in mind that AIO funct
 - Bootstrap / Deploy /Post-deploy;    
 
 ### Packages installation  
-``bash
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+``curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python get-pip.py
 yum -y install git gcc libattr-devel.x86_64 python-devel.x86_64 #mostly for further installation of openstack's clients
 pip install virtualenv``  
 
 ### Venv  
-``bash  
-virtualenv /opt/venv  
+``virtualenv /opt/venv  
 source /opt/venv/bin/activate``  
 
 ### Building images on remote machine   
 Optional step. Plan is to build images on a machine with a good internet connection, run locally docker registry, push images to it and export result registry container with all images to target host from which kolla will be deployed. Machine OS is CentOS7.     
-``bash
-cd /opt
+``cd /opt
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python get-pip.py
 yum -y install git gcc libattr-devel.x86_64 python-devel.x86_64
@@ -67,12 +64,10 @@ vim /etc/kolla/kolla-build.conf
 "regex = "fluentd|nova-.*|ironic-.*|neutron-.*|glance-.*|placement-.*|heat-.*|horizon|keystone-.*|swift-.*|openvswitch-.*|kolla-toolbox|mariadb|haproxy|dnsmasq|cron|iscsid|memcached|rabbitmq|keepalived|chrony"" for all needed images)    
 kolla-build``  
 Now, run local docker registry  and push there all builded images  
-``bash
-docker run -d -p 5002:5000 --restart always --name kolla-registry registry:2``   
+``docker run -d -p 5002:5000 --restart always --name kolla-registry registry:2``   
 
 Next, you can copy docker registry volume dir to your dest host with kolla-ansible and run local registry there  
-``bash
-cd /var/lib/docker/volumes/
+``cd /var/lib/docker/volumes/
 tar -cjf $ID.tar $ID  
 scp $ID.tar root@$DEST-HOST-IP:  
 ssh root@$DEST-HOST-IP  
@@ -86,8 +81,7 @@ docker start kolla-registry``
 Okay, now we have registry on right node with all images in place.    
 
 ### Git repos  
-``bash
-cd /opt
+``cd /opt
 git clone https://github.com/openstack/kolla-ansible.git -b stable/train
 git clone https://github.com/openstack/kolla.git -b stable/train
 cd kolla-ansible
@@ -98,6 +92,14 @@ pip install -r requirements.txt
 pip install ./
 pip install ansible==2.8 #I used this version for queens - train releases ``    
 
+### Configuration  
+Next, we need to configure globals.yml and inventory file;  
+We will use default all-in-one inventory and enable/disable services deployment via
+globals.  
+``cp -r /opt/kolla-ansible/etc/* /etc/
+kolla-genpwd
+vim /etc/kolla/globals.yml``  
+[globals.yml]({{"/listings/2020-01-04-Kolla-Train-Ironic-All-In-One/globals.yml"}})    
 
 ### Swift stuff
 #### Partition workaround
@@ -110,8 +112,7 @@ So I needed to create a new partition on this disk named and labeled it and ever
 Kolla's instruction doesn't presume this case, and I didn't managed to name partition correctly (not just to label it).      
 So I workarounded this problem with little hardcode in Swift ansible task (hate this but I was really-really short of time and it was holidays after all)  
 So let's begin with a new partition and xfs filesystem:      
-``bash
-fdisk /dev/sda
+``fdisk /dev/sda
 n
 p
 2
@@ -121,8 +122,7 @@ w``
 Create xfs:  
 ``mkfs.xfs -f -L 'KOLLA_SWIFT' /dev/sda2``  
 Now we hardcode our sda2 device in swift lookup task:  
-``bash
-blkid | grep sda2  #get UUID``    
+``blkid | grep sda2  #get UUID``    
 vim /opt/venv/share/kolla-ansible/ansible/roles/swift/tasks/start.yml  
 #pay attention to first 30 lines  
 [start.yml]({{"/listings/2020-01-04-Kolla-Train-Ironic-All-In-One/start.yml"}})  
@@ -136,8 +136,7 @@ Source:
 
 ### Ironic  
 #### Get images  
-``bash
-mkdir  /etc/kolla/dt-1/ironic
+``mkdir  /etc/kolla/dt-1/ironic
 cd /etc/kolla/dt-1/ironic
 wget ironic-agent.initramfs
 wget ironic-agent.kernel``  
@@ -149,14 +148,12 @@ vim /etc/kolla/dt-1/ironic-inspector.conf
 [ironic-inspector.conf]({{"/listings/2020-01-04-Kolla-Train-Ironic-All-In-One/ironic-inspector.conf"}})    
 
 ### Deploy
-``bash
-kolla-ansible -i /etc/kolla/dt-1.inv deploy
+``kolla-ansible -i /etc/kolla/dt-1.inv deploy
 kolla-ansible -i /etc/kolla/dt-1.inv post-deploy``  
 
 ### Post-deploy  
 First of all, its possible that swift containers will get "permission denied" from mounted storage (you can check this in /var/log/kolla/swift/.. log after object container creation (openstack container create test)). In that case, do:  
-``bash
-chmod 777 -R /srv/node/  #wrong permissions for swift  
+``chmod 777 -R /srv/node/  #wrong permissions for swift  
 docker ps | grep swift | awk '{print $1}' | xargs -n1 docker stop
 docker ps -a | grep swift | awk '{print $1}' | xargs -n1 docker start
 mount | grep sda2``  
@@ -168,8 +165,7 @@ export OS_USERNAME=ironic
 export OS_PASSWORD=pass
 openstack object store account show``  
 Set temp-url key:  
-``bash
-source code/openrc-dt1
+``source code/openrc-dt1
 export OS_PROJECT_NAME=service
 export OS_USERNAME=ironic
 export OS_PASSWORD=B5OnAJHYoRq1OuCy5rgUtAODidBTuQyaUQAi8PaR
@@ -184,15 +180,12 @@ swift_container = glance
 swift_endpoint_url = http://10.101.166.200:8080
 swift_temp_url_key = 0e827e0e497dc06dc35e8000``  
 Restart all ironic containers:  
-``bash
-docker ps | grep ironic | awk '{print $1}' | xargs -n1 docker restart``  
+``docker ps | grep ironic | awk '{print $1}' | xargs -n1 docker restart``  
 
 
 ### other stuff  (optional)  
 #### Reconfigure env  
-``bash
-kolla-ansible -i /etc/kolla/dt-1.inv reconfigure --tags ironic``  
+``kolla-ansible -i /etc/kolla/dt-1.inv reconfigure --tags ironic``  
 
 #### Deploy only one service  
-``bash
-kolla-ansible -i /etc/kolla/dt-1.inv deploy --tags mariadb,nova``  
+``kolla-ansible -i /etc/kolla/dt-1.inv deploy --tags mariadb,nova``  
