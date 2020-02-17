@@ -230,10 +230,19 @@ for container in $( docker ps -a --format {{.ID}} ); do
 	fi
 done``
 
+### DevPI server hacks
+``pip install devpi-server
+mkdir /var/www/devpi
+devpi-server --host=0.0.0.0 --serverdir /var/www/devpi --start --init``  
+
 ### Ansible ad-hoc with dynamic_inventory  
 Ex. 1. Testing new nova code  
 ``ansible -m copy -a 'src=virt dest=/openstack/venvs/nova-17.1.17/lib/python2.7/site-packages/nova/' -i /opt/openstack-ansible/inventory/dynamic_inventory.py nova_api_container
 ansible -m shell -a 'rm -rf /var/log/nova/*; reboot' -i /opt/openstack-ansible/inventory/dynamic_inventory.py nova_api_container``  
+
+### Ansible extract custom fact from inventory  
+``10.10.10.10 custom_fact=fact
+msg: "{{ (groups['prometheus'] | map('extract', hostvars, ['custom_fact']) | join(',')).split(',') }}"``
 
 ### Convert and upload tar.gz to pypiserver (OSA)  
 ``cd /opt; mkdir prometheus-client/
@@ -315,6 +324,16 @@ reboot``
 
 ### Skip Gitlab CI during committing  
 ``git commit -m "something [ci skip]"``  
+
+### Git update referance to latest submodule  
+``git clone --recurse-submodules https://bitbucket.gcore.lu/scm/gcloud/ansible-playbook-deploy-nodes.git
+cd ansible-playbook-deploy-nodes/
+cd configs/
+git checkout master && git pull
+cd ..
+git add configs
+git commit -m "updating submodule configs to latest"
+git push``  
 
 ### change rsyslog conf in all lxc containers with restart (recursive)  
 ``ssh infra  
@@ -575,6 +594,8 @@ print chains with line-numbers
 ``iptables -nvL --line-numbers``  
 delete rule by number and chain  
 ``iptables -D INPUT 3``  
+prerouting to other port (if port 9090 is not accessible)  
+``iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 9090``  
 
 ### OpenStack high memory usage  
 - decrease number of workers in services confs  
@@ -823,6 +844,12 @@ _Solution by Wol_[Beware if spacing in windows 7 hosts file](http://geekswithblo
 7. attrib +R hosts --make hosts file Read Only, which adds as much security as you think it does  
 
 ## Postgresql Pgpool Patroni  
+Reload postgres
+``sudo su postgres;  pg_ctlcluster 9.6 main reload``  
+
+Create test base and user with pass  
+``sudo su postgres;  create database testhba;create user tst with encrypted password 'mypass';grant all privileges on database testhba to tst;``  
+
 Check recovery nodes  
 ``sudo -u postgres psql -h 172.21.3.41 -p 5432 -x -c "show pool_nodes;"  
 sudo -u postgres psql -h 172.21.3.229 -p 5432 -x -c "select pg_is_in_recovery();"``  
@@ -1933,6 +1960,13 @@ http://uat-registry.sk.ru:8081/repository/alfa/
 ``kubectl get po -a --all-namespaces -o json | \
 jq  '.items[] | select(.status.reason!=null) | select(.status.reason | contains("Evicted")) |
 "kubectl delete po \(.metadata.name) -n \(.metadata.namespace)"' | xargs -n 1 bash -c``  
+
+### Autoscaler / allocatable  
+``# Check autoscaler status
+kubectl describe -n kube-system configmap cluster-autoscaler-status
+
+# Check maximum pods configuration for the node
+kubectl get node NODE-NAME -ojson | jq .status.allocatable.pods``  
 
 ### Check Kubernetes API availability  
 (create dummy resource and delete it via REST API):  

@@ -1,0 +1,24 @@
+private_network: priv_net
+public_network: pub_net
+flavor: m1.tiny
+enable_ssh: false
+cmp_cnt: 5
+image: sla-centos7-1811-x64.v04
+environment: 'gg-9'
+
+# (Optional). Each network will be added as neutron port and correspondig
+# eth{{ i }} interface with dhcp configuration will be created via user-data
+# eth0 will be used as default gateway device
+additional_networks:
+  - STG_NET
+
+additional_hosts:
+  c4:
+#error resolving hosts via WG dns server, so using ip instead
+   - IP1
+   - IP2
+# WARNING - you cannot simultaneously provide non-empty values for both variables below
+#allocate *(cmp_cnt) floating ip's starting from
+# If this list is not empty, floating_start var is not used
+floatings_list: ''
+floating_start: IP

@@ -136,8 +136,8 @@ Source:
 
 ### Ironic  
 #### Get images  
-``mkdir  /etc/kolla/dt-1/ironic
-cd /etc/kolla/dt-1/ironic
+``mkdir  /etc/dt-1/ironic
+cd /etc/dt-1/ironic
 wget ironic-agent.initramfs
 wget ironic-agent.kernel``  
 #### Configs  
@@ -148,8 +148,9 @@ vim /etc/kolla/dt-1/ironic-inspector.conf
 [ironic-inspector.conf]({{"/listings/2020-01-04-Kolla-Train-Ironic-All-In-One/ironic-inspector.conf"}})    
 
 ### Deploy
-``kolla-ansible -i /etc/kolla/dt-1.inv deploy
-kolla-ansible -i /etc/kolla/dt-1.inv post-deploy``  
+``cp /opt/kolla-ansible/ansible/inventory/all-in-one /etc/dt-1/
+kolla-ansible -i /etc/dt-1/dt-1.inv deploy
+kolla-ansible -i /etc/dt-1/dt-1.inv post-deploy``  
 
 ### Post-deploy  
 First of all, its possible that swift containers will get "permission denied" from mounted storage (you can check this in /var/log/kolla/swift/.. log after object container creation (openstack container create test)). In that case, do:  

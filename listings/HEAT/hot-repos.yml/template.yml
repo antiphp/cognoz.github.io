@@ -1,0 +1,250 @@
+#
+# This HOT template creates two servers, attaches two volumes to them and configures drbd to work with them
+#
+#
+heat_template_version: 2016-04-08
+
+description: >
+  This HOT template creates two webservers (boot from volume)
+  in new anti-affinity server-group with
+  master-slave drbd configuration, maps two existing
+  volumes with repositories to them, creates and
+  attaches two volumes with drbd-metadata and configures
+  crm resources  to dynamically access repository.
+
+parameters:
+  key_name:
+    type: string
+    description: Name of an existing key pair to use for the server
+    constraints:
+      - custom_constraint: nova.keypair
+
+  vip:
+    type: string
+
+  private_network_id:
+    type: string
+    description: Id of an existing private network
+
+  private_subnet_id:
+    type: string
+    description: Private subnet id
+
+  volume_first:
+    type: string
+    description: Id of volume1
+
+  volume_second:
+    type: string
+    description: Id of volume2
+
+  md_volume_size:
+    type: number
+    description: Size of the metadata volume for drbd to be created.
+    default: 2
+    constraints:
+      - range: { min: 1, max: 1024 }
+    description: must be between 1 and 1024 Gb.
+
+  root_size:
+    type: number
+    description: Size for root volume
+
+  hostname1:
+    type: string
+    description: Hostname of Server 1
+
+  hostname2:
+    type: string
+    description: Hostname of Server 2
+
+  flavor:
+    type: string
+    description: Flavor for the server to be created
+    default: m1.small
+    constraints:
+      - custom_constraint: nova.flavor
+  image:
+    type: string
+    description: Image ID or image name to use for the server
+    constraints:
+      - custom_constraint: glance.image
+
+  server_group_name:
+    type: string
+    description: Server Group Name
+
+
+resources:
+  volume_1:
+    type: OS::Cinder::Volume
+    properties:
+      name: "Server1 root volume"
+      image: { get_param: image }
+      size: { get_param: root_size }
+
+
+  volume_2:
+    type: OS::Cinder::Volume
+    properties:
+      name: "Server2 root volume"
+      image: { get_param: image }
+      size: { get_param: root_size }
+
+  repo_server_group:
+    type: OS::Nova::ServerGroup
+    properties:
+      name: { get_param: server_group_name }
+      policies: ['anti-affinity']
+
+  server_port_1:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_param: private_network_id }
+      fixed_ips:
+        - subnet_id: { get_param: private_subnet_id }
+
+  server_port_2:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_param: private_network_id }
+      fixed_ips:
+        - subnet_id: { get_param: private_subnet_id }
+
+  server_1:
+    type: OS::Nova::Server
+    properties:
+      key_name: { get_param: key_name }
+      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: volume_1 }, delete_on_termination: "true" }]
+      flavor: { get_param: flavor }
+      scheduler_hints:
+        group: { get_resource: repo_server_group }
+      networks:
+        - port: { get_resource: server_port_1 }
+      user_data:
+        str_replace:
+          template: |
+            #!/bin/bash -ex
+            hostname HOSTNAME1
+            echo HOSTNAME1 > /etc/hostname
+            echo "ip_server_1 HOSTNAME1" >> /etc/hosts
+            echo "ip_server_2 HOSTNAME2" >> /etc/hosts
+            sed -i "s/SERVERNAME1/HOSTNAME1/g" /etc/drbd.d/repo.res
+            sed -i "s/SERVERNAME2/HOSTNAME2/g" /etc/drbd.d/repo.res
+            sed -i "s/IP_FOR_SERVER1/ip_server_1/g" /etc/drbd.d/repo.res
+            sed -i "s/IP_FOR_SERVER2/ip_server_2/g" /etc/drbd.d/repo.res
+            sed -i "s|internal|/dev/vdc|g" /etc/drbd.d/repo.res
+            sed -i "s/IP_FOR_SERVER_CURRENT/ip_server_1/g" /etc/corosync/corosync.conf
+            sed -i "s/IP_FOR_SERVER1/ip_server_1/g" /etc/corosync/corosync.conf
+            sed -i "s/IP_FOR_SERVER2/ip_server_2/g" /etc/corosync/corosync.conf
+            sed -i "s/SERVERNAME1/HOSTNAME1/g" /etc/corosync/corosync.conf
+            sed -i "s/SERVERNAME2/HOSTNAME2/g" /etc/corosync/corosync.conf
+            drbdadm down repo
+            drbdadm create-md repo
+            drbdadm up repo
+            drbdadm --force primary repo
+            service corosync start
+            service pacemaker start
+            sleep 50
+            crm_resource --resource vip --set-parameter ip --parameter-value IPVIP
+            crm_resource --resource vip --set-parameter cidr_netmask --parameter-value 27
+
+          params:
+            ip_server_1: { get_attr: [ server_port_1, fixed_ips, 0, ip_address ] }
+            ip_server_2: { get_attr: [ server_port_2, fixed_ips, 0, ip_address ] }
+            HOSTNAME1: { get_param: hostname1 }
+            HOSTNAME2: { get_param: hostname2 }
+            IPVIP: { get_param: vip }
+
+  server_2:
+    type: OS::Nova::Server
+    properties:
+      key_name: { get_param: key_name }
+      block_device_mapping: [{ device_name: "vda", volume_id: { get_resource: volume_2 }, delete_on_termination: "true" }]
+      flavor: { get_param: flavor }
+      scheduler_hints:
+        group: { get_resource: repo_server_group }
+      networks:
+        - port: { get_resource: server_port_2 }
+      user_data:
+        str_replace:
+          template: |
+            #!/bin/bash -ex
+            hostname HOSTNAME2
+            echo HOSTNAME2 > /etc/hostname
+            echo "ip_server_1 HOSTNAME1" >> /etc/hosts
+            echo "ip_server_2 HOSTNAME2" >> /etc/hosts
+            sed -i "s/SERVERNAME1/HOSTNAME1/g" /etc/drbd.d/repo.res
+            sed -i "s/SERVERNAME2/HOSTNAME2/g" /etc/drbd.d/repo.res
+            sed -i "s/IP_FOR_SERVER1/ip_server_1/g" /etc/drbd.d/repo.res
+            sed -i "s/IP_FOR_SERVER2/ip_server_2/g" /etc/drbd.d/repo.res
+            sed -i "s|internal|/dev/vdc|g" /etc/drbd.d/repo.res
+            sed -i "s/IP_FOR_SERVER_CURRENT/ip_server_2/g" /etc/corosync/corosync.conf
+            sed -i "s/IP_FOR_SERVER1/ip_server_1/g" /etc/corosync/corosync.conf
+            sed -i "s/IP_FOR_SERVER2/ip_server_2/g" /etc/corosync/corosync.conf
+            sed -i "s/SERVERNAME1/HOSTNAME1/g" /etc/corosync/corosync.conf
+            sed -i "s/SERVERNAME2/HOSTNAME2/g" /etc/corosync/corosync.conf
+            drbdadm down repo
+            drbdadm create-md repo
+            drbdadm up repo
+            service corosync restart
+            service pacemaker restart
+          params:
+            ip_server_1: { get_attr: [ server_port_1, fixed_ips, 0, ip_address ] }
+            ip_server_2: { get_attr: [ server_port_2, fixed_ips, 0, ip_address ] }
+            HOSTNAME1: { get_param: hostname1 }
+            HOSTNAME2: { get_param: hostname2 }
+
+  volume_attachment_1:
+    type: OS::Cinder::VolumeAttachment
+    properties:
+      volume_id: { get_param: volume_first }
+      instance_uuid: { get_resource: server_1 }
+      mountpoint: "/dev/vdb"
+
+  volume_attachment_2:
+    type: OS::Cinder::VolumeAttachment
+    properties:
+      volume_id: { get_param: volume_second }
+      instance_uuid: { get_resource: server_2 }
+      mountpoint: "/dev/vdb"
+
+  md_volume1:
+    type: OS::Cinder::Volume
+    properties:
+      size: { get_param: md_volume_size }
+      availability_zone: nova
+
+  md_volume1_attachment:
+    type: OS::Cinder::VolumeAttachment
+    depends_on: volume_attachment_1
+    properties:
+      volume_id: { get_resource: md_volume1 }
+      instance_uuid: { get_resource: server_1 }
+      mountpoint: "/dev/vdc"
+
+  md_volume2:
+    type: OS::Cinder::Volume
+    properties:
+      size: { get_param: md_volume_size }
+      availability_zone: nova
+
+  md_volume2_attachment:
+    type: OS::Cinder::VolumeAttachment
+    depends_on: volume_attachment_2
+    properties:
+      volume_id: { get_resource: md_volume2 }
+      instance_uuid: { get_resource: server_2 }
+      mountpoint: "/dev/vdc"
+
+outputs:
+
+  lburl:
+    value:
+      str_replace:
+        template: http://IP_ADDRESS
+        params:
+          IP_ADDRESS: { get_param: vip }
+    description: >
+      This URL is the "external" URL that can be used to access the
+      load balancer.
