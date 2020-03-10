@@ -173,7 +173,7 @@ Problems with starting privileged container (2 different securityContext):
 ``use securityContext IN container spec, not pod:  
 securityContext:
   privileged: true
-image: nexus-registry.s7.aero:18116/heptio-images/velero:v1.1.0
+image: registry:18116/heptio-images/velero:v1.1.0
 imagePullPolicy: IfNotPresent
 name: restic
 resources: {}
@@ -347,7 +347,7 @@ reboot``
 ``git commit -m "something [ci skip]"``  
 
 ### Git update referance to latest submodule  
-``git clone --recurse-submodules https://bitbucket.gcore.lu/scm/gcloud/ansible-playbook-deploy-nodes.git
+``git clone --recurse-submodules https://repo/scm/gcloud/ansible-playbook-deploy-nodes.git
 cd ansible-playbook-deploy-nodes/
 cd configs/
 git checkout master && git pull
@@ -449,7 +449,7 @@ templates:
 - '/etc/alertmanager/templates/*.tmpl'
 receivers:
 - email_configs:
-  - to: devops@gcore.lu
+  - to: devops@domain.co
   name: default
 - name: pagerduty
   pagerduty_configs:
@@ -683,7 +683,7 @@ vim   /etc/sysconfig/network-scripts/ifcfg-NIC
 ### Check crm disk status  (full disk)  
 ``crm node status-attr  show "#health_disk"      
 delete flag  
-crm node status-attr skl-os-ctrl01.skolkovo.local delete "#health_disk"``      
+crm node status-attr node01.local delete "#health_disk"``      
 
 ### Recursive sed replacement in files  
 ``find . -type f -exec sed -i 's/foo/bar/g' {} +``  
@@ -1215,9 +1215,9 @@ As last resort u can check your chain one more time - maybe you have there bundl
 ``ldapsearch -x -LLL -h ****.ru -p 3268 -D openstack_ldap_user@*****.ru -w 'D*****2%$******X5(' -b DC=ti,DC=local -s sub "(sAMAccountName=a.sh******)" -P 3 -e ! chaining=referralsRequired``  
 ``ldapsearch -x -LLL -h 127.0.0.1 -p 389 -D cn=administrator,dc=local,dc=ru -w BNkmv/OEt+z1su_g_A_p_q_PjO6uA1C1 -b dc=***********,dc=ru -s sub "(sAMAccountName=a.*****ev)"``  
 itkey
-``ldapsearch -x -D 'cn=name,ou=Service Accounts,ou=IT,ou=IT Key Services,dc=itkeyservices,dc=loc' -w 'pass' -H ldap://ip -b "ou=IT Key Services,dc=itkeyservices,dc=loc"``  
+``ldapsearch -x -D 'cn=name,ou=Service Accounts,ou=IT,ou=IT Key Services,dc=dom,dc=loc' -w 'pass' -H ldap://ip -b "ou=IT Key Services,dc=dom,dc=loc"``  
 sk  
-``ldapsearch -L -H ldap://ip -x -D 'domain\user' -w "pass" -b 'OU=Users,OU=Foundation,DC=skolkovo,DC=local' '(&(objectCategory=person)(objectClass=*)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))' '(uid: sAMAccountName)'``  - not sure about 1.2.840 part  
+``ldapsearch -L -H ldap://ip -x -D 'domain\user' -w "pass" -b 'OU=Users,OU=Foundation,DC=dom,DC=local' '(&(objectCategory=person)(objectClass=*)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))' '(uid: sAMAccountName)'``  - not sure about 1.2.840 part  
 
 ## Python using ssl verify cert  
 ``import requests  
@@ -1292,7 +1292,7 @@ kubectl -n kube-system get po | grep dashboard ; kubectl delete po $name``
 ``helm repo add coreos https://s3-eu-west-1.amazonaws.com/coreos-charts/stable/  
 helm install coreos/prometheus-operator --name prometheus-operator --namespace monitoring  
 helm install coreos/kube-prometheus --set global.rbacEnabled=true --name kube-prometheus --namespace monitoring  
-helm install -n monitoring --name grafana --set auth.anonymous.enabled=false --set adminUser=admin --set adminPassword=admin --set ingress.enabled=true --set ingress.hosts[0]=grafana.dev.sk.ru  coreos/grafana``  
+helm install -n monitoring --name grafana --set auth.anonymous.enabled=false --set adminUser=admin --set adminPassword=admin --set ingress.enabled=true --set ingress.hosts[0]=grafana.dev.cool.ru  coreos/grafana``  
 Go after that in grafana, and change corresponding prometheus datasource   (should be http://kube-prometheus-prometheus:9090)  
 Also you need to disable tls in kube-prometheus-exporter-kubelets (if you are experiencing prometheus 401 errors in kubelets), so just go and edit  
 ``kubectl -n monitoring edit servicemonitor kube-prometheus-exporter-kubelets``  
@@ -1565,7 +1565,7 @@ ceph tell osd.* injectargs '--osd-recovery-max-active 1'``
 ### Get current osd config  
 ``ceph -n osd.30 --show-config > 30.conf``  
 ### Get mon config  
-``ceph daemon /var/run/ceph/ceph-mon.skl-os-ctrl01.asok config show``  
+``ceph daemon /var/run/ceph/ceph-mon.node01.asok config show``  
 
 ### Bash pipe to get Ceph backfill_toofull targets for every pg  
 ``ceph health detail | grep toofull | awk '{print $2}' | xargs -n1 -I {} ceph pg {} query | grep -1 backfill_targets``  
@@ -1610,7 +1610,7 @@ sgdisk --typecode=3:4fbd7e29-9d25-41b8-afd0-062c0ceff05d -- /dev/sdd (This GUID 
 ceph-deploy --ceph-conf /root/ceph.conf osd prepare localhost:sdd3  
 ceph-deploy --ceph-conf /root/ceph.conf osd activate localhost:sdd3  
 ceph auth add osd.30 mon 'allow profile osd' osd 'allow *'  
-ceph osd crush add 30 1.09 host=skl-os-ceph02.HDD (30 - osd-id, 1.09 - weight)``  
+ceph osd crush add 30 1.09 host=node02.HDD (30 - osd-id, 1.09 - weight)``  
 ### Ceph Bluestore mount via fuse  
 ``systemctl stop ceph-osd@ID    
 mkdir /mnt/foo
@@ -1976,14 +1976,12 @@ BROWSER:
 login, create docker hosted repo with HTTP connector 5000``  
 
 ### OrientDB reset admin  
-1. log via ssh  
-2. java -jar /opt/sonatype/nexus/lib/support/nexus-orient-console.jar  
-3. CONNECT plocal:/nexus-data/db/security admin admin  
-4. ``update user SET password="$shiro1$SHA-512$1024$NE+wqQq/TmjZMvfI7ENh/g==$V4yPw8T64UQ6GfJfxYq2hLsVrBY8D1v+bktfOxGdt4b/9BthpWPNUy/CBk6V9iA0nHpzYzJFWO8v/tZFtES8CA==" UPSERT WHERE id="admin"  
+``ssh
+java -jar /opt/sonatype/nexus/lib/support/nexus-orient-console.jar
+CONNECT plocal:/nexus-data/db/security admin admin  
+update user SET password="$shiro1$SHA-512$1024$NE+wqQq/TmjZMvfI7ENh/g==$V4yPw8T64UQ6GfJfxYq2hLsVrBY8D1v+bktfOxGdt4b/9BthpWPNUy/CBk6V9iA0nHpzYzJFWO8v/tZFtES8CA==" UPSERT WHERE id="admin"  
 delete from realm``  
-5. ``delete from realm``
-If there still no configuration tab - it's maybe not your fault, try another browser and cacheclaening
-http://uat-registry.sk.ru:8081/repository/alfa/
+If there still no configuration tab - it's maybe not your fault, try another browser and cacheclaening  
 ## KUBERNETES  
 ### Diagnostic net pod  
 ``kubectl run --generator=run-pod/v1 tmp-shell --rm -i --tty --image nicolaka/netshoot -- /bin/bash
@@ -2008,9 +2006,9 @@ Check autoscaler status
 (create dummy resource and delete it via REST API):  
 ``Bearer=Token
 
-curl  --insecure -XDELETE -H "Authorization: Bearer $Bearer" 'https://okd.sigma.uat.oc.s7.ru:8443/api/v1/namespaces/default/configmaps/dummyzb'
+curl  --insecure -XDELETE -H "Authorization: Bearer $Bearer" 'https://apiURl:8443/api/v1/namespaces/default/configmaps/dummyzb'
 sleep 2;
-curl -s -o /dev/null -w "%{http_code}" --insecure -XPOST  -H "Authorization: Bearer $Bearer" -H 'Content-Type: application/json' -d '{"apiVersion":"v1","kind":"ConfigMap","metadata":{"name":"dummyzb","namespace":"default"}}'  'https://okd.sigma.uat.oc.s7.ru:8443/api/v1/namespaces/default/configmaps'``  
+curl -s -o /dev/null -w "%{http_code}" --insecure -XPOST  -H "Authorization: Bearer $Bearer" -H 'Content-Type: application/json' -d '{"apiVersion":"v1","kind":"ConfigMap","metadata":{"name":"dummyzb","namespace":"default"}}'  'https://apiURL:8443/api/v1/namespaces/default/configmaps'``  
 
 ### Haproxy frontend/backend stats via socket  
 `` echo "show stat" | nc -U /var/lib/haproxy/stats | cut -d "," -f 1,2,5-11,18,24,27,30,36,50,37,56,57,62 | column -s, -t``  
@@ -2032,8 +2030,8 @@ Also:
 ### Grafana Auth  
 ``kubectl get deploy -n kube-system  
 kubectl edit deploy monitoring-grafana``  
-``  
-- env:  
+env variables
+``- env:  
   - name: INFLUXDB_HOST  
     value: monitoring-influxdb  
   - name: INFLUXDB_SERVICE_URL  
@@ -2050,6 +2048,7 @@ kubectl edit deploy monitoring-grafana``
     value: GrAfAnA  
   - name: GRAFANA_PASSWD  
     value: GrAfAnA``  
+
 ### Forward-port  
 ``kubectl port-forward heketi-37915784-8gkqp :8080``  
 Forwarding from 127.0.0.1:38219 -> 8080  
@@ -2060,7 +2059,7 @@ Hello from heketi
 ### Connect to etcd (kubespray)  
 On etcd node (not in container) run:  
 ``netstat -ltupn | grep 2379  
-IP=`netstat -ltupn | grep 2379 | grep -v '127.0.0.1' | awk '{print $4}'`
+IP=$(netstat -ltupn | grep 2379 | grep -v '127.0.0.1' | awk '{print $4}')
 
 etcdctl --cert-file /etc/ssl/etcd/ssl/member-f00k8setcs01.pem --key-file /etc/ssl/etcd/ssl/member-f00k8setcs01-key.pem --endpoints https://$IP ls``  
 
