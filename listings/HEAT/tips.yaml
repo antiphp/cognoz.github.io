@@ -1,6 +1,0 @@
-# You can use these for dynamic parameters
-        str_replace:
-          template: ed-c10-2quarter-1quarter
-          params:
-            2quarter: {str_split: ['.', { get_attr: [ node_port, fixed_ips, 0, ip_address ] }, 2]}
-            1quarter: {str_split: ['.', { get_attr: [ node_port, fixed_ips, 0, ip_address ] }, 3]}
