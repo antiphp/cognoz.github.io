@@ -53,8 +53,8 @@ wget https://iotc360-my.sharepoint.com/:u:/p/blabla/EdTJBkefastNuBX3n9y9NxUBJeh4
 document.write(location.hostname);
 </script>
 </body>
-</html>
-``  
+</html>``
+
 ### journalctl  
 ``journalctl --since "2019-12-20 17:15:00"``  
 
@@ -79,10 +79,10 @@ cd /usr/local/mydebs
 dpkg-scanpackages . /dev/null | gzip -9c > Packages.gz
 #Get files locally via apt  
 echo "deb file:/usr/local/mydebs ./ >> /etc/apt/sources.list
-apt update"  
+apt update"``  
 
 
-### selinux (hate it)  
+### SElinux  
 basic stuff for surviving with docker and se  
 ``semodule -l|grep container
 semanage fcontext -l|grep /var/lib/docker
@@ -90,7 +90,7 @@ grep avc /var/log/audit/audit.log
 restorecon -Frv /var/lib/docker/overlay2/*
 grep docker /etc/selinux/targeted/contexts/files/file_contexts``
 
-restore right labels:  
+#### Restore right labels  
 `` semanage fcontext -a -t container_var_lib_t '/var/lib/docker(/.*)?'
 semanage fcontext -a -t container_share_t '/var/lib/docker/.*/config/\.env'
 semanage fcontext -a -t container_file_t '/var/lib/docker/vfs(/.*)?'
@@ -145,8 +145,7 @@ export PS1="\[\e[00;32m\]\u@($role) \h\[\e[0m\]\[\e[00;37m\]:\[\e[0m\]\[\e[00;36
 export PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME%%.*}\007"'
 unset role
 unset role_id
-unset cluster_id
-``  
+unset cluster_id``  
 
 ### Openshift  
 simulate OOM  
@@ -185,28 +184,27 @@ volumeMounts:
   mountPropagation: HostToContainer
   name: host-pods
 securityContext:
-  runAsUser: 0
-``  
+  runAsUser: 0``    
 also dont forget about  
 ``oc adm policy add-scc-to-user privileged system:serviceaccount:testrk2:testnice``  
 
-and about joining networks))  
+and about joining networks either  
 ``oc adm pod-network join-projects --to=velero kube-system``  
 
 Get etcdctl info  
 ``ETCDCTL_API=3 etcdctl get "" --from-key --endpoints https://172.20.61.11:2379 --cacert="/etc/etcd/ca.crt" --cert="/etc/etcd/server.crt" --key="/etc/etcd/server.key"``  
-test fs
-``docker run -it nexus-registry.s7.aero:18116/twalter/openshift-nginx /bin/bash ``  
+test fs  
+``docker run -it registry:18116/twalter/openshift-nginx /bin/bash ``  
 Right way to delete LDAP users:  
 ``oc delete identity 'provider=ldap ......'``   
 
-How to redirect oauth in Openshift
+How to redirect oauth in Openshift  
 ``kind: ServiceAccount
 metadata:
   annotations:
-    serviceaccounts.openshift.io/oauth-redirecturi.first: https://grafana-testfu.domain.com``
+    serviceaccounts.openshift.io/oauth-redirecturi.first: https://grafana-testfu.domain.com``  
 Cronjob for sync ldap users  
-oc create -f [cronjob-sync-ldap.yml]({{"/listings/cronjob-sync-ldap.yml"}})   
+oc create -f [cronjob-sync-ldap.yml]({{"/listings/cronjob-sync-ldap.yml"}})  
 
 Bug     
 ``Error updating node status, will retry: failed to patch status " ......
@@ -228,7 +226,7 @@ for container in $( docker ps -a --format {{.ID}} ); do
 			docker rm -v "${container}"
 		fi
 	fi
-done``
+done``  
 
 ### DevPI server hacks
 ``pip install devpi-server
@@ -248,12 +246,12 @@ ansible -m shell -a 'rm -rf /var/log/nova/*; reboot' -i /opt/openstack-ansible/i
     age: "-{{ sb_max_age }}"
     patterns: '*log*'
   with_items: "{{ sb_kolla_log_services }}"
-  register: sb_kolla_log_info
+  register: sb_kolla_log_info``  
 
-#Structure, we need to iterate through results list and files list:   
-#{"msg": { "results": [{files[path]}]}}
-
-- name: Fetch Kolla logs from nodes
+Structure, we need to iterate through results list and files list:   
+``{"msg": { "results": [{files[path]}]}}``  
+Result cycle:  
+``- name: Fetch Kolla logs from nodes
   fetch:
     src: "{{ item[1].path }}"
     dest: "{{ sb_tmp_dir }}/{{ ansible_hostname }}/{{ item[0].item }}/"
@@ -265,7 +263,7 @@ ansible -m shell -a 'rm -rf /var/log/nova/*; reboot' -i /opt/openstack-ansible/i
 
 ### Ansible extract custom fact from inventory  
 ``10.10.10.10 custom_fact=fact
-msg: "{{ (groups['prometheus'] | map('extract', hostvars, ['custom_fact']) | join(',')).split(',') }}"``
+msg: "{{ (groups['prometheus'] | map('extract', hostvars, ['custom_fact']) | join(',')).split(',') }}"``  
 
 ### Convert and upload tar.gz to pypiserver (OSA)  
 ``cd /opt; mkdir prometheus-client/
@@ -876,7 +874,7 @@ _Solution by Wol_[Beware if spacing in windows 7 hosts file](http://geekswithblo
 7. attrib +R hosts --make hosts file Read Only, which adds as much security as you think it does  
 
 ## Postgresql Pgpool Patroni  
-Reload postgres
+Reload postgres  
 ``sudo su postgres;  pg_ctlcluster 9.6 main reload``  
 
 Create test base and user with pass  
@@ -893,6 +891,7 @@ patronictl list psql_cluster``
 Change postgres parametrs cia etcd in patroni:  
 ``etcdctl ls --recursive -p | grep -v '/$' | xargs -n 1 -I% sh -c 'echo -n %:; etcdctl get %;'
 etcdctl set /service/psql_cluster/config '{"ttl":30,"maximum_lag_on_failover":1048576,"retry_timeout":10,"postgresql":{"use_pg_rewind":true,"parameters":{"max_connections": 1500}},"loop_wait":10}'``  
+
 ### Testing LB  
 ``sudo -u postgres pgbench -i  
 sudo -u postgres pgbench -p 5432 -h pgpool_vip -c 10 -S -T 10 postgres  
@@ -1999,11 +1998,11 @@ jq  '.items[] | select(.status.reason!=null) | select(.status.reason | contains(
 "kubectl delete po \(.metadata.name) -n \(.metadata.namespace)"' | xargs -n 1 bash -c``  
 
 ### Autoscaler / allocatable  
-``# Check autoscaler status
-kubectl describe -n kube-system configmap cluster-autoscaler-status
+Check autoscaler status
+``kubectl describe -n kube-system configmap cluster-autoscaler-status``  
 
-# Check maximum pods configuration for the node
-kubectl get node NODE-NAME -ojson | jq .status.allocatable.pods``  
+#Check maximum pods configuration for the node
+``kubectl get node NODE-NAME -ojson | jq .status.allocatable.pods``    
 
 ### Check Kubernetes API availability  
 (create dummy resource and delete it via REST API):  
