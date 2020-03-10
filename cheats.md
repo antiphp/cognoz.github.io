@@ -240,6 +240,29 @@ Ex. 1. Testing new nova code
 ``ansible -m copy -a 'src=virt dest=/openstack/venvs/nova-17.1.17/lib/python2.7/site-packages/nova/' -i /opt/openstack-ansible/inventory/dynamic_inventory.py nova_api_container
 ansible -m shell -a 'rm -rf /var/log/nova/*; reboot' -i /opt/openstack-ansible/inventory/dynamic_inventory.py nova_api_container``  
 
+### Ansible iterate inside of one of with_items argument  
+``- name: Find logs in kolla log dir
+  find:
+    follow: true
+    paths: "{{ sb_kolla_log_path }}/{{ item }}"
+    age: "-{{ sb_max_age }}"
+    patterns: '*log*'
+  with_items: "{{ sb_kolla_log_services }}"
+  register: sb_kolla_log_info
+
+#Structure, we need to iterate through results list and files list:   
+#{"msg": { "results": [{files[path]}]}}
+
+- name: Fetch Kolla logs from nodes
+  fetch:
+    src: "{{ item[1].path }}"
+    dest: "{{ sb_tmp_dir }}/{{ ansible_hostname }}/{{ item[0].item }}/"
+    flat: true
+    validate_checksum: false
+  with_subelements:
+    - "{{ sb_kolla_log_info.results }}"
+    - files``  
+
 ### Ansible extract custom fact from inventory  
 ``10.10.10.10 custom_fact=fact
 msg: "{{ (groups['prometheus'] | map('extract', hostvars, ['custom_fact']) | join(',')).split(',') }}"``
@@ -596,6 +619,15 @@ delete rule by number and chain
 ``iptables -D INPUT 3``  
 prerouting to other port (if port 9090 is not accessible)  
 ``iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 9090``  
+delete
+``iptables -t nat -D PREROUTING 1``  
+list
+``iptables -L -n -t nat --line-numbers``  
+
+### Tarantool basics
+connect  
+``tarantoolctl connect /var/run/tarantool/tarantool-storage.<instance-name>.control
+require('membership').members()``  
 
 ### OpenStack high memory usage  
 - decrease number of workers in services confs  
@@ -932,6 +964,11 @@ cz-eth1809-3(config-pmap-nq)#   class type network-qos class-default
 cz-eth1809-3(config-pmap-nq-c)#           mtu 9216  
 cz-eth1809-3(config-pmap-nq-c)# system qos  
 cz-eth1809-3(config-sys-qos)#   service-policy type network-qos jumbo``  
+
+### Kakfa /zookeeper  
+Get topics from remote zookeeper via kafka  
+``cd /opt/kafka/*/
+bin/kafka-topics.sh --list --zookeeper 10.0.1.45:2181``  
 
 ## Vmware/vsphere  
 ### Port security configure  
