@@ -263,7 +263,7 @@ Result cycle:
 
 ### Ansible extract custom fact from inventory  
 ``10.10.10.10 custom_fact=fact
-msg: "{{ (groups['prometheus'] | map('extract', hostvars, ['custom_fact']) | join(',')).split(',') }}"``  
+msg: "\{\{ (groups['prometheus'] | map('extract', hostvars, ['custom_fact']) | join(',')).split(',') \}\}"``  
 
 ### Convert and upload tar.gz to pypiserver (OSA)  
 ``cd /opt; mkdir prometheus-client/
