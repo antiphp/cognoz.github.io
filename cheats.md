@@ -72,6 +72,10 @@ virt-customize -a xenial-server-cloudimg-amd64-disk1.img --root-password passwor
 ### Get ram usage staticstics
 ``ps aux  | awk '{print $6/1024 " MB\t\t" $11}'  | sort -n``  
 
+### awk
+Staled queues   
+``rabbitmqctl list_queues -p /neutron  | awk -F' ' '$2!="0"'``  
+
 ### Apt - adding new deb packages in repo    
 ``apt-get install dpkg-dev  
 mkdir -p /usr/local/mydebs
@@ -304,6 +308,33 @@ ansible -m shell -a "systemctl restart nova-compute"  nova_compute``
 ``openstack-ansible -vv -e '{repo_build_git_reclone: True}' playbooks/repo-install.yml
 ``  
 
+### Git pull every branch  
+``git branch -r | grep -v '\->' | while read remote; do git branch --track "${remote#origin/}" "$remote"; done
+git fetch --all
+git pull --all``
+
+### Nmap check for DHCP  
+``nmap --script broadcast-dhcp-discover -e eth0
+check dhcp in network``  
+
+### CentOS virtual KVM hypervisor - no guests boot successful  
+If you see smth like "booting from hard drive" then place this in nova-compute.conf  
+``[libvirt]
+hw_machine_type = x86_64=pc-i440fx-rhel7.2.0``  
+
+### NoVNC configuration  
+controller (62)
+``[vnc]
+novncproxy_host = 10.220.104.62
+novncproxy_port = 6080``  
+compute   (63)
+``[vnc]
+novncproxy_host = 10.220.104.63
+novncproxy_port = 6080
+novncproxy_base_url = http://int.os.local:6080/vnc_auto.html
+vncserver_listen = 10.220.104.63
+vncserver_proxyclient_address = 10.220.104.63``  
+
 ### Ansible ARA openstack  
 ``source /opt/ansible-runtime/bin/activate
 pip install ara
@@ -355,6 +386,9 @@ cd ..
 git add configs
 git commit -m "updating submodule configs to latest"
 git push``  
+
+### Git latest commit sha  
+``git log -n1 --format=format:"%H"``  
 
 ### change rsyslog conf in all lxc containers with restart (recursive)  
 ``ssh infra  
@@ -601,6 +635,14 @@ name = Altinity ClickHouse Repo``
 
 ### Check internet speed in cli (via speedtest.com by ookla)  
 ``curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -``  
+
+### Stupid situation around include/python.h  
+error: #include "python.h": No such file  
+Go to /usr/include. where you have 2 dirs presumably -
+python2.7 and python3.6  
+map everything from python2.7:  
+``ln -sv python2.7/* /usr/include/``  
+
 
 ### Check json from page (chrome)    
 F12 -> Network -> Preserver log  
@@ -1145,6 +1187,15 @@ Validate cert/key/SAN
 ``openssl rsa -noout -modulus -in harbor.example.key | openssl md5
 openssl x509 -noout -modulus -in harbor.example.crt | openssl md5  
 openssl x509 -in harbor.example.crt -text -noout  
+``
+Add certificates to trusted (centos)
+``yum install ca-certificates
+update-ca-trust force-enable
+cp jenkinsRootCA.crt /etc/pki/ca-trust/source/anchors/ #pay attention to .crt "extension"
+update-ca-trust extract
+``
+Check that rootCA in bundle
+``awk -v cmd='openssl x509 -noout -subject' ' /BEGIN/{close(cmd)};{print | cmd}' < /etc/ssl/certs/ca-bundle.crt
 ``
 
 

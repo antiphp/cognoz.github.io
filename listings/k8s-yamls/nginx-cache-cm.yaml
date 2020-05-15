@@ -1,0 +1,40 @@
+apiVersion: v1
+data:
+  ALLOWED_HOSTS: domain1,domain2
+  DJANGO_SETTINGS_MODULE: base.settings.dev
+  EXTERNAL_AUTH_ENABLED: "True"
+  EXTERNAL_AUTH_REFRESH_TIMEOUT: "60"
+  EXTERNAL_USER_ADMIN_GROUP: CMS-administrator
+  EXTERNAL_USER_EDITOR_GROUP: CMS-editor
+  EXTERNAL_USER_MODERATOR_GROUP: CMS-moderator
+  MAIN_WORKERS: "2"
+  PORTAL_AUTH_URL: /auth/user_info/
+  PORTAL_HOST: domain
+  PROXY_CONF: |
+    proxy_cache_path /usr/share/nginx/cache levels=1:2 keys_zone=STATIC:256m inactive=36h max_size=2g;
+
+    server {
+        listen 8000;
+        client_max_body_size 100M;
+
+        location ^~ /media/ {
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            expires max;
+            proxy_buffering on;
+            proxy_cache STATIC;
+            proxy_cache_valid 24h;
+            proxy_hide_header content-security-policy;
+            proxy_cache_lock on;
+            proxy_cache_use_stale error timeout invalid_header updating http_500 http_502 http_503 http_504;
+            add_header X-Cache-Zone STATIC;
+            add_header Cache-Control "Public, max-age=604800"; #7 days
+            add_header X-Proxy-Cache $upstream_cache_status;
+            proxy_cache_key "$uri";
+            proxy_ignore_headers Set-Cookie;
+            proxy_ignore_headers Cache-Control;
+            proxy_ignore_headers Vary;
+            proxy_pass http://domain.svc.cluster.local.:8000;
+        }
+    }
