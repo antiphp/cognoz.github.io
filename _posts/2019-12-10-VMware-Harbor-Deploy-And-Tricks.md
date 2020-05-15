@@ -93,7 +93,7 @@ tar -xf harbor*
 cd harbor``  
 Configure:  
 vim harbor.yml  
-[harbor.yml]({{"/listings/2019-12-10-VMware-Harbor-Deploy-And-Tricks/multinode"}})  
+[harbor.yml]({{"/listings/2019-12-10-VMware-Harbor-Deploy-And-Tricks/harbor.yml"}})  
 If you want to use S3 storage backend, you can specify it in storage_service dict (harbor.yml):  
 ``storage_service:
   s3:
@@ -118,44 +118,3 @@ If you are using Windows OS, as I, you need to click on this certificate in down
 ./install.sh --with-notary --with-clair --with-chartmuseum``  
 
 If everything went successful then you can access harbor registry on  https://10.220.104.57 (Or on https://harbor.cognoz if you have an corresponing entry in /etc/hosts)!
- 
-
-
-
-
-
-
-
-
-#### Generate passwords  
-``kolla-genpwd``  
-Optionally, change keystone_admin_password there to something shorter for convenience;  
-
-#### Configure variables  
-vim /etc/kolla/globals.yml  
-[/etc/kolla/globals.yml]({{"/listings/2019-12-09-Kolla-Ansible-Train-Ext-Ceph/globals.yml"}})  
-vim /opt/kolla-ansible/multinode
-[/opt/kolla-ansible/multinode]({{"/listings/2019-12-09-Kolla-Ansible-Train-Ext-Ceph/multinode"}})    
-
-#### Other checks  
-In inventory file (multinode, for example), your nodes also should be placed under [baremetal:children] section (bootstrap).  
-
-#### Bootstrap  
-``kolla-ansible -i multinode bootstrap-servers``  
-
-#### Deploy  
-``kolla-ansible deploy -i multinode``  
-
-#### Post-Deploy  
-``kolla-ansible post-deploy``  
-
-#### Check basic stuff  
-If you installed kolla in venv, u also need openstack clients.  
-``apt install -y build-essential python-dev
-source /opt/venv/bin/activate
-pip install openstackclient``  
-Now, check basic statuses:  
-``cinder service-list; nova service-list; neutron agent-list``  
-
-### Links  
-https://docs.openstack.org/kolla-ansible/latest/user/operating-kolla.html
