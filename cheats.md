@@ -1198,6 +1198,15 @@ Check that rootCA in bundle
 ``awk -v cmd='openssl x509 -noout -subject' ' /BEGIN/{close(cmd)};{print | cmd}' < /etc/ssl/certs/ca-bundle.crt
 ``
 
+### Gitlab SSL
+Create ssl dir in configs/ dir, copy certificates there
+and change externla_url in configuration, i.e
+``mkdir /srv/gitlab/config/ssl #docker
+cp gitlab.mb.com.key gitlab.mb.com.crt /srv/gitlab/config/ssl/
+>vim /srv/gitlab/config/gitlab.rb
+external_url 'https://gitlab.mb.com'
+docker restart gitlab
+``
 
 ### Certbot let-s encrypt manual DNS verification and renewing   
 ``add-apt-repository ppa:certbot/certbot  
