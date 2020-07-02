@@ -28,6 +28,13 @@ Stop downloading
 Get URL with ?AuthParam=  
 wget url  
 
+### ipmitool shortcuts
+``ipmitool -I lanplus -H FQDN -U username -P 'hardpasswithspecialcymbols' chassis status -L user``  
+
+### HARD cold reboot of Linux (carefull, almost as IMPI reset)  
+``echo 1 > /proc/sys/kernel/sysrq
+echo b > /proc/sysrq-trigger``  
+
 ### Download office365 onedrive file via wget  
 ``When you take the original URL and cut the text behind the '?' and add the text: download=1
 Example:
@@ -42,6 +49,13 @@ wget https://iotc360-my.sharepoint.com/:u:/p/blabla/EdTJBkefastNuBX3n9y9NxUBJeh4
 
 ### stupd firewalld  
 ``firewall-cmd --permanent --zone=public --add-port=2234/tcp``  
+
+### SSH Tunnels
+Copy via tunnel  
+``# First, open the tunnel
+ssh -L 1234:remote2:22 -p 45678 user1@remote1
+# Then, use the tunnel to copy the file directly from remote2
+scp -P 1234 user2@localhost:file``  
 
 ### Megacli Basic info  
 ``MegaCli -LDInfo -Lall -aALL``   
@@ -449,6 +463,10 @@ done<img.txt``
 ### In oneline
 ``for img in $(docker images | awk '{print $1":"$2}' | grep -v REPOSITORY | tr '\n' ' '); do docker tag $img harbor.cognoz/$img; docker push harbor.cognoz/$img; done``  
 
+### Docker inspect -> Run  
+Nexdrew I love you.  
+``docker run --rm -i -v /var/run/docker.sock:/var/run/docker.sock nexdrew/rekcod <container>``  
+
 ### Docker access crashing container  
 ``docker commit CONTAINER NEWIMAGENAME
 docker run -ti --entrypoint /bin/bash NEWIMAGENAME``  
@@ -545,6 +563,8 @@ service nova-compute restart``
 ``consul agent -bind=10.36.22.50 -retry-join=10.36.22.100 -config-dir=/etc/consul.d -data-dir=/opt/consul -encrypt "string"``  
 ### Could not decrypt message  
 on client or server do  ``rm -rf data_dir/cerf/*``  
+### Get leader  
+``consul operator raft list-peers``  
 
 ### Exposing UDP services k8s   
 [udp_expose]({{"/listings/cheats/udp_expose.yml"}})  
@@ -702,6 +722,14 @@ UPDATE mysql.user SET Password=PASSWORD('NEW-PASSWORD') WHERE User='root';
 FLUSH PRIVILEGES;
 SHUTDOWN;``  
 
+### Mysql create remote user with perm  (kolla example)  
+``docker exec -it mariadb mysql -uroot -ppassw0rd
+CREATE USER 'ha'@'localhost' IDENTIFIED BY 'passw0rd';
+CREATE USER 'ha'@'%' IDENTIFIED BY 'passw0rd';
+GRANT ALL ON *.* TO 'ha'@'localhost';
+GRANT ALL ON *.* TO 'ha'@'%';``  
+check  
+``docker exec -it mariadb mysql -uha -ppassw0rd``  
 
 ### Fuel plugins - Add version: 2.0.0 in deployment_tasks via VIM  
 ``'%s/^\s&ast;role: .&ast;/  version: 2.0.0\r&/g'``  
@@ -915,6 +943,15 @@ _Solution by Wol_[Beware if spacing in windows 7 hosts file](http://geekswithblo
 6. ipconfig /flushdns --possibly unnecessary, but I did it this way and it worked  
 7. attrib +R hosts --make hosts file Read Only, which adds as much security as you think it does  
 
+### Windows get sorted diskusage in directory (powershell)  
+``$startDirectory = 'E:\MSSQL\Backups\'
+$directoryItems = Get-ChildItem $startDirectory | Where-Object {$_.PSIsContainer -eq $true} | Sort-Object
+ foreach ($i in $directoryItems)
+{
+    $subFolderItems = Get-ChildItem $i.FullName -recurse -force | Where-Object {$_.PSIsContainer -eq $false} | Measure-Object -property Length -sum | Select-Object Sum
+    $i.FullName + " -- " + "{0:N2}" -f ($subFolderItems.sum / 1GB) + " GB"
+}``  
+
 ## Postgresql Pgpool Patroni  
 Reload postgres  
 ``sudo su postgres;  pg_ctlcluster 9.6 main reload``  
@@ -933,6 +970,9 @@ patronictl list psql_cluster``
 Change postgres parametrs cia etcd in patroni:  
 ``etcdctl ls --recursive -p | grep -v '/$' | xargs -n 1 -I% sh -c 'echo -n %:; etcdctl get %;'
 etcdctl set /service/psql_cluster/config '{"ttl":30,"maximum_lag_on_failover":1048576,"retry_timeout":10,"postgresql":{"use_pg_rewind":true,"parameters":{"max_connections": 1500}},"loop_wait":10}'``  
+
+### More ETCD cli  
+``export ETCDCTL_API=3; etcdctl --endpoints=https://$(hostname -i):2379 --cacert=/etc/etcd/ca.pem --cert=/etc/etcd/kubernetes.pem --key=/etc/etcd/kubernetes-key.pem member list``  
 
 ### Testing LB  
 ``sudo -u postgres pgbench -i  
@@ -1606,6 +1646,17 @@ start osd via service:
 ``start ceph-osd id=14``  
 some fstab entries:  
 ``/dev/sdk3 /var/lib/ceph/osd/ceph-14 xfs rw,relatime,attr2,inode64,allocsize=4096k,logbsize=256k,noquota 0 0``  
+
+### Ceph lockfiles (crushed instances filesystems after evacuation)  
+Solution: add capability to issue osd blacklist commands to OS clients  
+``ceph auth caps client.<ID> mon 'allow r, allow command "osd blacklist"' osd '<existing osd caps>'``  
+list existing blacklist rules  
+``ceph osd blacklist ls``  
+Other related stuff  
+``ceph tell mds.0 client ls
+ceph tell mds.0 client evict id=4305
+ceph tell mds.0 client evict client_metadata.=4305``  
+
 ### Ceph usefull flags during migraton / evacuation etc  
 ceph set ..
 ``noout  
@@ -1626,6 +1677,9 @@ ceph tell osd.* injectargs '--osd-recovery-max-active 1'``
 ``ceph -n osd.30 --show-config > 30.conf``  
 ### Get mon config  
 ``ceph daemon /var/run/ceph/ceph-mon.node01.asok config show``  
+
+### Get mapping for image (pgs)  
+``ceph osd map POOLNAME IMAGENAME``  
 
 ### Bash pipe to get Ceph backfill_toofull targets for every pg  
 ``ceph health detail | grep toofull | awk '{print $2}' | xargs -n1 -I {} ceph pg {} query | grep -1 backfill_targets``  
@@ -1651,6 +1705,11 @@ ceph tell osd.* injectargs '--osd-scrub-chunk-max 2'``
 
 higher -> slower recovery  (optimal are 1 for hdd, 0 ssd, 0.25 hybrid)   
 ``ceph tell 'osd.*' injectargs '--osd_recovery_sleep 0.5'``
+
+### Ceph multiple backends / AZ  
+1. Create 1 volume type with backend-name=ceph
+2. Put backends in different AZ - dont sure how, probably via different ceph.confs / keyrings on compute nodes in both AZ
+3. Create volume via openstack volume create --type ceph --az az1 OR --az az2
 
 ### Ceph replace osd (hammer, mitaka mos9)  
 Remove old device  
