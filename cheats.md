@@ -622,8 +622,17 @@ hdlr = logging.FileHandler('/var/log/ssh_audit.log.dup')
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')  
 hdlr.setFormatter(formatter)  
 logger.addHandler(hdlr)  
-
 logger.warning('Authorized Key for host {0} and user {1} was   reloaded'.format(host, user[2]))``  
+
+### Python openstackclient queue bug  
+error:
+``openstack server list
+..
+File "/opt/mcs_venv/lib/python2.7/site-packages/openstack/utils.py", line 13, in <module>
+  from multiprocessing import queue
+ImportError: cannot import name queue``  
+fix:  
+``pip install openstacksdk==0.35.0 #faulty versions are ~0.40+``  
 
 ### uniq lines  
 ``os.system("awk '!x[$0]++' /var/log/ssh_audit.log.dup >   /var/log/ssh_audit.log")   
@@ -662,7 +671,14 @@ Go to /usr/include. where you have 2 dirs presumably -
 python2.7 and python3.6  
 map everything from python2.7:  
 ``ln -sv python2.7/* /usr/include/``  
-
+### And same situation around virtualenv/multiprocessing etc
+error:
+``Modules/_multiprocessing/multiprocessing.h:6:20: fatal error: Python.h: No such file or directory
+   #include "Python.h"
+                      ^
+    compilation terminated.``  
+fix:
+``cp -r /usr/include/python2.7/ /opt/venv/include/ #or ln -s if you prefer``  
 
 ### Check json from page (chrome)    
 F12 -> Network -> Preserver log  
@@ -1322,7 +1338,12 @@ sk
 ## Python using ssl verify cert  
 ``import requests  
 url = 'https://foo.com/bar'  
-r = requests.post(url, verify='/path/to/ca')``    
+r = requests.post(url, verify='/path/to/ca')``  
+or with urllib3  
+``import urllib3
+http = urllib3.PoolManager(ca_certs='/etc/ssl/certs/ca-certificates.crt')
+r = http.request('GET', 'https://xcloud.x5.ru/marketplace_templates/')
+print(r.data)``  
 
 ## Zabbix  
 ### mariadb-mysql  
