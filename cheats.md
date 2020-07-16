@@ -634,6 +634,18 @@ ImportError: cannot import name queue``
 fix:  
 ``pip install openstacksdk==0.35.0 #faulty versions are ~0.40+``  
 
+### Python openstackclient v1.contrib cinder bug  
+error:  
+``openstack server create
+...
+ File "/opt/mcs_venv/lib/python2.7/site-packages/osc_lib/clientmanager.py", line 47, in ...
+make_client
+    from cinderclient.v1.contrib import list_extensions
+ImportError: No module named v1.contrib
+``  
+fix:  
+``pip install python-cinderclient==4.3.0``  
+
 ### uniq lines  
 ``os.system("awk '!x[$0]++' /var/log/ssh_audit.log.dup >   /var/log/ssh_audit.log")   
 ``
