@@ -16,6 +16,10 @@ Accessing values inside arrays
 Using conditionals
 ``cat test.json |  jq .[] | jq 'select(.name == "vtb-rheltest-01").nics[1].ipAddress'``  
 
+### Long resolving time
+``cat /etc/resolv.conf
+options single-request``  
+
 ### Systemd stuff
 Reaaaly weird bug in Centos7.6 with systemd-219-67.el7  -
 starting some exporter (https://github.com/czerwonk/ping_exporter) with flag   --config.path="path" not equal to   
@@ -825,6 +829,7 @@ or
 or  
 ``git -c http.sslVerify=false clone https://example.com/path/to/git``    
 
+
 ### Git change git scheme to https  
 `` git config --global url."https://".insteadOf git://``  
 
@@ -1234,6 +1239,10 @@ Generate right self-signed certs
 ``openssl req -x509 -newkey rsa:4096 -keyout kibana-lol.it.com.pem -out  kibana-lol.it.com.cert -days 365 -nodes  
 echo  kibana-lol.it.com.cert >> kibana-lol.it.bundle  
 echo  kibana-lol.it.com.pem  >> kibana-lol.it.bundle``  
+
+P7B windows to x509 cert  
+``openssl pkcs7 -inform der -in certnew.p7b -out a.cer
+openssl pkcs7 -print_certs -in a.cer -out certnew.crt``   
 
 Version 2 - with CA and AltSubjectName  (CentOS)   
 First of all, copy and made these changes to openss.cnf  
