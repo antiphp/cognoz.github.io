@@ -19,7 +19,7 @@ vim [/etc/systemd/system/docker.prometheus]({{"/listings/2019-03-26-Prometheus-f
 vim [/etc/systemd/system/docker.grafana]({{"/listings/2019-03-26-Prometheus-federation-OpenShift/docker.grafana"}})  
 
 Main config for polling several OpenShift clusters (of course, endpoints should be resolvable)   
-vim [/etc/prometheus/prometheus.yml]({{"/listings/2019-03-26-Prometheus-federation-OpenShift/prometheus,yml"}})
+vim [/etc/prometheus/prometheus.yml]({{"/listings/2019-03-26-Prometheus-federation-OpenShift/prometheus.yml"}})
 
 Setup rule for InstanceDown  
  vim [/etc/prometheus/rules/down.rules]({{"/listings/2019-03-26-Prometheus-federation-OpenShift/rule"}})
